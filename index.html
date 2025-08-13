@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>통신사폰 계산기</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
+  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+</head>
+<body class="bg-slate-50">
+  <div id="root"></div>
+
+  <script type="text/babel">
+    const { useState, useMemo, useRef, useEffect } = React;
+
+    function pmt(rate, nper, pv) {
+      if (rate === 0) return pv / nper;
+      return (rate * pv) / (1 - Math.pow(1 + rate, -nper));
+    }
+
+    const PLAN_LIST = [
+      { category: 'LTE', name: 'LTE 베이직', price: 33000 },
+      { category: 'LTE', name: '데이터ON 톡 플러스(신규가입 중단)', price: 49000 },
+      { category: 'LTE', name: '데이터ON 비디오 플러스(신규가입 중단)', price: 69000 },
+      { category: 'LTE', name: 'LTE 슬림 플러스(신규가입 중단)', price: 61000 },
+      { category: 'LTE', name: 'LTE 베이직 플러스(신규가입 중단)', price: 44000 },
+      { category: 'LTE', name: 'LTE 안심데이터 38.5(신규가입 중단)', price: 38500 },
+      { category: 'LTE', name: '데이터ON 비디오 플러스', price: 69000 },
+      { category: 'LTE', name: '데이터ON 프리미엄', price: 89000 },
+      { category: '5G 시니어', name: '5G 시니어 베이직', price: 49000 },
+      { category: '5G 시니어', name: '5G 시니어 A형', price: 44000 },
+      { category: '5G 시니어', name: '5G 시니어 B형', price: 42000 },
+      { category: '5G 시니어', name: '5G 시니어 C형', price: 41000 },
+      { category: '5G', name: '5G Y틴', price: 47000 },
+      { category: '5G', name: '5G 슬림 4GB', price: 37000 },
+      { category: '5G', name: '5G 슬림 7GB', price: 45000 },
+      { category: '5G', name: '5G 슬림 10GB', price: 50000 },
+      { category: '5G', name: '5G 슬림 14GB', price: 55000 },
+      { category: '5G', name: '5G 슬림 21GB', price: 58000 },
+      { category: '5G', name: '5G 심플 30GB', price: 61000 },
+      { category: '5G', name: '5G 심플 50GB', price: 63000 },
+      { category: '5G', name: '5G 심플 70GB', price: 65000 },
+      { category: '5G', name: '5G 심플 90GB', price: 67000 },
+      { category: '5G', name: '5G 심플 110GB', price: 69000 },
+      { category: '5G', name: '5G 베이직', price: 80000 },
+      { category: '5G', name: '5G 스페셜', price: 100000 },
+      { category: '5G', name: '5G 초이스 베이직', price: 90000 },
+      { category: '5G', name: '5G 초이스 스페셜', price: 110000 },
+      { category: '5G', name: '5G 초이스 프리미엄', price: 130000 },
+    ];
+
+    const DEVICE_LIST = [
+      { name: '폴드7 256기가', price: 2379300 },
+      { name: '폴드7 512기가', price: 2537700 },
+      { name: '플립7 256기가', price: 1485000 },
+      { name: '플립7 512기가', price: 1643400 },
+      { name: 'S25 엣지 256기가', price: 1496000 },
+      { name: 'S25 엣지 512기가', price: 1639000 },
+      { name: 'S25 울트라 256기가', price: 1698400 },
+      { name: 'S25 플러스 256기가', price: 1353000 },
+      { name: 'S25 256기가', price: 1155000 },
+      { name: 'S24 FE', price: 946000 },
+      { name: 'A36 5G 128기가', price: 499400 },
+      { name: 'A16 LTE 128기가', price: 319000 },
+    ];
+
+    function App() {
+      const [selectedDevice, setSelectedDevice] = useState(DEVICE_LIST[0].name);
+      const [releasePrice, setReleasePrice] = useState(DEVICE_LIST[0].price);
+      const [selectedPlan, setSelectedPlan] = useState(PLAN_LIST[0].name);
+      const [installMonths, setInstallMonths] = useState(24);
+      const [interestRate] = useState(0.059);
+      const [commonSubsidy, setCommonSubsidy] = useState('300000');
+      const [extraSubsidy, setExtraSubsidy] = useState('0');
+      const [planType, setPlanType] = useState('0');
+
+      const commonRef = useRef(null);
+      const extraRef = useRef(null);
+
+      useEffect(() => {
+        const inputs = [commonRef.current, extraRef.current];
+        inputs.forEach(input => {
+          input.addEventListener('focus', () => {
+            input.setSelectionRange(0, 0);
+          });
+        });
+      }, []);
+
+      const resetField = (setter, ref) => {
+        setter('0');
+        if (ref && ref.current) ref.current.setSelectionRange(0, 0);
+      };
+
+      useMemo(() => {
+        const device = DEVICE_LIST.find(d => d.name === selectedDevice);
+        if (device) setReleasePrice(device.price);
+      }, [selectedDevice]);
+
+      const totalSubsidy = useMemo(() => (planType === '1' ? 0 : parseInt(commonSubsidy || '0')) + parseInt(extraSubsidy || '0'), [commonSubsidy, extraSubsidy, planType]);
+      const deviceValue = useMemo(() => releasePrice - totalSubsidy, [releasePrice, totalSubsidy]);
+      const monthlyDevice = useMemo(() => installMonths === 0 ? 0 : pmt(interestRate/12, installMonths, deviceValue), [deviceValue, installMonths, interestRate]);
+      const planFee = useMemo(() => {
+        const plan = PLAN_LIST.find(p => p.name === selectedPlan);
+        if (!plan) return 0;
+        return planType === '1' ? plan.price * 0.75 : plan.price;
+      }, [selectedPlan, planType]);
+      const monthlyTotal = useMemo(() => installMonths === 0 ? planFee : planFee + monthlyDevice, [installMonths, monthlyDevice, planFee]);
+      const currency = n => Math.round(n).toLocaleString('ko-KR') + '원';
+      const betterOption = useMemo(() => planType === '1' ? '요금할인 25%' : '공시지원', [planType]);
+
+      const planCategories = useMemo(() => {
+        const categories = Array.from(new Set(PLAN_LIST.map(p => p.category)));
+        return categories.map(cat => ({
+          category: cat,
+          plans: PLAN_LIST.filter(p => p.category === cat)
+        }));
+      }, []);
+
+      return (
+        <div className="min-h-screen p-6">
+          <button className="px-4 py-2 bg-blue-500 text-white rounded mb-4">딸깍</button>
+          <div className="grid md:grid-cols-2 gap-6">
+            <div className="bg-white p-4 rounded shadow space-y-3">
+              <div>
+                <label>단말기 모델</label>
+                <select className="block border rounded w-full" value={selectedDevice} onChange={e=>setSelectedDevice(e.target.value)}>
+                  {DEVICE_LIST.map(d=><option key={d.name} value={d.name}>{d.name}</option>)}
+                </select>
+              </div>
+              <div>
+                <label>출고가</label>
+                <input type="text" className="block border rounded w-full" value={currency(releasePrice)} disabled />
+              </div>
+              <div>
+                <label>공통지원금 <button className="ml-2 px-2 py-1 bg-gray-200 rounded" onClick={()=>resetField(setCommonSubsidy, commonRef)}>초기화</button></label>
+                <input ref={commonRef} type="text" className="block border rounded w-full" value={planType==='1'?'0':commonSubsidy} onChange={e=>setCommonSubsidy(e.target.value)} disabled={planType==='1'} />
+              </div>
+              <div>
+                <label>추가지원금 <button className="ml-2 px-2 py-1 bg-gray-200 rounded" onClick={()=>resetField(setExtraSubsidy, extraRef)}>초기화</button></label>
+                <input ref={extraRef} type="text" className="block border rounded w-full" value={extraSubsidy} onChange={e=>setExtraSubsidy(e.target.value)} />
+              </div>
+              <div>
+                <label>요금제 선택</label>
+                <select className="block border rounded w-full" value={selectedPlan} onChange={e=>setSelectedPlan(e.target.value)}>
+                  {planCategories.map(cat => (
+                    <optgroup key={cat.category} label={cat.category}>
+                      {cat.plans.map(p => <option key={p.name} value={p.name}>{p.name} ({currency(p.price)})</option>)}
+                    </optgroup>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label>할부여부</label>
+                <select className="block border rounded w-full" value={installMonths} onChange={e=>setInstallMonths(parseInt(e.target.value))}>
+                  <option value={0}>일시불</option>
+                  {[6,12,18,24,30,36,48].map(m=><option key={m} value={m}>{m}개월</option>)}
+                </select>
+              </div>
+              <div>
+                <label>약정할인</label>
+                <select className="block border rounded w-full" value={planType} onChange={e=>setPlanType(e.target.value)}>
+                  <option value='0'>공시지원</option>
+                  <option value='1'>요금할인 25%</option>
+                </select>
+              </div>
+            </div>
+
+            <div className="bg-white p-4 rounded shadow space-y-3">
+              <div>월 통신요금: {currency(planFee)}</div>
+              <div>월 할부금 (기기값 + 이자): {installMonths === 0 ? '-' : currency(monthlyDevice)}</div>
+              <div>월 총 납부금: {currency(monthlyTotal)}</div>
+              <div className="text-blue-600 font-bold">더 유리한 옵션: {betterOption}</div>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+  </script>
+</body>
+</html>
