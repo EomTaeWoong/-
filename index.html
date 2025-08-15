@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -13,7 +14,7 @@
 <div id="root"></div>
 
 <script type="text/babel">
-const { useState, useMemo } = React;
+const { useState, useMemo, useEffect } = React;
 
 // 월 할부 계산 함수
 function pmt(rate, nper, pv) {
@@ -181,6 +182,14 @@ const PLAN_FEATURES_U = {
   '5G 시그니처':'무제한/스마트기기 요금할인 11,000원(2대)/미성년자 휴대폰 1대 33,000원 할인'
 };
 
+// ------ 이름 정규화: 괄호 제거 + 스페셜 A/B 보정 ------
+function normalizePlanKey(name) {
+  let n = (name || '').replace(/\(.*?\)/g, '').trim();
+  if (n === '스페셜 A') n = '데이터 스페셜 A';
+  if (n === '스페셜 B') n = '데이터 스페셜 B';
+  return n;
+}
+
 // ------------------ 계산기 컴포넌트 ------------------
 function Calculator({ plans, features }) {
   const [selectedDevice, setSelectedDevice] = useState(DEVICE_LIST[0].name);
@@ -189,7 +198,12 @@ function Calculator({ plans, features }) {
   const [interestRate] = useState(0.059);
   const [commonSupport, setCommonSupport] = useState(300000);
   const [additionalSupport, setAdditionalSupport] = useState(0);
-  const [contractType, setContractType] = useState('공통지원');
+  const [contractType, setContractType] = useState('공시지원');
+
+  // 통신사(=plans 배열) 변경 시, 해당 통신사의 첫 요금제로 리셋
+  useEffect(() => {
+    setSelectedPlan(plans[0]?.name || '');
+  }, [plans]);
 
   const devicePrice = useMemo(()=> DEVICE_LIST.find(d=>d.name===selectedDevice)?.price || 0, [selectedDevice]);
 
@@ -200,13 +214,21 @@ function Calculator({ plans, features }) {
   }, [devicePrice, installMonths, commonSupport, additionalSupport, contractType]);
 
   const planPrice = useMemo(()=>{
-    let price = plans.find(p=>p.name===selectedPlan)?.price || 0;
+    const plan = plans.find(p=>p.name===selectedPlan);
+    let price = plan ? plan.price : 0;
     if(contractType==='선택약정') price = Math.round(price * 0.75);
     return price;
   }, [selectedPlan, plans, contractType]);
 
+  // 특징 매칭: 정확 일치 → 정규화 키 순으로 검색
+  const featureText = useMemo(()=>{
+    const exact = features[selectedPlan];
+    if (exact) return exact;
+    const normalized = normalizePlanKey(selectedPlan);
+    return features[normalized] || '';
+  }, [selectedPlan, features]);
+
   const totalMonthly = monthlyDevice + planPrice;
-  const featureText = features[selectedPlan] || '';
   const totalSupport = contractType==='선택약정'?0:commonSupport + additionalSupport;
   const finalDevicePrice = devicePrice - (contractType==='선택약정'?0:totalSupport);
 
@@ -246,18 +268,18 @@ function Calculator({ plans, features }) {
         <div className="flex flex-col">
           <label className="text-sm">약정</label>
           <select value={contractType} onChange={e=>setContractType(e.target.value)} className="border p-1 rounded w-32">
-            <option value="공통지원">공통지원</option>
+            <option value="공시지원">공시지원</option>
             <option value="선택약정">선택약정</option>
           </select>
         </div>
       </div>
 
       <div className="border p-4 rounded bg-white shadow-md flex flex-col gap-2">
-        <div className="text-green-600 font-bold text-xl">단말기 가격: {devicePrice.toLocaleString()}원</div>
-        <div>월 단말기 할부금: {monthlyDevice.toLocaleString()}원</div>
-        <div>월 요금제: {planPrice.toLocaleString()}원 ({featureText})</div>
-        <div className="text-red-600 font-bold text-2xl">총 월 납부금: {totalMonthly.toLocaleString()}원</div>
-        <div>총 지원금 적용 후 단말기 실 납부금: {finalDevicePrice.toLocaleString()}원</div>
+        <div className="text-green-600 font-bold text-xl">단말기 출고가: {devicePrice.toLocaleString()}원</div>
+        <div>할인 적용된 기기값: {finalDevicePrice.toLocaleString()}원</div>
+        <div>월 할부금(할부이자 5.9% 포함): {monthlyDevice.toLocaleString()}원</div>
+        <div>월 통신요금: {planPrice.toLocaleString()}원 {featureText && <span>({featureText})</span>}</div>
+        <div className="text-red-600 font-bold text-2xl">월 납부 예상금액: {totalMonthly.toLocaleString()}원</div>
       </div>
     </div>
   );
@@ -272,10 +294,56 @@ function App() {
 
   return (
     <div>
-      <div className="p-4 max-w-4xl mx-auto flex gap-4">
-        <button className={`p-2 rounded ${operator==='KT'?'bg-blue-600 text-white':'bg-white border'}`} onClick={()=>setOperator('KT')}>KT</button>
-        <button className={`p-2 rounded ${operator==='U'?'bg-green-600 text-white':'bg-white border'}`} onClick={()=>setOperator('U')}>U+</button>
+      <div className="p-4 max-w-4xl mx-auto flex gap-4 items-center">
+        {/* 통신사 선택 버튼 */}
+        <button
+          className={`p-2 rounded ${operator === 'KT' ? 'bg-blue-600 text-white' : 'bg-white border'}`}
+          onClick={() => setOperator('KT')}
+        >
+          KT
+        </button>
+        <button
+          className={`p-2 rounded ${operator === 'U' ? 'bg-green-600 text-white' : 'bg-white border'}`}
+          onClick={() => setOperator('U')}
+        >
+          U+
+        </button>
+
+        {/* KT 페이지 전용 버튼 */}
+        {operator === 'KT' && (
+          <a
+            href="https://shop.kt.com/mobile/products.do?&=&category=mobile"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="ml-4 bg-blue-500 text-white px-3 py-2 rounded hover:bg-blue-600"
+          >
+            KT닷컴
+          </a>
+        )}
+
+        {/* U+ 페이지 전용 버튼 */}
+        {operator === 'U' && (
+          <a
+            href="https://www.lguplus.com/mobile/device/phone"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="ml-4 bg-green-500 text-white px-3 py-2 rounded hover:bg-green-600"
+          >
+            U+닷컴
+          </a>
+        )}
+
+        {/* 삼성닷컴 버튼 (공통) */}
+        <a
+          href="https://www.samsung.com/sec/smartphones/all-smartphones/?carrier-phone"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="ml-4 bg-gray-800 text-white px-3 py-2 rounded hover:bg-gray-900"
+        >
+          삼성닷컴
+        </a>
       </div>
+
       <Calculator plans={plans} features={features}/>
     </div>
   );
