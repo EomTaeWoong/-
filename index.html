@@ -32,17 +32,16 @@ const DEVICE_LIST = [
   { name: 'S25 울트라 256기가', price: 1698400 },
   { name: 'S25 플러스 256기가', price: 1353000 },
   { name: 'S25 256기가', price: 1155000 },
-  { name: 'S24 FE', price: 946000 },
+  { name: 'S24 FE 256기가', price: 946000 },
   { name: 'A36 5G 128기가', price: 499400 },
   { name: 'A16 LTE 128기가', price: 319000 }
 ];
 
-// ------------------ KT 요금제 ------------------
+// ------------------ KT 요금제 (수정됨) ------------------
 const PLAN_LIST_KT = [
   { category: 'LTE', name: 'LTE 베이직', price: 33000 },
-  { category: 'LTE', name: 'LTE Y베이직', price: 33000 },
   { category: 'LTE', name: '데이터ON 톡 플러스(신규가입 중단)', price: 49000 },
-  { category: 'LTE', name: '데이터ON 비디오 플러스(신규가입 중단)', price: 69000 },
+  { category: 'LTE', name: '데이터ON 비디오 (신규가입 중단)', price: 69000 },
   { category: 'LTE', name: 'LTE 슬림 플러스(신규가입 중단)', price: 61000 },
   { category: 'LTE', name: 'LTE 베이직 플러스(신규가입 중단)', price: 44000 },
   { category: 'LTE', name: 'LTE 안심데이터 38.5(신규가입 중단)', price: 38500 },
@@ -54,9 +53,13 @@ const PLAN_LIST_KT = [
   { category: '5G 시니어', name: '5G 시니어 B형', price: 42000 },
   { category: '5G 시니어', name: '5G 시니어 C형', price: 41000 },
 
+  { category: 'Y', name: 'LTE Y베이직', price: 33000 },
   { category: 'Y', name: '5G Y틴', price: 47000 },
+  { category: 'Y', name: 'Y데이터ON 톡 플러스(신규가입 중단)', price: 49000 },
   { category: 'Y', name: '5G Y슬림', price: 55000 },
+  { category: 'Y', name: 'Y데이터ON 비디오 플러스', price: 69000 },
   { category: 'Y', name: '5G Y베이직', price: 80000 },
+  { category: 'Y', name: 'Y데이터ON 프리미엄', price: 89000 },
   { category: 'Y', name: '5G Y스페셜', price: 100000 },
 
   { category: '5G', name: '5G 슬림 4GB', price: 37000 },
@@ -76,24 +79,27 @@ const PLAN_LIST_KT = [
   { category: '5G', name: '5G 초이스 프리미엄', price: 130000 },
 ];
 
-// KT 요금제 특징
+// KT 요금제 특징 (수정됨)
 const PLAN_FEATURES_KT = {
   'LTE 베이직':'1.4GB + Qos',
-  'LTE Y베이직':'2.5GB + Qos',
-  '데이터ON 톡 플러스(신규가입 중단)':'3GB + 1Mbps',
-  '데이터ON 비디오 플러스(신규가입 중단)':'100GB + 5Mbps',
-  'LTE 슬림 플러스(신규가입 중단)':'30GB + 1Mbps',
-  'LTE 베이직 플러스(신규가입 중단)':'3GB + 400Kbps',
-  'LTE 안심데이터 38.5(신규가입 중단)':'450MB + 400Kbps',
-  '데이터ON 비디오 플러스':'110GB + 5Mbps',
+  '데이터ON 톡 플러스':'5GB + 1Mbps',
+  '데이터ON 비디오':'100GB + 5Mbps/VIP',
+  'LTE 슬림 플러스':'30GB + 1Mbps',
+  'LTE 베이직 플러스':'3GB + 400Kbps',
+  'LTE 안심데이터 38.5':'450MB + 400Kbps',
+  '데이터ON 비디오 플러스':'110GB + 5Mbps/2022년 12월 이전까지 VIP',
   '데이터ON 프리미엄':'완전 무제한/스마트기기 1회선 무료VIP/필수팩 L3(지니/밀리) 무료/단말보험 멤버십 포인트 최대 4,500P 차감',
   '5G 시니어 베이직':'15GB + 1Mbps/만 65세 이상',
   '5G 시니어 A형':'10GB + 1Mbps/만 65세 이상',
   '5G 시니어 B형':'9GB + 1Mbps/만 75세 이상',
   '5G 시니어 C형':'8GB + 1Mbps/만 80세 이상',
+  'LTE Y베이직':'2.5GB + Qos',
   '5G Y틴':'10GB + 1Mbps',
+  'Y데이터ON 톡 플러스':'6GB + 1Mbps/미디어팩 50%할인',
   '5G Y슬림':'14GB + 1Mbps/로밍 데이터 속도 100Kbps',
+  'Y데이터ON 비디오 플러스':'110GB + 5Mbps/필수팩 L3(지니/밀리) 50%할인/2022년 12월 이전까지 VIP',
   '5G Y베이직':'완전 무제한/스마트기기 1회선 50% 할인(Y덤)/로밍 데이터 속도 1Mbps/VIP',
+  'Y데이터ON 프리미엄':'완전 무제한/스마트기기 1회선 무료/VIP/필수팩 L3(지니/밀리) 무료/단말보험 멤버십 포인트 최대 4,500P 차감',
   '5G Y스페셜':'완전 무제한/스마트기기 1회선 무료/로밍 데이터 속도 1Mbps/VVIP/단말보험 멤버십 포인트 최대 4,500P 차감',
   '5G 슬림 4GB':'400Kbps',
   '5G 슬림 7GB':'400Kbps',
@@ -248,8 +254,6 @@ function Calculator({ plans, features }) {
 
   // 특징 매칭: 정확 일치 → 정규화 키 순으로 검색
   const featureText = useMemo(()=>{
-    const exact = features[selectedPlan];
-    if (exact) return exact;
     const normalized = normalizePlanKey(selectedPlan);
     return features[normalized] || '';
   }, [selectedPlan, features]);
