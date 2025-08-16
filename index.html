@@ -204,6 +204,7 @@ function Calculator({ plans, features }) {
   const [commonSupport, setCommonSupport] = useState(300000);
   const [additionalSupport, setAdditionalSupport] = useState(0);
   const [contractType, setContractType] = useState('공시지원');
+  const [memo, setMemo] = useState(''); // 메모를 위한 상태 추가
 
   // 통신사(=plans 배열) 변경 시, 해당 통신사의 첫 요금제로 리셋
   useEffect(() => {
@@ -305,6 +306,21 @@ function Calculator({ plans, features }) {
         <div>월 통신요금: {planPrice.toLocaleString()}원 {featureText && <span>({featureText})</span>}</div>
         <div className="text-red-600 font-bold text-2xl">월 납부 예상금액: {totalMonthly.toLocaleString()}원</div>
       </div>
+      
+      {/* --- 추가된 메모 칸 --- */}
+      <div className="mt-4">
+        <label htmlFor="memo-area" className="block text-sm font-medium text-gray-700 mb-1">메모</label>
+        <textarea
+          id="memo-area"
+          value={memo}
+          onChange={e => setMemo(e.target.value)}
+          rows="4"
+          className="p-2 border rounded shadow-sm w-full focus:ring-blue-500 focus:border-blue-500"
+          placeholder="여기에 자유롭게 메모를 작성하세요..."
+        ></textarea>
+      </div>
+      {/* --- 여기까지 --- */}
+
     </div>
   );
 }
