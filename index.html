@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -131,6 +130,9 @@ const PLAN_LIST_U = [
   { category: 'LTE', name: 'LTE 속걱데88(신규가입 중단)', price: 88000 },
   { category: 'LTE', name: 'LTE 프리미어 에센셜(신규가입 중단)', price: 85000 },
   { category: 'LTE', name: 'LTE 프리미어 플러스(신규가입 중단)', price: 105000 },
+  { category: '5G 시니어', name: '5G 시니어 A형', price: 45000 },
+  { category: '5G 시니어', name: '5G 시니어 B형', price: 43000 },
+  { category: '5G 시니어', name: '5G 시니어 C형', price: 39000 },
   { category: '5G', name: '5G 미니', price: 37000 },
   { category: '5G', name: '5G 슬림+', price: 47000 },
   { category: '5G', name: '5G 라이트+', price: 55000 },
@@ -165,6 +167,9 @@ const PLAN_FEATURES_U = {
   'LTE 속걱데88':'무제한/스마트기기 2회선 무료',
   'LTE 프리미어 에센셜':'무제한',
   'LTE 프리미어 플러스':'무제한/스마트기기 2회선 무료',
+  '5G 시니어 A형': '10GB + 1Mbps/만 65세 이상~만 70세 미만',
+  '5G 시니어 B형': '10GB + 1Mbps/만 70세 이상~만 80세 미만',
+  '5G 시니어 C형': '10GB + 1Mbps/만 80세 이상',
   '5G 미니':'5GB + 400Kbps/유쓰 데이터 제공량 9GB',
   '5G 슬림+':'9GB + 400Kbps/유쓰 데이터 제공량 15GB',
   '5G 라이트+':'14GB + 1Mbps/유쓰 데이터 제공량 26GB',
@@ -207,18 +212,38 @@ function Calculator({ plans, features }) {
 
   const devicePrice = useMemo(()=> DEVICE_LIST.find(d=>d.name===selectedDevice)?.price || 0, [selectedDevice]);
 
+  const originalPlanPrice = useMemo(() => {
+    return plans.find(p => p.name === selectedPlan)?.price || 0;
+  }, [selectedPlan, plans]);
+
+  const totalDiscountDisplay = useMemo(() => {
+    if (contractType === '공시지원') {
+      return commonSupport + additionalSupport;
+    } else { // 선택약정
+      const totalPlanDiscount = Math.round(originalPlanPrice * 0.25 * 24);
+      return additionalSupport + totalPlanDiscount;
+    }
+  }, [contractType, commonSupport, additionalSupport, originalPlanPrice]);
+
+  const finalDevicePrice = useMemo(() => {
+    let totalDiscount = additionalSupport;
+    if (contractType === '공시지원') {
+      totalDiscount += commonSupport;
+    }
+    return devicePrice - totalDiscount;
+  }, [devicePrice, commonSupport, additionalSupport, contractType]);
+
   const monthlyDevice = useMemo(()=>{
-    if(installMonths===0) return 0;
-    const totalPrice = devicePrice - (contractType==='선택약정'?0:commonSupport) - additionalSupport;
-    return Math.round(pmt(interestRate/12, installMonths, totalPrice));
-  }, [devicePrice, installMonths, commonSupport, additionalSupport, contractType]);
+    if(installMonths === 0) return 0;
+    const principal = finalDevicePrice > 0 ? finalDevicePrice : 0;
+    return Math.round(pmt(interestRate/12, installMonths, principal));
+  }, [finalDevicePrice, installMonths, interestRate]);
 
   const planPrice = useMemo(()=>{
-    const plan = plans.find(p=>p.name===selectedPlan);
-    let price = plan ? plan.price : 0;
+    let price = originalPlanPrice;
     if(contractType==='선택약정') price = Math.round(price * 0.75);
     return price;
-  }, [selectedPlan, plans, contractType]);
+  }, [originalPlanPrice, contractType]);
 
   // 특징 매칭: 정확 일치 → 정규화 키 순으로 검색
   const featureText = useMemo(()=>{
@@ -229,8 +254,6 @@ function Calculator({ plans, features }) {
   }, [selectedPlan, features]);
 
   const totalMonthly = monthlyDevice + planPrice;
-  const totalSupport = contractType==='선택약정'?0:commonSupport + additionalSupport;
-  const finalDevicePrice = devicePrice - (contractType==='선택약정'?0:totalSupport);
 
   return (
     <div className="p-4 max-w-4xl mx-auto">
@@ -275,8 +298,9 @@ function Calculator({ plans, features }) {
       </div>
 
       <div className="border p-4 rounded bg-white shadow-md flex flex-col gap-2">
-        <div className="text-green-600 font-bold text-xl">단말기 출고가: {devicePrice.toLocaleString()}원</div>
-        <div>할인 적용된 기기값: {finalDevicePrice.toLocaleString()}원</div>
+        <div className="text-black font-bold text-xl">단말기 출고가: {devicePrice.toLocaleString()}원</div>
+        <div className="text-blue-600 font-bold text-xl">총 할인금액: {totalDiscountDisplay.toLocaleString()}원</div>
+        <div className="text-green-600 font-bold text-xl">할인 적용된 기기값: {finalDevicePrice.toLocaleString()}원</div>
         <div>월 할부금(할부이자 5.9% 포함): {monthlyDevice.toLocaleString()}원</div>
         <div>월 통신요금: {planPrice.toLocaleString()}원 {featureText && <span>({featureText})</span>}</div>
         <div className="text-red-600 font-bold text-2xl">월 납부 예상금액: {totalMonthly.toLocaleString()}원</div>
