@@ -377,15 +377,19 @@ function App() {
           </a>
         )}
 
-        {/* 삼성닷컴 버튼 (공통) */}
-        <a
-          href="https://www.samsung.com/sec/smartphones/all-smartphones/?carrier-phone"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="ml-4 bg-gray-800 text-white px-3 py-2 rounded hover:bg-gray-900"
-        >
-          삼성닷컴
-        </a>
+        {/* --- 수정된 부분 --- */}
+        <div className="flex items-center ml-4">
+          <a
+            href="https://www.samsung.com/sec/smartphones/all-smartphones/?carrier-phone"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="bg-gray-800 text-white px-3 py-2 rounded hover:bg-gray-900"
+          >
+            삼성닷컴
+          </a>
+          <span className="ml-2 font-semibold text-gray-700 text-sm">공통지원금/추가지원금(선할인 포함) 직접 입력하세요</span>
+        </div>
+        {/* --- 여기까지 --- */}
       </div>
 
       <Calculator plans={plans} features={features}/>
