@@ -305,8 +305,8 @@ function Calculator({ plans, features }) {
 
       <div className="border p-4 rounded bg-white shadow-md flex flex-col gap-2">
         <div className="text-black font-bold text-xl">단말기 출고가: {devicePrice.toLocaleString()}원</div>
-        <div className="text-blue-600 font-bold text-xl">총 할인금액: {totalDiscountDisplay.toLocaleString()}원</div>
-        <div className="text-green-600 font-bold text-xl">할인 적용된 기기값: {finalDevicePrice.toLocaleString()}원</div>
+        <div className="text-blue-600 font-bold text-xl">할인받는 금액(선택약정은 24개월동안 할인받는 총 금액 포함): {totalDiscountDisplay.toLocaleString()}원</div>
+        <div className="text-green-600 font-bold text-xl">최종 기기값: {finalDevicePrice.toLocaleString()}원</div>
         <div>월 할부금(할부이자 5.9% 포함): {monthlyDevice.toLocaleString()}원</div>
         <div>월 통신요금: {planPrice.toLocaleString()}원 {featureText && <span>({featureText})</span>}</div>
         <div className="text-red-600 font-bold text-2xl">월 납부 예상금액: {totalMonthly.toLocaleString()}원</div>
