@@ -107,7 +107,7 @@ function Calculator({ plans, features }) {
   const [interestRate] = useState(0.059);
   const [commonSupport, setCommonSupport] = useState(300000);
   const [additionalSupport, setAdditionalSupport] = useState(0);
-  const [contractType, setContractType] = useState('공시지원');
+  const [contractType, setContractType] = useState('공통지원');
   const [memo, setMemo] = useState('');
 
   useEffect(() => {
@@ -129,7 +129,7 @@ function Calculator({ plans, features }) {
   }, [monthlyPlanDiscount]);
 
   const totalDiscountDisplay = useMemo(() => {
-    if (contractType === '공시지원') {
+    if (contractType === '공통지원') {
       return commonSupport + additionalSupport;
     } else { // 선택약정
       return additionalSupport + totalPlanDiscount;
@@ -147,13 +147,13 @@ function Calculator({ plans, features }) {
         </span>
       );
     }
-    // '공시지원'일 경우
+    // '공통지원'일 경우
     return <span>- {totalDiscountDisplay.toLocaleString()}원</span>;
   }, [contractType, totalDiscountDisplay, additionalSupport, monthlyPlanDiscount, totalPlanDiscount]);
 
   const finalDevicePrice = useMemo(() => {
     let totalDiscount = additionalSupport;
-    if (contractType === '공시지원') {
+    if (contractType === '공통지원') {
       totalDiscount += commonSupport;
     }
     return devicePrice - totalDiscount;
@@ -216,17 +216,17 @@ function Calculator({ plans, features }) {
               <input
                 type="radio"
                 name="contractType"
-                value="공시지원"
-                checked={contractType === '공시지원'}
+                value="공통지원"
+                checked={contractType === '공통지원'}
                 onChange={e => setContractType(e.target.value)}
                 className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
               />
               <div
                 className={`flex items-center justify-center h-full px-3 text-xs transition-colors ${
-                  contractType === '공시지원' ? 'bg-blue-600 text-white' : 'bg-white text-gray-700 hover:bg-gray-100'
+                  contractType === '공통지원' ? 'bg-blue-600 text-white' : 'bg-white text-gray-700 hover:bg-gray-100'
                 }`}
               >
-                공시지원
+                공통지원
               </div>
             </label>
             <div className="border-l"></div>
