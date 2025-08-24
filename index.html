@@ -164,6 +164,19 @@ function Calculator({ plans, features }) {
     const principal = finalDevicePrice > 0 ? finalDevicePrice : 0;
     return Math.round(pmt(interestRate/12, installMonths, principal));
   }, [finalDevicePrice, installMonths, interestRate]);
+    
+  // --- ✨ 추가된 부분 시작 ---
+  const totalRepayment = useMemo(() => {
+    if (installMonths === 0) return finalDevicePrice > 0 ? finalDevicePrice : 0;
+    return monthlyDevice * installMonths;
+  }, [monthlyDevice, installMonths, finalDevicePrice]);
+
+  const totalInterest = useMemo(() => {
+    if (installMonths === 0) return 0;
+    const interest = totalRepayment - (finalDevicePrice > 0 ? finalDevicePrice : 0);
+    return interest > 0 ? Math.round(interest) : 0;
+  }, [totalRepayment, finalDevicePrice, installMonths]);
+  // --- ✨ 추가된 부분 끝 ---
 
   const planPrice = useMemo(()=>{
     let price = originalPlanPrice;
@@ -254,7 +267,16 @@ function Calculator({ plans, features }) {
       <div className="border p-4 rounded bg-white shadow-md flex flex-col gap-2">
         <div className="text-black font-bold text-xl">단말기 출고가: {devicePrice.toLocaleString()}원</div>
         <div className="text-red-600 font-bold text-xl">총 할인액: {totalDiscountElement}</div>
-        <div className="text-green-600 font-bold text-xl">단말기 할부원금: {finalDevicePrice.toLocaleString()}원</div>
+        {/* --- ✨ 수정된 부분 시작 --- */}
+        <div className="text-green-600 font-bold text-xl">
+          단말기 할부원금: {(finalDevicePrice > 0 ? finalDevicePrice : 0).toLocaleString()}원
+          {installMonths > 0 && finalDevicePrice > 0 && (
+            <span className="text-sm font-normal ml-2 text-gray-600">
+              (총 이자: {totalInterest.toLocaleString()}원, 총 상환액: {totalRepayment.toLocaleString()}원)
+            </span>
+          )}
+        </div>
+        {/* --- ✨ 수정된 부분 끝 --- */}
         <div className="text-blue-600 font-bold text-xl">월 할부금(할부이자 5.9% 포함): {monthlyDevice.toLocaleString()}원</div>
         <div className="text-blue-600 font-bold text-xl">월 통신요금: {planPrice.toLocaleString()}원 {featureText && <span className="text-gray-600 text-sm">({featureText})</span>}</div>
         <div className="text-black-600 font-bold text-2xl">월 납부 예상금액: {totalMonthly.toLocaleString()}원</div>
