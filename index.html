@@ -21,22 +21,26 @@ function pmt(rate, nper, pv) {
   return (rate*pv)/(1-Math.pow(1+rate, -nper));
 }
 
-// ------------------ 단말기 ------------------
+// ------------------ 단말기 (수정됨) ------------------
 const DEVICE_LIST = [
   { name: '폴드7 ｜ 256기가', price: 2379300 },
   { name: '폴드7 ｜ 512기가', price: 2537700 },
+  { name: 'separator-1', isSeparator: true },
   { name: '플립7 FE ｜ 256기가', price: 1199000 },
   { name: '플립7 ｜ 256기가', price: 1485000 },
   { name: '플립7 ｜ 512기가', price: 1643400 },
+  { name: 'separator-2', isSeparator: true },
   { name: 'S25엣지 ｜ 256기가', price: 1496000 },
   { name: 'S25엣지 ｜ 512기가', price: 1639000 },
   { name: 'S25울트라 ｜ 256기가', price: 1698400 },
   { name: 'S25플러스 ｜ 256기가', price: 1353000 },
   { name: 'S25 ｜ 256기가', price: 1155000 },
   { name: 'S24 FE ｜ 256기가', price: 946000 },
+  { name: 'separator-3', isSeparator: true },
   { name: 'A36 5G ｜ 128기가', price: 499400 },
   { name: 'A16 LTE ｜ 128기가', price: 319000 }
 ];
+
 
 // ------------------ KT 요금제 (수정됨) ------------------
 const PLAN_LIST_KT = [
@@ -226,9 +230,19 @@ function Calculator({ plans, features }) {
   return (
     <div className="p-4 max-w-4xl mx-auto">
       <div className="mb-4 flex flex-wrap gap-4">
+        {/* --- 단말기 목록 렌더링 수정 시작 --- */}
         <select value={selectedDevice} onChange={e=>setSelectedDevice(e.target.value)} className="border p-2 rounded flex-1">
-          {DEVICE_LIST.map(d=><option key={d.name} value={d.name}>{d.name} ({d.price.toLocaleString()}원)</option>)}
+          {DEVICE_LIST.map(d =>
+            d.isSeparator ? (
+              <option key={d.name} disabled>──────────</option>
+            ) : (
+              <option key={d.name} value={d.name}>
+                {d.name} ({d.price.toLocaleString()}원)
+              </option>
+            )
+          )}
         </select>
+        {/* --- 단말기 목록 렌더링 수정 끝 --- */}
         <select value={selectedPlan} onChange={e=>setSelectedPlan(e.target.value)} className="border p-2 rounded flex-1">
           {['LTE','5G 시니어','Y','5G'].map(cat=>{
             const filtered = plans.filter(p=>p.category===cat);
@@ -320,7 +334,7 @@ function Calculator({ plans, features }) {
           onChange={e => setMemo(e.target.value)}
           rows="6"
           className="p-2 border rounded shadow-sm w-full focus:ring-blue-500 focus:border-blue-500"
-          placeholder="퇴근하고 싶다..."
+          placeholder="퇴근하고싶다..."
         ></textarea>
       </div>
 
