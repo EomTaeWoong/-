@@ -63,10 +63,11 @@ const PLAN_LIST_KT = [
   { category: 'LTE', name: 'LTE 데이터선택 87.8(신규가입 중단)', price: 87890 },
   { category: 'LTE', name: 'LTE 데이터선택 87.8(로밍)(신규가입 중단)', price: 87890 },
   { category: 'LTE', name: 'LTE 데이터선택 109(신규가입 중단)', price: 109890 },
-  { category: '5G 시니어', name: '5G 시니어 C형', price: 41000 },
-  { category: '5G 시니어', name: '5G 시니어 B형', price: 42000 },
-  { category: '5G 시니어', name: '5G 시니어 A형', price: 44000 },
-  { category: '5G 시니어', name: '5G 시니어 베이직', price: 49000 },
+  { category: '시니어', name: '시니어 베이직(LTE)', price: 33000 },
+  { category: '시니어', name: '5G 시니어 C형', price: 41000 },
+  { category: '시니어', name: '5G 시니어 B형', price: 42000 },
+  { category: '시니어', name: '5G 시니어 A형', price: 44000 },
+  { category: '시니어', name: '5G 시니어 베이직', price: 49000 },
   { category: 'Y', name: 'LTE Y베이직', price: 33000 },
   { category: 'Y', name: 'Y군인 33', price: 33000 },
   { category: 'Y', name: '5G Y틴', price: 47000 },
@@ -117,16 +118,23 @@ const PLAN_FEATURES_KT = {
   'LTE 데이터선택 109': '30GB + 일 2GB + 5Mbps/VIP/단말보험(멤버십 할인)/스마트기기 요금할인 무료 or 11,000원 할인/미디어팩 무료 or 리얼 미디어팩 50%할인(적용일:19.08.13)/하루종일 로밍 5일(이용권 5매)',
   '데이터ON 톡': '3GB + 1Mbps',
   'Y데이터ON 톡': '6GB + 1Mbps/필수팩 L3(미디어팩) 50%할인',
-  'Y데이터ON 비디오': '100GB + 5Mbps/VIP/필수팩 L3(미디어팩) 50%할인'
+  'Y데이터ON 비디오': '100GB + 5Mbps/VIP/필수팩 L3(미디어팩) 50%할인',
+  '시니어 베이직': '2GB + 밀당'
 };
 
 // ------------------ U+ 요금제 ------------------
 const PLAN_LIST_U = [
-  { category: 'LTE', name: '데이터 일반(신규가입 중단)', price: 32890 }, { category: 'LTE', name: '데이터 1.3(신규가입 중단)', price: 39490 }, { category: 'LTE', name: '데이터 2.3(신규가입 중단)', price: 46090 }, { category: 'LTE', name: '데이터 3.6(신규가입 중단)', price: 51590 }, { category: 'LTE', name: '데이터 6.6(신규가입 중단)', price: 55990 }, { category: 'LTE', name: '스페셜 A(신규가입 중단)', price: 65890 }, { category: 'LTE', name: '스페셜 B(신규가입 중단)', price: 74800 }, { category: 'LTE', name: 'LTE 데이터33', price: 33000 }, { category: 'LTE', name: 'LTE 추걱데44(신규가입 중단)', price: 44000 }, { category: 'LTE', name: 'LTE 추걱데49(신규가입 중단)', price: 49000 }, { category: 'LTE', name: 'LTE 추걱데59(신규가입 중단)', price: 59000 }, { category: 'LTE', name: 'LTE 추걱데69(신규가입 중단)', price: 69000 }, { category: 'LTE', name: 'LTE 속걱데78(신규가입 중단)', price: 78000 }, { category: 'LTE', name: 'LTE 속걱데88(신규가입 중단)', price: 88000 }, { category: 'LTE', name: 'LTE 프리미어 에센셜(신규가입 중단)', price: 85000 }, { category: 'LTE', name: 'LTE 프리미어 플러스(신규가입 중단)', price: 105000 }, { category: '5G 시니어', name: '5G 시니어 A형', price: 45000 }, { category: '5G 시니어', name: '5G 시니어 B형', price: 43000 }, { category: '5G 시니어', name: '5G 시니어 C형', price: 39000 }, { category: '5G', name: '5G 미니', price: 37000 }, { category: '5G', name: '5G 슬림+', price: 47000 }, { category: '5G', name: '5G 라이트+', price: 55000 }, { category: '5G', name: '5G 베이직+', price: 59000 }, { category: '5G', name: '5G 심플+', price: 61000 }, { category: '5G', name: '5G 데이터 레귤러', price: 63000 }, { category: '5G', name: '5G 데이터 플러스', price: 66000 }, { category: '5G', name: '5G 데이터 슈퍼', price: 68000 }, { category: '5G', name: '5G 스탠다드 에센셜', price: 70000 }, { category: '5G', name: '5G 스탠다드', price: 75000 }, { category: '5G', name: '5G 프리미어 에센셜', price: 85000 }, { category: '5G', name: '5G 프리미어 레귤러', price: 95000 }, { category: '5G', name: '5G 프리미어 플러스', price: 105000 }, { category: '5G', name: '5G 프리미어 슈퍼', price: 115000 }, { category: '5G', name: '5G 시그니처', price: 130000 }
+  { category: 'LTE', name: '데이터 일반(신규가입 중단)', price: 32890 }, { category: 'LTE', name: '데이터 1.3(신규가입 중단)', price: 39490 }, { category: 'LTE', name: '데이터 2.3(신규가입 중단)', price: 46090 }, { category: 'LTE', name: '데이터 3.6(신규가입 중단)', price: 51590 }, { category: 'LTE', name: '데이터 6.6(신규가입 중단)', price: 55990 }, { category: 'LTE', name: '스페셜 A(신규가입 중단)', price: 65890 }, { category: 'LTE', name: '스페셜 B(신규가입 중단)', price: 74800 }, { category: 'LTE', name: 'LTE 데이터33', price: 33000 }, { category: 'LTE', name: 'LTE 추걱데44(신규가입 중단)', price: 44000 }, { category: 'LTE', name: 'LTE 추걱데49(신규가입 중단)', price: 49000 }, { category: 'LTE', name: 'LTE 추걱데59(신규가입 중단)', price: 59000 }, { category: 'LTE', name: 'LTE 추걱데69(신규가입 중단)', price: 69000 }, { category: 'LTE', name: 'LTE 속걱데78(신규가입 중단)', price: 78000 }, { category: 'LTE', name: 'LTE 속걱데88(신규가입 중단)', price: 88000 }, { category: 'LTE', name: 'LTE 프리미어 에센셜(신규가입 중단)', price: 85000 }, { category: 'LTE', name: 'LTE 프리미어 플러스(신규가입 중단)', price: 105000 },
+  { category: '시니어', name: '5G 시니어 A형', price: 45000 },
+  { category: '시니어', name: '5G 시니어 B형', price: 43000 },
+  { category: '시니어', name: '5G 시니어 C형', price: 39000 },
+  { category: '5G', name: '5G 미니', price: 37000 }, { category: '5G', name: '5G 슬림+', price: 47000 }, { category: '5G', name: '5G 라이트+', price: 55000 }, { category: '5G', name: '5G 베이직+', price: 59000 }, { category: '5G', name: '5G 심플+', price: 61000 }, { category: '5G', name: '5G 데이터 레귤러', price: 63000 }, { category: '5G', name: '5G 데이터 플러스', price: 66000 }, { category: '5G', name: '5G 데이터 슈퍼', price: 68000 }, { category: '5G', name: '5G 스탠다드 에센셜', price: 70000 }, { category: '5G', name: '5G 스탠다드', price: 75000 }, { category: '5G', name: '5G 프리미어 에센셜', price: 85000 }, { category: '5G', name: '5G 프리미어 레귤러', price: 95000 }, { category: '5G', name: '5G 프리미어 플러스', price: 105000 }, { category: '5G', name: '5G 프리미어 슈퍼', price: 115000 }, { category: '5G', name: '5G 시그니처', price: 130000 }
 ];
 
 const PLAN_FEATURES_U = {
-  '데이터 일반':'300MB', '데이터 1.3':'1.3GB', '데이터 2.3':'2.3GB', '데이터 3.6':'3.6GB', '데이터 6.6':'6.6GB', '데이터 스페셜 A':'11GB + 일 2GB + 3Mbps', '데이터 스페셜 B':'16GB + 일 2GB + 3Mbps', 'LTE 데이터33':'1.5GB + 종량과금', 'LTE 추걱데44':'2.5GB + 400Kbps', 'LTE 추걱데49':'3.5GB + 1Mbps', 'LTE 추걱데59':'6.6GB + 1Mbps', 'LTE 추걱데69':'일 5GB + 5Mbps', 'LTE 속걱데78':'무제한', 'LTE 속걱데88':'무제한/스마트기기 2회선 무료', 'LTE 프리미어 에센셜':'무제한', 'LTE 프리미어 플러스':'무제한/스마트기기 2회선 무료', '5G 시니어 A형': '10GB + 1Mbps/만 65세 이상~만 70세 미만', '5G 시니어 B형': '10GB + 1Mbps/만 70세 이상~만 80세 미만', '5G 시니어 C형': '10GB + 1Mbps/만 80세 이상', '5G 미니':'5GB + 400Kbps/유쓰 데이터 제공량 9GB', '5G 슬림+':'9GB + 400Kbps/유쓰 데이터 제공량 15GB', '5G 라이트+':'14GB + 1Mbps/유쓰 데이터 제공량 26GB', '5G 베이직+':'24GB + 1Mbps/유쓰 데이터 제공량 36GB', '5G 심플+':'31GB + 1Mbps/유쓰 데이터 제공량 41GB', '5G 데이터 레귤러':'50GB + 1Mbps/유쓰 데이터 제공량 70GB', '5G 데이터 플러스':'80GB + 1Mbps/유쓰 데이터 제공량 110GB', '5G 데이터 슈퍼':'95GB + 3Mbps/유쓰 데이터 제공량 135GB', '5G 스탠다드 에센셜':'125GB + 5Mbps/유쓰 데이터 제공량 185GB', '5G 스탠다드':'150GB + 5Mbps/유쓰 데이터 제공량 210GB', '5G 프리미어 에센셜':'무제한', '5G 프리미어 레귤러':'무제한/스마트기기 요금할인 11,000원(1대)', '5G 프리미어 플러스':'무제한/스마트기기 요금할인 11,000원(2대)', '5G 프리미어 슈퍼':'무제한/스마트기기 요금할인 11,000원(2대)', '5G 시그니처':'무제한/스마트기기 요금할인 11,000원(2대)/미성년자 휴대폰 1대 33,000원 할인'
+  '데이터 일반':'300MB', '데이터 1.3':'1.3GB', '데이터 2.3':'2.3GB', '데이터 3.6':'3.6GB', '데이터 6.6':'6.6GB', '데이터 스페셜 A':'11GB + 일 2GB + 3Mbps', '데이터 스페셜 B':'16GB + 일 2GB + 3Mbps', 'LTE 데이터33':'1.5GB + 종량과금', 'LTE 추걱데44':'2.5GB + 400Kbps', 'LTE 추걱데49':'3.5GB + 1Mbps', 'LTE 추걱데59':'6.6GB + 1Mbps', 'LTE 추걱데69':'일 5GB + 5Mbps', 'LTE 속걱데78':'무제한', 'LTE 속걱데88':'무제한/스마트기기 2회선 무료', 'LTE 프리미어 에센셜':'무제한', 'LTE 프리미어 플러스':'무제한/스마트기기 2회선 무료',
+  '5G 시니어 A형': '10GB + 1Mbps/만 65세 이상~만 70세 미만', '5G 시니어 B형': '10GB + 1Mbps/만 70세 이상~만 80세 미만', '5G 시니어 C형': '10GB + 1Mbps/만 80세 이상',
+  '5G 미니':'5GB + 400Kbps/유쓰 데이터 제공량 9GB', '5G 슬림+':'9GB + 400Kbps/유쓰 데이터 제공량 15GB', '5G 라이트+':'14GB + 1Mbps/유쓰 데이터 제공량 26GB', '5G 베이직+':'24GB + 1Mbps/유쓰 데이터 제공량 36GB', '5G 심플+':'31GB + 1Mbps/유쓰 데이터 제공량 41GB', '5G 데이터 레귤러':'50GB + 1Mbps/유쓰 데이터 제공량 70GB', '5G 데이터 플러스':'80GB + 1Mbps/유쓰 데이터 제공량 110GB', '5G 데이터 슈퍼':'95GB + 3Mbps/유쓰 데이터 제공량 135GB', '5G 스탠다드 에센셜':'125GB + 5Mbps/유쓰 데이터 제공량 185GB', '5G 스탠다드':'150GB + 5Mbps/유쓰 데이터 제공량 210GB', '5G 프리미어 에센셜':'무제한', '5G 프리미어 레귤러':'무제한/스마트기기 요금할인 11,000원(1대)', '5G 프리미어 플러스':'무제한/스마트기기 요금할인 11,000원(2대)', '5G 프리미어 슈퍼':'무제한/스마트기기 요금할인 11,000원(2대)', '5G 시그니처':'무제한/스마트기기 요금할인 11,000원(2대)/미성년자 휴대폰 1대 33,000원 할인'
 };
 
 // ------ 이름 정규화: 괄호 제거 + 스페셜 A/B 보정 ------
@@ -138,19 +146,40 @@ function normalizePlanKey(name) {
 }
 
 // ------------------ 계산기 컴포넌트 ------------------
-function Calculator({ plans, features }) {
+function Calculator({ plans, features, operator }) { // operator prop 추가
   const [selectedDevice, setSelectedDevice] = useState(DEVICE_LIST[0].name);
   const [selectedPlan, setSelectedPlan] = useState(plans[0].name);
   const [installMonths, setInstallMonths] = useState(24);
   const [interestRate] = useState(0.059);
   const [commonSupport, setCommonSupport] = useState(300000);
   const [additionalSupport, setAdditionalSupport] = useState(0);
+  const [additionalEdited, setAdditionalEdited] = useState(false); // 사용자가 직접 수정했는지 플래그
+  const [preDiscount, setPreDiscount] = useState(0);
   const [contractType, setContractType] = useState('공통지원');
   const [memo, setMemo] = useState('');
 
   useEffect(() => {
     setSelectedPlan(plans[0]?.name || '');
   }, [plans]);
+
+  // --- KT & 공통지원일 때 추가지원금 자동 계산 (단, 사용자가 수정하면 덮어쓰기 안 함) ---
+  useEffect(() => {
+    // 선택약정이면 추가지원금을 0으로 초기화하고 사용자가 편집한 상태도 해제
+    if (contractType === '선택약정') {
+      setAdditionalSupport(0);
+      setAdditionalEdited(false);
+      return;
+    }
+
+    // 공통지원일 때만 자동계산(단, 사용자가 직접 수정하면 자동으로 덮어쓰지 않음)
+    if (operator === 'KT' && contractType === '공통지원') {
+      const calculatedSupport = Math.floor((commonSupport * 0.15) / 100) * 100;
+      if (!additionalEdited) {
+        setAdditionalSupport(calculatedSupport);
+      }
+    }
+    // U+ 탭은 자동계산 하지 않음 (사용자가 입력 가능)
+  }, [commonSupport, contractType, operator, additionalEdited]);
 
   const devicePrice = useMemo(()=> DEVICE_LIST.find(d=>d.name===selectedDevice)?.price || 0, [selectedDevice]);
 
@@ -168,11 +197,11 @@ function Calculator({ plans, features }) {
 
   const totalDiscountDisplay = useMemo(() => {
     if (contractType === '공통지원') {
-      return commonSupport + additionalSupport;
+      return commonSupport + additionalSupport + preDiscount;
     } else { // 선택약정
-      return additionalSupport + totalPlanDiscount;
+      return preDiscount + totalPlanDiscount;
     }
-  }, [contractType, commonSupport, additionalSupport, totalPlanDiscount]);
+  }, [contractType, commonSupport, additionalSupport, preDiscount, totalPlanDiscount]);
 
   const totalDiscountElement = useMemo(() => {
     if (contractType === '선택약정') {
@@ -180,22 +209,21 @@ function Calculator({ plans, features }) {
         <span>
           - {totalDiscountDisplay.toLocaleString()}원
           <span className="text-sm font-normal ml-2 text-gray-600">
-            (추가지원금 {additionalSupport.toLocaleString()}원 + 통신요금 25% 할인 월 {monthlyPlanDiscount.toLocaleString()}원 (총 {totalPlanDiscount.toLocaleString()}원))
+            (선할인 {preDiscount.toLocaleString()}원 + 통신요금 25% 할인 월 {monthlyPlanDiscount.toLocaleString()}원 (총 {totalPlanDiscount.toLocaleString()}원))
           </span>
         </span>
       );
     }
-    // '공통지원'일 경우
     return <span>- {totalDiscountDisplay.toLocaleString()}원</span>;
-  }, [contractType, totalDiscountDisplay, additionalSupport, monthlyPlanDiscount, totalPlanDiscount]);
+  }, [contractType, totalDiscountDisplay, preDiscount, monthlyPlanDiscount, totalPlanDiscount]);
 
   const finalDevicePrice = useMemo(() => {
-    let totalDiscount = additionalSupport;
+    let totalDeviceDiscount = preDiscount; 
     if (contractType === '공통지원') {
-      totalDiscount += commonSupport;
+      totalDeviceDiscount += commonSupport + additionalSupport;
     }
-    return devicePrice - totalDiscount;
-  }, [devicePrice, commonSupport, additionalSupport, contractType]);
+    return devicePrice - totalDeviceDiscount;
+  }, [devicePrice, commonSupport, additionalSupport, preDiscount, contractType]);
 
   const monthlyDevice = useMemo(()=>{
     if(installMonths === 0) return 0;
@@ -227,10 +255,11 @@ function Calculator({ plans, features }) {
 
   const totalMonthly = monthlyDevice + planPrice;
 
+  const handleFocus = (e) => e.target.select();
+  
   return (
     <div className="p-4 max-w-4xl mx-auto">
       <div className="mb-4 flex flex-wrap gap-4">
-        {/* --- 단말기 목록 렌더링 수정 시작 --- */}
         <select value={selectedDevice} onChange={e=>setSelectedDevice(e.target.value)} className="border p-2 rounded flex-1">
           {DEVICE_LIST.map(d =>
             d.isSeparator ? (
@@ -242,9 +271,8 @@ function Calculator({ plans, features }) {
             )
           )}
         </select>
-        {/* --- 단말기 목록 렌더링 수정 끝 --- */}
         <select value={selectedPlan} onChange={e=>setSelectedPlan(e.target.value)} className="border p-2 rounded flex-1">
-          {['LTE','5G 시니어','Y','5G'].map(cat=>{
+          {['LTE','시니어','Y','5G'].map(cat=>{
             const filtered = plans.filter(p=>p.category===cat);
             if(filtered.length===0) return null;
             return (
@@ -262,11 +290,45 @@ function Calculator({ plans, features }) {
       <div className="mb-4 flex flex-wrap items-end gap-4">
         <div className="flex flex-col">
           <label className="text-sm">공통지원금</label>
-          <input type="number" value={contractType==='선택약정'?0:commonSupport} disabled={contractType==='선택약정'} onChange={e=>setCommonSupport(Number(e.target.value))} className="border p-1 rounded w-32"/>
+          <input 
+            type="text" 
+            inputMode="numeric"
+            value={contractType==='선택약정' ? 0 : commonSupport} 
+            disabled={contractType==='선택약정'} 
+            onChange={e => {
+              const v = Number(e.target.value.replace(/\D/g, '')) || 0;
+              setCommonSupport(v);
+            }} 
+            onFocus={handleFocus}
+            className="border p-1 rounded w-32"
+          />
         </div>
         <div className="flex flex-col">
           <label className="text-sm">추가지원금</label>
-          <input type="number" value={additionalSupport} onChange={e=>setAdditionalSupport(Number(e.target.value))} className="border p-1 rounded w-32"/>
+          <input 
+            type="text" 
+            inputMode="numeric"
+            value={contractType==='선택약정' ? 0 : additionalSupport} 
+            disabled={contractType==='선택약정'} 
+            onChange={e => {
+              const v = Number(e.target.value.replace(/\D/g, '')) || 0;
+              setAdditionalSupport(v);
+              setAdditionalEdited(true); // 사용자가 직접 수정했음을 표시
+            }} 
+            onFocus={handleFocus}
+            className="border p-1 rounded w-32"
+          />
+        </div>
+        <div className="flex flex-col">
+          <label className="text-sm">선할인</label>
+          <input 
+            type="text" 
+            inputMode="numeric"
+            value={preDiscount} 
+            onChange={e => setPreDiscount(Number(e.target.value.replace(/\D/g, '')) || 0)} 
+            onFocus={handleFocus}
+            className="border p-1 rounded w-32"
+          />
         </div>
         <div className="flex flex-col">
           <label className="text-sm mb-1">약정</label>
@@ -334,7 +396,7 @@ function Calculator({ plans, features }) {
           onChange={e => setMemo(e.target.value)}
           rows="6"
           className="p-2 border rounded shadow-sm w-full focus:ring-blue-500 focus:border-blue-500"
-          placeholder="퇴근하고싶다..."
+          placeholder="메모를 입력하세요..."
         ></textarea>
       </div>
 
@@ -345,7 +407,6 @@ function Calculator({ plans, features }) {
 // ------------------ 렌더링 ------------------
 function App() {
   const [operator, setOperator] = useState('KT');
-  {/* --- 송장 조회 기능 추가 시작 --- */}
   const [trackingNumber, setTrackingNumber] = useState('');
 
   const handleTrackingSearch = () => {
@@ -354,11 +415,10 @@ function App() {
       return;
     }
     const url = `https://www.cjlogistics.com/ko/tool/parcel/tracking?gnbInvcNo=${trackingNumber}`;
-    const popupFeatures = 'width=800,height=700,scrollbars=yes,resizable=yes';
+    const popupFeatures = 'width=1600,height=900,scrollbars=yes,resizable=yes';
     window.open(url, 'cjTrackingPopup', popupFeatures);
     setTrackingNumber(''); 
   };
-  {/* --- 송장 조회 기능 추가 끝 --- */}
 
   const plans = useMemo(()=> operator==='KT'?PLAN_LIST_KT:PLAN_LIST_U, [operator]);
   const features = useMemo(()=> operator==='KT'?PLAN_FEATURES_KT:PLAN_FEATURES_U, [operator]);
@@ -399,7 +459,7 @@ function App() {
           >
             U+닷컴
           </a>
-        )}
+        )} 
 
         <div className="flex items-center ml-4">
           <a
@@ -410,10 +470,8 @@ function App() {
           >
             삼성닷컴
           </a>
-          <span className="ml-2 font-semibold text-gray-700 text-sm">공통지원금/추가지원금(선할인 포함) 직접 입력하세요</span>
         </div>
         
-        {/* --- 송장 조회 기능 추가 시작 --- */}
         <div className="flex items-center ml-auto gap-2">
           <input
             type="text"
@@ -437,10 +495,9 @@ function App() {
             배송조회
           </button>
         </div>
-        {/* --- 송장 조회 기능 추가 끝 --- */}
       </div>
 
-      <Calculator plans={plans} features={features}/>
+      <Calculator plans={plans} features={features} operator={operator} />
     </div>
   );
 }
