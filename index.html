@@ -21,7 +21,7 @@ function pmt(rate, nper, pv) {
   return (rate*pv)/(1-Math.pow(1+rate, -nper));
 }
 
-// ------------------ 단말기 (수정됨) ------------------
+// ------------------ 단말기 ------------------
 const DEVICE_LIST = [
   { name: '폴드7 ｜ 256기가', price: 2379300 },
   { name: '폴드7 ｜ 512기가', price: 2537700 },
@@ -41,8 +41,36 @@ const DEVICE_LIST = [
   { name: 'A16 LTE ｜ 128기가', price: 319000 }
 ];
 
+// 단말기 목록을 카테고리별로 분류하고 가격순으로 정렬합니다.
+const CATEGORIZED_DEVICE_LIST = (() => {
+  const devices = DEVICE_LIST.filter(d => !d.isSeparator);
+  const categories = {
+    '폴더블': [],
+    'S 시리즈': [],
+    'A 시리즈': []
+  };
 
-// ------------------ KT 요금제 (수정됨) ------------------
+  devices.forEach(device => {
+    if (device.name.includes('폴드') || device.name.includes('플립')) {
+      categories['폴더블'].push(device);
+    } else if (device.name.includes('S')) {
+      categories['S 시리즈'].push(device);
+    } else if (device.name.includes('A')) {
+      categories['A 시리즈'].push(device);
+    }
+  });
+
+  for (const key in categories) {
+    categories[key].sort((a, b) => b.price - a.price);
+  }
+
+  return Object.keys(categories).map(key => ({
+    category: key,
+    devices: categories[key]
+  }));
+})();
+
+// ------------------ KT 요금제 ------------------
 const PLAN_LIST_KT = [
   { category: 'LTE', name: 'LTE 데이터선택 32.8(신규가입 중단)', price: 32890 },
   { category: 'LTE', name: 'LTE 베이직', price: 33000 },
@@ -99,7 +127,7 @@ const PLAN_LIST_KT = [
   { category: '5G', name: '5G 초이스 프리미엄', price: 130000 },
 ];
 
-// KT 요금제 특징 (수정됨)
+// KT 요금제 특징
 const PLAN_FEATURES_KT = {
   'LTE 베이직':'1.4GB + Qos', '데이터ON 톡 플러스':'5GB + 1Mbps', '데이터ON 비디오':'100GB + 5Mbps/VIP', 'LTE 슬림 플러스':'30GB + 1Mbps', 'LTE 베이직 플러스':'3GB + 400Kbps', 'LTE 안심데이터 38.5':'450MB + 400Kbps', '데이터ON 비디오 플러스':'110GB + 5Mbps/2022년 12월 이전까지 VIP', '데이터ON 프리미엄':'완전 무제한/스마트기기 1회선 무료VIP/필수팩 L3(지니/밀리) 무료/단말보험 멤버십 포인트 최대 4,500P 차감', '5G 시니어 베이직':'15GB + 1Mbps/만 65세 이상', '5G 시니어 A형':'10GB + 1Mbps/만 65세 이상', '5G 시니어 B형':'9GB + 1Mbps/만 75세 이상', '5G 시니어 C형':'8GB + 1Mbps/만 80세 이상', 'LTE Y베이직':'2.5GB + Qos', '5G Y틴':'10GB + 1Mbps', 'Y데이터ON 톡 플러스':'6GB + 1Mbps/미디어팩 50%할인', '5G Y슬림':'14GB + 1Mbps/로밍 데이터 속도 100Kbps', 'Y데이터ON 비디오 플러스':'110GB + 5Mbps/필수팩 L3(지니/밀리) 50%할인/2022년 12월 이전까지 VIP', '5G Y베이직':'완전 무제한/스마트기기 1회선 50% 할인(Y덤)/로밍 데이터 속도 1Mbps/VIP', 'Y데이터ON 프리미엄':'완전 무제한/스마트기기 1회선 무료/VIP/필수팩 L3(지니/밀리) 무료/단말보험 멤버십 포인트 최대 4,500P 차감', '5G Y스페셜':'완전 무제한/스마트기기 1회선 무료/로밍 데이터 속도 1Mbps/VVIP/단말보험 멤버십 포인트 최대 4,500P 차감', '5G 슬림 4GB':'400Kbps', '5G 슬림 7GB':'400Kbps', '5G 슬림 10GB':'400Kbps', '5G 슬림 14GB':'1Mbps', '5G 슬림 21GB':'1Mbps', '5G 심플 30GB':'1Mbps', '5G 심플 50GB':'1Mbps', '5G 심플 70GB':'1Mbps', '5G 심플 90GB':'1Mbps', '5G 심플 110GB':'5Mbps', '5G 베이직':'완전 무제한/만 34세 이하 스마트기기 1회선 50% 할인(Y덤)/로밍 데이터 속도 100Kbps/VIP', '5G 스페셜':'완전 무제한/스마트기기 1회선 무료/로밍 데이터 속도 100Kbps/VVIP/단말보험 멤버십 포인트 최대 4,500P 차감', '5G 초이스 베이직':'유튜브 선택시 월 4,450원 추가', '5G 초이스 스페셜':'유튜브 선택시 월 4,450원 추가', '5G 초이스 프리미엄':'유튜브 선택시 월 4,450원 추가',
   'Y군인 77 Plus': '무제한/VIP/초이스(택2)',
@@ -146,14 +174,14 @@ function normalizePlanKey(name) {
 }
 
 // ------------------ 계산기 컴포넌트 ------------------
-function Calculator({ plans, features, operator }) { // operator prop 추가
-  const [selectedDevice, setSelectedDevice] = useState(DEVICE_LIST[0].name);
+function Calculator({ plans, features, operator }) {
+  const [selectedDevice, setSelectedDevice] = useState(CATEGORIZED_DEVICE_LIST[0].devices[0].name);
   const [selectedPlan, setSelectedPlan] = useState(plans[0].name);
   const [installMonths, setInstallMonths] = useState(24);
   const [interestRate] = useState(0.059);
   const [commonSupport, setCommonSupport] = useState(300000);
   const [additionalSupport, setAdditionalSupport] = useState(0);
-  const [additionalEdited, setAdditionalEdited] = useState(false); // 사용자가 직접 수정했는지 플래그
+  const [additionalEdited, setAdditionalEdited] = useState(false);
   const [preDiscount, setPreDiscount] = useState(0);
   const [contractType, setContractType] = useState('공통지원');
   const [memo, setMemo] = useState('');
@@ -161,24 +189,19 @@ function Calculator({ plans, features, operator }) { // operator prop 추가
   useEffect(() => {
     setSelectedPlan(plans[0]?.name || '');
   }, [plans]);
-
-  // --- KT & 공통지원일 때 추가지원금 자동 계산 (단, 사용자가 수정하면 덮어쓰기 안 함) ---
+  
   useEffect(() => {
-    // 선택약정이면 추가지원금을 0으로 초기화하고 사용자가 편집한 상태도 해제
     if (contractType === '선택약정') {
       setAdditionalSupport(0);
       setAdditionalEdited(false);
       return;
     }
-
-    // 공통지원일 때만 자동계산(단, 사용자가 직접 수정하면 자동으로 덮어쓰지 않음)
     if (operator === 'KT' && contractType === '공통지원') {
       const calculatedSupport = Math.floor((commonSupport * 0.15) / 100) * 100;
       if (!additionalEdited) {
         setAdditionalSupport(calculatedSupport);
       }
     }
-    // U+ 탭은 자동계산 하지 않음 (사용자가 입력 가능)
   }, [commonSupport, contractType, operator, additionalEdited]);
 
   const devicePrice = useMemo(()=> DEVICE_LIST.find(d=>d.name===selectedDevice)?.price || 0, [selectedDevice]);
@@ -198,7 +221,7 @@ function Calculator({ plans, features, operator }) { // operator prop 추가
   const totalDiscountDisplay = useMemo(() => {
     if (contractType === '공통지원') {
       return commonSupport + additionalSupport + preDiscount;
-    } else { // 선택약정
+    } else {
       return preDiscount + totalPlanDiscount;
     }
   }, [contractType, commonSupport, additionalSupport, preDiscount, totalPlanDiscount]);
@@ -260,18 +283,18 @@ function Calculator({ plans, features, operator }) { // operator prop 추가
   return (
     <div className="p-4 max-w-4xl mx-auto">
       <div className="mb-4 flex flex-wrap gap-4">
-        <select value={selectedDevice} onChange={e=>setSelectedDevice(e.target.value)} className="border p-2 rounded flex-1">
-          {DEVICE_LIST.map(d =>
-            d.isSeparator ? (
-              <option key={d.name} disabled>──────────</option>
-            ) : (
-              <option key={d.name} value={d.name}>
-                {d.name} ({d.price.toLocaleString()}원)
-              </option>
-            )
-          )}
+        <select value={selectedDevice} onChange={e=>setSelectedDevice(e.target.value)} className="border p-2 rounded flex-1 min-w-0">
+          {CATEGORIZED_DEVICE_LIST.map(group => (
+            <optgroup key={group.category} label={group.category}>
+              {group.devices.map(d => (
+                <option key={d.name} value={d.name}>
+                  {d.name} ({d.price.toLocaleString()}원)
+                </option>
+              ))}
+            </optgroup>
+          ))}
         </select>
-        <select value={selectedPlan} onChange={e=>setSelectedPlan(e.target.value)} className="border p-2 rounded flex-1">
+        <select value={selectedPlan} onChange={e=>setSelectedPlan(e.target.value)} className="border p-2 rounded flex-1 min-w-0">
           {['LTE','시니어','Y','5G'].map(cat=>{
             const filtered = plans.filter(p=>p.category===cat);
             if(filtered.length===0) return null;
@@ -290,6 +313,8 @@ function Calculator({ plans, features, operator }) { // operator prop 추가
       <div className="mb-4 flex flex-wrap items-end gap-4">
         <div className="flex flex-col">
           <label className="text-sm">공통지원금</label>
+          {/* ▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼ */}
+          {/* 수정된 부분: 공통지원금 변경 시, 추가지원금을 다시 자동계산하도록 로직을 수정합니다. */}
           <input 
             type="text" 
             inputMode="numeric"
@@ -298,10 +323,12 @@ function Calculator({ plans, features, operator }) { // operator prop 추가
             onChange={e => {
               const v = Number(e.target.value.replace(/\D/g, '')) || 0;
               setCommonSupport(v);
+              setAdditionalEdited(false); // 수동입력 상태를 해제하여 재계산을 허용
             }} 
             onFocus={handleFocus}
             className="border p-1 rounded w-32"
           />
+          {/* ▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲ */}
         </div>
         <div className="flex flex-col">
           <label className="text-sm">추가지원금</label>
@@ -313,7 +340,7 @@ function Calculator({ plans, features, operator }) { // operator prop 추가
             onChange={e => {
               const v = Number(e.target.value.replace(/\D/g, '')) || 0;
               setAdditionalSupport(v);
-              setAdditionalEdited(true); // 사용자가 직접 수정했음을 표시
+              setAdditionalEdited(true); // 수동으로 입력했음을 표시
             }} 
             onFocus={handleFocus}
             className="border p-1 rounded w-32"
@@ -396,7 +423,7 @@ function Calculator({ plans, features, operator }) { // operator prop 추가
           onChange={e => setMemo(e.target.value)}
           rows="6"
           className="p-2 border rounded shadow-sm w-full focus:ring-blue-500 focus:border-blue-500"
-          placeholder="퇴근하고싶다..."
+          placeholder="퇴근하고싶다"
         ></textarea>
       </div>
 
@@ -507,4 +534,3 @@ ReactDOM.createRoot(document.getElementById('root')).render(<App/>);
 </script>
 </body>
 </html>
-
