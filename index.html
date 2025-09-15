@@ -13,7 +13,7 @@
 <div id="root"></div>
 
 <script type="text/babel">
-const { useState, useMemo, useEffect } = React;
+const { useState, useMemo, useEffect, useRef } = React;
 
 // 월 할부 계산 함수
 function pmt(rate, nper, pv) {
@@ -96,6 +96,8 @@ const PLAN_LIST_KT = [
   { category: '시니어', name: '5G 시니어 B형', price: 42000 },
   { category: '시니어', name: '5G 시니어 A형', price: 44000 },
   { category: '시니어', name: '5G 시니어 베이직', price: 49000 },
+  { category: 'Y', name: 'Y주니어 19.8', price: 19800 },
+  { category: 'Y', name: 'Y주니어 ON', price: 24000 },
   { category: 'Y', name: 'LTE Y베이직', price: 33000 },
   { category: 'Y', name: 'Y군인 33', price: 33000 },
   { category: 'Y', name: '5G Y틴', price: 47000 },
@@ -129,7 +131,7 @@ const PLAN_LIST_KT = [
 
 // KT 요금제 특징
 const PLAN_FEATURES_KT = {
-  'LTE 베이직':'1.4GB + Qos', '데이터ON 톡 플러스':'5GB + 1Mbps', '데이터ON 비디오':'100GB + 5Mbps/VIP', 'LTE 슬림 플러스':'30GB + 1Mbps', 'LTE 베이직 플러스':'3GB + 400Kbps', 'LTE 안심데이터 38.5':'450MB + 400Kbps', '데이터ON 비디오 플러스':'110GB + 5Mbps/2022년 12월 이전까지 VIP', '데이터ON 프리미엄':'완전 무제한/스마트기기 1회선 무료VIP/필수팩 L3(지니/밀리) 무료/단말보험 멤버십 포인트 최대 4,500P 차감', '5G 시니어 베이직':'15GB + 1Mbps/만 65세 이상', '5G 시니어 A형':'10GB + 1Mbps/만 65세 이상', '5G 시니어 B형':'9GB + 1Mbps/만 75세 이상', '5G 시니어 C형':'8GB + 1Mbps/만 80세 이상', 'LTE Y베이직':'2.5GB + Qos', '5G Y틴':'10GB + 1Mbps', 'Y데이터ON 톡 플러스':'6GB + 1Mbps/미디어팩 50%할인', '5G Y슬림':'14GB + 1Mbps/로밍 데이터 속도 100Kbps', 'Y데이터ON 비디오 플러스':'110GB + 5Mbps/필수팩 L3(지니/밀리) 50%할인/2022년 12월 이전까지 VIP', '5G Y베이직':'완전 무제한/스마트기기 1회선 50% 할인(Y덤)/로밍 데이터 속도 1Mbps/VIP', 'Y데이터ON 프리미엄':'완전 무제한/스마트기기 1회선 무료/VIP/필수팩 L3(지니/밀리) 무료/단말보험 멤버십 포인트 최대 4,500P 차감', '5G Y스페셜':'완전 무제한/스마트기기 1회선 무료/로밍 데이터 속도 1Mbps/VVIP/단말보험 멤버십 포인트 최대 4,500P 차감', '5G 슬림 4GB':'400Kbps', '5G 슬림 7GB':'400Kbps', '5G 슬림 10GB':'400Kbps', '5G 슬림 14GB':'1Mbps', '5G 슬림 21GB':'1Mbps', '5G 심플 30GB':'1Mbps', '5G 심플 50GB':'1Mbps', '5G 심플 70GB':'1Mbps', '5G 심플 90GB':'1Mbps', '5G 심플 110GB':'5Mbps', '5G 베이직':'완전 무제한/만 34세 이하 스마트기기 1회선 50% 할인(Y덤)/로밍 데이터 속도 100Kbps/VIP', '5G 스페셜':'완전 무제한/스마트기기 1회선 무료/로밍 데이터 속도 100Kbps/VVIP/단말보험 멤버십 포인트 최대 4,500P 차감', '5G 초이스 베이직':'유튜브 선택시 월 4,450원 추가', '5G 초이스 스페셜':'유튜브 선택시 월 4,450원 추가', '5G 초이스 프리미엄':'유튜브 선택시 월 4,450원 추가',
+  'LTE 베이직':'1.4GB + Qos', '데이터ON 톡 플러스':'5GB + 1Mbps', '데이터ON 비디오':'100GB + 5Mbps/VIP', 'LTE 슬림 플러스':'30GB + 1Mbps', 'LTE 베이직 플러스':'3GB + 400Kbps', 'LTE 안심데이터 38.5':'450MB + 400Kbps', '데이터ON 비디오 플러스':'110GB + 5Mbps/2022년 12월 이전까지 VIP', '데이터ON 프리미엄':'완전 무제한/스마트기기 1회선 무료VIP/필수팩 L3(지니/밀리) 무료/단말보험 멤버십 포인트 최대 4,500P 차감', '5G 시니어 베이직':'15GB + 1Mbps/만 65세 이상', '5G 시니어 A형':'10GB + 1Mbps/만 65세 이상', '5G 시니어 B형':'9GB + 1Mbps/만 75세 이상', '5G 시니어 C형':'8GB + 1Mbps/만 80세 이상', 'Y주니어 19.8':'900MB + 400Kbps', 'Y주니어 ON':'1.5GB + 400Kbps', 'LTE Y베이직':'2.5GB + Qos', '5G Y틴':'10GB + 1Mbps', 'Y데이터ON 톡 플러스':'6GB + 1Mbps/미디어팩 50%할인', '5G Y슬림':'14GB + 1Mbps/로밍 데이터 속도 100Kbps', 'Y데이터ON 비디오 플러스':'110GB + 5Mbps/필수팩 L3(지니/밀리) 50%할인/2022년 12월 이전까지 VIP', '5G Y베이직':'완전 무제한/스마트기기 1회선 50% 할인(Y덤)/로밍 데이터 속도 1Mbps/VIP', 'Y데이터ON 프리미엄':'완전 무제한/스마트기기 1회선 무료/VIP/필수팩 L3(지니/밀리) 무료/단말보험 멤버십 포인트 최대 4,500P 차감', '5G Y스페셜':'완전 무제한/스마트기기 1회선 무료/로밍 데이터 속도 1Mbps/VVIP/단말보험 멤버십 포인트 최대 4,500P 차감', '5G 슬림 4GB':'400Kbps', '5G 슬림 7GB':'400Kbps', '5G 슬림 10GB':'400Kbps', '5G 슬림 14GB':'1Mbps', '5G 슬림 21GB':'1Mbps', '5G 심플 30GB':'1Mbps', '5G 심플 50GB':'1Mbps', '5G 심플 70GB':'1Mbps', '5G 심플 90GB':'1Mbps', '5G 심플 110GB':'5Mbps', '5G 베이직':'완전 무제한/만 34세 이하 스마트기기 1회선 50% 할인(Y덤)/로밍 데이터 속도 100Kbps/VIP', '5G 스페셜':'완전 무제한/스마트기기 1회선 무료/로밍 데이터 속도 100Kbps/VVIP/단말보험 멤버십 포인트 최대 4,500P 차감', '5G 초이스 베이직':'유튜브 선택시 월 4,450원 추가', '5G 초이스 스페셜':'유튜브 선택시 월 4,450원 추가', '5G 초이스 프리미엄':'유튜브 선택시 월 4,450원 추가',
   'Y군인 77 Plus': '무제한/VIP/초이스(택2)',
   'Y군인 55 Plus 미디어팩': '100GB + 5Mbps/24.07.03까지:미디어팩, 24.07.04부터 필수팩 L3',
   'Y군인 55 Plus': '100GB + 5Mbps/초이스(택1)',
@@ -184,7 +186,15 @@ function Calculator({ plans, features, operator }) {
   const [additionalEdited, setAdditionalEdited] = useState(false);
   const [preDiscount, setPreDiscount] = useState(0);
   const [contractType, setContractType] = useState('공통지원');
-  const [memo, setMemo] = useState('');
+
+  // ▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼
+  // 수정된 부분: 메모 객체에 status(상담 현황) 추가
+  const [memos, setMemos] = useState([{ id: 1, title: '메모 1', content: '', status: null }]);
+  // ▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲
+  const [activeMemoId, setActiveMemoId] = useState(1);
+  const [editingTabId, setEditingTabId] = useState(null);
+  const [tempTitle, setTempTitle] = useState('');
+  const titleInputRef = useRef(null);
 
   useEffect(() => {
     setSelectedPlan(plans[0]?.name || '');
@@ -203,6 +213,13 @@ function Calculator({ plans, features, operator }) {
       }
     }
   }, [commonSupport, contractType, operator, additionalEdited]);
+  
+  useEffect(() => {
+    if (editingTabId !== null && titleInputRef.current) {
+      titleInputRef.current.focus();
+      titleInputRef.current.select();
+    }
+  }, [editingTabId]);
 
   const devicePrice = useMemo(()=> DEVICE_LIST.find(d=>d.name===selectedDevice)?.price || 0, [selectedDevice]);
 
@@ -277,13 +294,85 @@ function Calculator({ plans, features, operator }) {
   }, [selectedPlan, features]);
 
   const totalMonthly = monthlyDevice + planPrice;
-
   const handleFocus = (e) => e.target.select();
+
+  // 메모 관련 핸들러 함수들
+  const handleAddMemo = () => {
+    const newId = (memos.length > 0 ? Math.max(...memos.map(m => m.id)) : 0) + 1;
+    // ▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼
+    // 수정된 부분: 새 메모 객체에 status 속성 추가
+    const newMemo = { id: newId, title: `메모 ${newId}`, content: '', status: null };
+    // ▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲
+    setMemos([...memos, newMemo]);
+    setActiveMemoId(newId);
+  };
   
+  const handleMemoChange = (e) => {
+    setMemos(memos.map(memo =>
+      memo.id === activeMemoId ? { ...memo, content: e.target.value } : memo
+    ));
+  };
+
+  const handleStartEditing = (memo) => {
+    setEditingTabId(memo.id);
+    setTempTitle(memo.title);
+  };
+
+  const handleTitleChange = (e) => {
+    if (e.target.value.length <= 8) {
+      setTempTitle(e.target.value);
+    }
+  };
+
+  const handleSaveTitle = (id) => {
+    if(tempTitle.trim() === '') return;
+    setMemos(memos.map(memo =>
+      memo.id === id ? { ...memo, title: tempTitle } : memo
+    ));
+    setEditingTabId(null);
+  };
+
+  const handleKeyDown = (e, id) => {
+    if (e.key === 'Enter') {
+      handleSaveTitle(id);
+    } else if (e.key === 'Escape') {
+      setEditingTabId(null);
+    }
+  };
+
+  const handleDeleteMemo = (idToDelete) => {
+    if(memos.length <= 1) {
+      alert("마지막 메모 탭은 삭제할 수 없습니다.");
+      return;
+    }
+    const newMemos = memos.filter(memo => memo.id !== idToDelete);
+    setMemos(newMemos);
+    if(activeMemoId === idToDelete) {
+      setActiveMemoId(newMemos[0]?.id || null);
+    }
+  }
+
+  // ▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼
+  // 수정된 부분: 활성 탭의 상태를 변경하는 핸들러
+  const handleStatusChange = (newStatus) => {
+    setMemos(memos.map(memo => 
+      memo.id === activeMemoId ? { ...memo, status: newStatus } : memo
+    ));
+  };
+
+  const activeMemo = memos.find(memo => memo.id === activeMemoId);
+  const activeMemoContent = activeMemo?.content || '';
+  const activeMemoStatus = activeMemo?.status;
+  // ▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲
+
+  const consultationStatuses = ['상담완료', '상담부재', '서식지 작성안내완료', '서식지 미접수(부재)', '보류'];
+
   return (
     <div className="p-4 max-w-4xl mx-auto">
+      {/* ▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼ */}
+      {/* 수정된 부분: 단말기 목록 너비 w-[42%]로 고정, 요금제 목록은 flex-1으로 유연하게 조정 */}
       <div className="mb-4 flex flex-wrap gap-4">
-        <select value={selectedDevice} onChange={e=>setSelectedDevice(e.target.value)} className="border p-2 rounded flex-1 min-w-0">
+        <select value={selectedDevice} onChange={e=>setSelectedDevice(e.target.value)} className="border p-2 rounded w-[42%]">
           {CATEGORIZED_DEVICE_LIST.map(group => (
             <optgroup key={group.category} label={group.category}>
               {group.devices.map(d => (
@@ -309,41 +398,39 @@ function Calculator({ plans, features, operator }) {
           {[0,6,12,18,24,30,36,48].map(m=><option key={m} value={m}>{m===0?'일시불':m+'개월'}</option>)}
         </select>
       </div>
+      {/* ▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲ */}
 
       <div className="mb-4 flex flex-wrap items-end gap-4">
         <div className="flex flex-col">
           <label className="text-sm">공통지원금</label>
-          {/* ▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼ */}
-          {/* 수정된 부분: 공통지원금 변경 시, 추가지원금을 다시 자동계산하도록 로직을 수정합니다. */}
           <input 
             type="text" 
             inputMode="numeric"
-            value={contractType==='선택약정' ? 0 : commonSupport} 
+            value={contractType==='선택약정' ? '0' : commonSupport.toLocaleString()} 
             disabled={contractType==='선택약정'} 
             onChange={e => {
               const v = Number(e.target.value.replace(/\D/g, '')) || 0;
               setCommonSupport(v);
-              setAdditionalEdited(false); // 수동입력 상태를 해제하여 재계산을 허용
+              setAdditionalEdited(false);
             }} 
             onFocus={handleFocus}
-            className="border p-1 rounded w-32"
+            className="border p-1 rounded w-32 text-right"
           />
-          {/* ▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲ */}
         </div>
         <div className="flex flex-col">
           <label className="text-sm">추가지원금</label>
           <input 
             type="text" 
             inputMode="numeric"
-            value={contractType==='선택약정' ? 0 : additionalSupport} 
+            value={contractType==='선택약정' ? '0' : additionalSupport.toLocaleString()} 
             disabled={contractType==='선택약정'} 
             onChange={e => {
               const v = Number(e.target.value.replace(/\D/g, '')) || 0;
               setAdditionalSupport(v);
-              setAdditionalEdited(true); // 수동으로 입력했음을 표시
+              setAdditionalEdited(true);
             }} 
             onFocus={handleFocus}
-            className="border p-1 rounded w-32"
+            className="border p-1 rounded w-32 text-right"
           />
         </div>
         <div className="flex flex-col">
@@ -351,15 +438,15 @@ function Calculator({ plans, features, operator }) {
           <input 
             type="text" 
             inputMode="numeric"
-            value={preDiscount} 
+            value={preDiscount.toLocaleString()} 
             onChange={e => setPreDiscount(Number(e.target.value.replace(/\D/g, '')) || 0)} 
             onFocus={handleFocus}
-            className="border p-1 rounded w-32"
+            className="border p-1 rounded w-32 text-right"
           />
         </div>
         <div className="flex flex-col">
           <label className="text-sm mb-1">약정</label>
-          <div className="flex border rounded overflow-hidden h-[26px]">
+          <div className="flex border rounded overflow-hidden h-[34px]">
             <label className="relative flex-1">
               <input
                 type="radio"
@@ -370,7 +457,7 @@ function Calculator({ plans, features, operator }) {
                 className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
               />
               <div
-                className={`flex items-center justify-center h-full px-3 text-xs transition-colors ${
+                className={`flex items-center justify-center h-full px-3 text-sm transition-colors ${
                   contractType === '공통지원' ? 'bg-blue-600 text-white' : 'bg-white text-gray-700 hover:bg-gray-100'
                 }`}
               >
@@ -388,7 +475,7 @@ function Calculator({ plans, features, operator }) {
                 className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
               />
               <div
-                className={`flex items-center justify-center h-full px-3 text-xs transition-colors ${
+                className={`flex items-center justify-center h-full px-3 text-sm transition-colors ${
                   contractType === '선택약정' ? 'bg-blue-600 text-white' : 'bg-white text-gray-700 hover:bg-gray-100'
                 }`}
               >
@@ -415,18 +502,93 @@ function Calculator({ plans, features, operator }) {
         <div className="text-black-600 font-bold text-2xl">월 납부 예상금액: {totalMonthly.toLocaleString()}원</div>
       </div>
       
-      <div className="mt-4">
-        <label htmlFor="memo-area" className="block text-sm font-medium text-gray-700 mb-1">상담 메모</label>
+      <div className="mt-6">
+        <div className="flex items-center border-b border-gray-200">
+          {memos.map(memo => (
+            <div key={memo.id} className="relative group">
+              <button
+                onClick={() => setActiveMemoId(memo.id)}
+                onDoubleClick={() => handleStartEditing(memo)}
+                className={`px-4 py-2 text-sm font-medium border-b-2 -mb-px transition-colors duration-200 ease-in-out
+                  ${activeMemoId === memo.id ? 'border-blue-600 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'}`}
+              >
+                {editingTabId === memo.id ? (
+                  <input
+                    ref={titleInputRef}
+                    type="text"
+                    value={tempTitle}
+                    onChange={handleTitleChange}
+                    onBlur={() => handleSaveTitle(memo.id)}
+                    onKeyDown={(e) => handleKeyDown(e, memo.id)}
+                    className="p-0 m-0 border-0 focus:ring-0 bg-transparent text-center"
+                    style={{ width: `${Math.max(3, tempTitle.length) + 1}ch` }}
+                  />
+                ) : (
+                  <span>{memo.title}</span>
+                )}
+              </button>
+              {memos.length > 1 && (
+                <button 
+                  onClick={() => handleDeleteMemo(memo.id)}
+                  className="absolute top-0 right-0 p-1 text-gray-400 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity"
+                  title="탭 삭제"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              )}
+            </div>
+          ))}
+          <button
+            onClick={handleAddMemo}
+            className="ml-2 px-3 py-1 text-sm text-gray-500 hover:text-blue-600 hover:bg-gray-100 rounded-full"
+            title="새 메모 추가"
+          >
+            +
+          </button>
+        </div>
         <textarea
-          id="memo-area"
-          value={memo}
-          onChange={e => setMemo(e.target.value)}
+          value={activeMemoContent}
+          onChange={handleMemoChange}
           rows="6"
-          className="p-2 border rounded shadow-sm w-full focus:ring-blue-500 focus:border-blue-500"
-          placeholder="퇴근하고싶다"
+          className="p-2 border border-gray-300 rounded-b shadow-sm w-full focus:ring-blue-500 focus:border-blue-500 mt-[-1px]"
+          placeholder="이곳에 상담 내용을 입력하세요..."
         ></textarea>
       </div>
 
+      <div className="mt-4 p-4 border rounded bg-white shadow-sm">
+        <div className="text-sm font-medium text-gray-700 mb-3">상담 현황</div>
+        <div className="flex flex-wrap gap-x-4 gap-y-2">
+          {consultationStatuses.map(status => (
+            <label key={status} className="relative flex items-center">
+              <input
+                type="radio"
+                name={`consultationStatus-${activeMemoId}`} // name을 탭별로 다르게 하여 그룹화
+                value={status}
+                // ▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼
+                // 수정된 부분: checked와 onChange가 활성 탭의 상태를 따르도록 변경
+                checked={activeMemoStatus === status}
+                onChange={(e) => handleStatusChange(e.target.value)}
+                // ▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲
+                className="absolute opacity-0 w-full h-full cursor-pointer"
+              />
+              <div
+                className={`px-3 py-1 text-xs rounded-full cursor-pointer transition-colors ${
+                  // ▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼
+                  // 수정된 부분: 스타일링도 활성 탭의 상태를 따르도록 변경
+                  activeMemoStatus === status 
+                  ? 'bg-blue-600 text-white font-semibold' 
+                  : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                  // ▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲
+                }`}
+              >
+                {status}
+              </div>
+            </label>
+          ))}
+        </div>
+      </div>
     </div>
   );
 }
@@ -454,13 +616,13 @@ function App() {
     <div>
       <div className="p-4 max-w-4xl mx-auto flex flex-wrap gap-4 items-center">
         <button
-          className={`p-2 rounded ${operator === 'KT' ? 'bg-blue-600 text-white' : 'bg-white border'}`}
+          className={`px-4 py-2 rounded text-sm font-bold ${operator === 'KT' ? 'bg-blue-600 text-white shadow' : 'bg-white border'}`}
           onClick={() => setOperator('KT')}
         >
           KT
         </button>
         <button
-          className={`p-2 rounded ${operator === 'U' ? 'bg-green-600 text-white' : 'bg-white border'}`}
+          className={`px-4 py-2 rounded text-sm font-bold ${operator === 'U' ? 'bg-green-600 text-white shadow' : 'bg-white border'}`}
           onClick={() => setOperator('U')}
         >
           U+
@@ -471,7 +633,7 @@ function App() {
             href="https://shop.kt.com/mobile/products.do?&=&category=mobile"
             target="_blank"
             rel="noopener noreferrer"
-            className="ml-4 bg-blue-500 text-white px-3 py-2 rounded hover:bg-blue-600"
+            className="ml-4 bg-blue-500 text-white px-3 py-2 rounded hover:bg-blue-600 text-sm"
           >
             KT닷컴
           </a>
@@ -482,7 +644,7 @@ function App() {
             href="https://www.lguplus.com/mobile/device/phone"
             target="_blank"
             rel="noopener noreferrer"
-            className="ml-4 bg-green-500 text-white px-3 py-2 rounded hover:bg-green-600"
+            className="ml-4 bg-green-500 text-white px-3 py-2 rounded hover:bg-green-600 text-sm"
           >
             U+닷컴
           </a>
@@ -493,7 +655,7 @@ function App() {
             href="https://www.samsung.com/sec/smartphones/all-smartphones/?carrier-phone"
             target="_blank"
             rel="noopener noreferrer"
-            className="bg-gray-800 text-white px-3 py-2 rounded hover:bg-gray-900"
+            className="bg-gray-800 text-white px-3 py-2 rounded hover:bg-gray-900 text-sm"
           >
             삼성닷컴
           </a>
@@ -517,7 +679,7 @@ function App() {
           />
           <button
             onClick={handleTrackingSearch}
-            className="bg-amber-500 text-white px-3 py-2 rounded hover:bg-amber-600 h-[40px]"
+            className="bg-amber-500 text-white px-3 py-2 rounded hover:bg-amber-600 h-[40px] text-sm"
           >
             배송조회
           </button>
