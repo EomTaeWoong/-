@@ -370,9 +370,9 @@ function Calculator({ plans, features, operator }) {
   return (
     <div className="p-4 max-w-4xl mx-auto">
       {/* ▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼ */}
-      {/* 수정된 부분: 단말기 목록 너비 w-[42%]로 고정, 요금제 목록은 flex-1으로 유연하게 조정 */}
+      {/* 수정된 부분: 단말기 목록 너비를 w-[40%]로 조정 */}
       <div className="mb-4 flex flex-wrap gap-4">
-        <select value={selectedDevice} onChange={e=>setSelectedDevice(e.target.value)} className="border p-2 rounded w-[42%]">
+        <select value={selectedDevice} onChange={e=>setSelectedDevice(e.target.value)} className="border p-2 rounded w-[40%]">
           {CATEGORIZED_DEVICE_LIST.map(group => (
             <optgroup key={group.category} label={group.category}>
               {group.devices.map(d => (
@@ -553,7 +553,11 @@ function Calculator({ plans, features, operator }) {
           onChange={handleMemoChange}
           rows="6"
           className="p-2 border border-gray-300 rounded-b shadow-sm w-full focus:ring-blue-500 focus:border-blue-500 mt-[-1px]"
-          placeholder="이곳에 상담 내용을 입력하세요..."
+          placeholder={`[사용방법]
+1. "+" 버튼을 눌러 메모 탭을 추가할 수 있습니다.
+2. 각 탭의 제목을 더블클릭하여 글자 수정이 가능합니다. (한글기준 최대 8글자)
+3. 하단에 있는 상태값을 클릭하여 현황 체크가 가능합니다.
+    (탭 마다 개별 지정 가능)`}
         ></textarea>
       </div>
 
