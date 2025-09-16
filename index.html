@@ -404,7 +404,7 @@ function Calculator({ plans, features, operator }) {
               setAdditionalEdited(false);
             }} 
             onFocus={handleFocus}
-            className="border p-1 rounded w-32 text-right"
+            className="border p-1 rounded w-32 text-center"
           />
         </div>
         <div className="flex flex-col">
@@ -420,7 +420,7 @@ function Calculator({ plans, features, operator }) {
               setAdditionalEdited(true);
             }} 
             onFocus={handleFocus}
-            className="border p-1 rounded w-32 text-right"
+            className="border p-1 rounded w-32 text-center"
           />
         </div>
         <div className="flex flex-col">
@@ -431,7 +431,7 @@ function Calculator({ plans, features, operator }) {
             value={preDiscount.toLocaleString()} 
             onChange={e => setPreDiscount(Number(e.target.value.replace(/\D/g, '')) || 0)} 
             onFocus={handleFocus}
-            className="border p-1 rounded w-32 text-right"
+            className="border p-1 rounded w-32 text-center"
           />
         </div>
         <div className="flex flex-col">
