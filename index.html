@@ -187,10 +187,7 @@ function Calculator({ plans, features, operator }) {
   const [preDiscount, setPreDiscount] = useState(0);
   const [contractType, setContractType] = useState('공통지원');
 
-  // ▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼
-  // 수정된 부분: 메모 객체에 status(상담 현황) 추가
   const [memos, setMemos] = useState([{ id: 1, title: '메모 1', content: '', status: null }]);
-  // ▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲
   const [activeMemoId, setActiveMemoId] = useState(1);
   const [editingTabId, setEditingTabId] = useState(null);
   const [tempTitle, setTempTitle] = useState('');
@@ -299,10 +296,7 @@ function Calculator({ plans, features, operator }) {
   // 메모 관련 핸들러 함수들
   const handleAddMemo = () => {
     const newId = (memos.length > 0 ? Math.max(...memos.map(m => m.id)) : 0) + 1;
-    // ▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼
-    // 수정된 부분: 새 메모 객체에 status 속성 추가
     const newMemo = { id: newId, title: `메모 ${newId}`, content: '', status: null };
-    // ▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲
     setMemos([...memos, newMemo]);
     setActiveMemoId(newId);
   };
@@ -352,8 +346,6 @@ function Calculator({ plans, features, operator }) {
     }
   }
 
-  // ▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼
-  // 수정된 부분: 활성 탭의 상태를 변경하는 핸들러
   const handleStatusChange = (newStatus) => {
     setMemos(memos.map(memo => 
       memo.id === activeMemoId ? { ...memo, status: newStatus } : memo
@@ -363,14 +355,11 @@ function Calculator({ plans, features, operator }) {
   const activeMemo = memos.find(memo => memo.id === activeMemoId);
   const activeMemoContent = activeMemo?.content || '';
   const activeMemoStatus = activeMemo?.status;
-  // ▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲
 
   const consultationStatuses = ['상담완료', '상담부재', '서식지 작성안내완료', '서식지 미접수(부재)', '보류'];
 
   return (
     <div className="p-4 max-w-4xl mx-auto">
-      {/* ▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼ */}
-      {/* 수정된 부분: 단말기 목록 너비를 w-[40%]로 조정 */}
       <div className="mb-4 flex flex-wrap gap-4">
         <select value={selectedDevice} onChange={e=>setSelectedDevice(e.target.value)} className="border p-2 rounded w-[40%]">
           {CATEGORIZED_DEVICE_LIST.map(group => (
@@ -398,11 +387,12 @@ function Calculator({ plans, features, operator }) {
           {[0,6,12,18,24,30,36,48].map(m=><option key={m} value={m}>{m===0?'일시불':m+'개월'}</option>)}
         </select>
       </div>
-      {/* ▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲ */}
 
+      {/* ▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼ */}
+      {/* 수정된 부분: label에 text-center 클래스 추가 */}
       <div className="mb-4 flex flex-wrap items-end gap-4">
         <div className="flex flex-col">
-          <label className="text-sm">공통지원금</label>
+          <label className="text-sm text-center">공통지원금</label>
           <input 
             type="text" 
             inputMode="numeric"
@@ -418,7 +408,7 @@ function Calculator({ plans, features, operator }) {
           />
         </div>
         <div className="flex flex-col">
-          <label className="text-sm">추가지원금</label>
+          <label className="text-sm text-center">추가지원금</label>
           <input 
             type="text" 
             inputMode="numeric"
@@ -434,7 +424,7 @@ function Calculator({ plans, features, operator }) {
           />
         </div>
         <div className="flex flex-col">
-          <label className="text-sm">선할인</label>
+          <label className="text-sm text-center">선할인</label>
           <input 
             type="text" 
             inputMode="numeric"
@@ -445,7 +435,7 @@ function Calculator({ plans, features, operator }) {
           />
         </div>
         <div className="flex flex-col">
-          <label className="text-sm mb-1">약정</label>
+          <label className="text-sm mb-1 text-center">약정</label>
           <div className="flex border rounded overflow-hidden h-[34px]">
             <label className="relative flex-1">
               <input
@@ -485,6 +475,7 @@ function Calculator({ plans, features, operator }) {
           </div>
         </div>
       </div>
+      {/* ▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲ */}
 
       <div className="border p-4 rounded bg-white shadow-md flex flex-col gap-2">
         <div className="text-black font-bold text-xl">단말기 출고가: {devicePrice.toLocaleString()}원</div>
@@ -558,6 +549,10 @@ function Calculator({ plans, features, operator }) {
 2. 각 탭의 제목을 더블클릭하여 글자 수정이 가능합니다. (한글기준 최대 8글자)
 3. 하단에 있는 상태값을 클릭하여 현황 체크가 가능합니다.
     (탭 마다 개별 지정 가능)`}
+          autoComplete="off"
+          autoCorrect="off"
+          autoCapitalize="off"
+          spellCheck="false"
         ></textarea>
       </div>
 
@@ -568,23 +563,17 @@ function Calculator({ plans, features, operator }) {
             <label key={status} className="relative flex items-center">
               <input
                 type="radio"
-                name={`consultationStatus-${activeMemoId}`} // name을 탭별로 다르게 하여 그룹화
+                name={`consultationStatus-${activeMemoId}`}
                 value={status}
-                // ▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼
-                // 수정된 부분: checked와 onChange가 활성 탭의 상태를 따르도록 변경
                 checked={activeMemoStatus === status}
                 onChange={(e) => handleStatusChange(e.target.value)}
-                // ▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲
                 className="absolute opacity-0 w-full h-full cursor-pointer"
               />
               <div
                 className={`px-3 py-1 text-xs rounded-full cursor-pointer transition-colors ${
-                  // ▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼
-                  // 수정된 부분: 스타일링도 활성 탭의 상태를 따르도록 변경
                   activeMemoStatus === status 
                   ? 'bg-blue-600 text-white font-semibold' 
                   : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-                  // ▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲
                 }`}
               >
                 {status}
