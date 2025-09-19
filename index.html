@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>통신사폰 계산기</title>
+  <title>내가 편하려고 만든 딸깍이</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
   <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
@@ -35,7 +35,7 @@ const DEVICE_LIST = [
   { name: 'S25 울트라 ｜ 256기가', price: 1698400 },
   { name: 'S25 플러스 ｜ 256기가', price: 1353000 },
   { name: 'S25 ｜ 256기가', price: 1155000 },
-  { name: 'S24 FE ｜ 256기가', price: 946000 },
+  { name: 'S25 FE ｜ 256기가', price: 946000 },
   { name: 'separator-3', isSeparator: true },
   { name: 'A36 5G ｜ 128기가', price: 499400 },
   { name: 'A16 LTE ｜ 128기가', price: 319000 }
@@ -501,7 +501,8 @@ function Calculator({
 1. "+" 버튼을 눌러 메모 탭을 추가할 수 있습니다.
 2. 각 탭의 제목을 더블클릭하여 글자 수정이 가능합니다. (한글기준 최대 8글자)
 3. 하단에 있는 상태값을 클릭하여 현황 체크가 가능합니다.
-   (탭 마다 개별 지정 가능)`}
+   (탭 마다 개별 지정 가능)
+4. 상단에 '메모 저장' 버튼을 누르면 메모 탭 전체가 저장됩니다.`}
           autoComplete="off"
           autoCorrect="off"
           autoCapitalize="off"
