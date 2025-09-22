@@ -501,7 +501,7 @@ function Calculator({
 1. "+" 버튼을 눌러 메모 탭을 추가할 수 있습니다.
 2. 각 탭의 제목을 더블클릭하여 글자 수정이 가능합니다. (한글기준 최대 8글자)
 3. 하단에 있는 상태값을 클릭하여 현황 체크가 가능합니다.
-   (탭 마다 개별 지정 가능)
+   (활성화/비활성화 및 탭 마다 개별 지정 가능)
 4. 상단에 '메모 저장' 버튼을 누르면 메모 탭 전체가 저장됩니다.`}
           autoComplete="off"
           autoCorrect="off"
@@ -513,40 +513,91 @@ function Calculator({
       <div className="mt-4 p-4 border rounded bg-white shadow-sm">
         <div className="text-sm font-medium text-gray-700 mb-3">상담 현황</div>
         <div className="flex flex-wrap gap-x-4 gap-y-2">
+          {/* ▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼ */}
+          {/* 수정된 부분: input/label 구조에서 button으로 변경하여 토글 기능 오류 수정 */}
           {consultationStatuses.map(status => (
-            <label key={status} className="relative flex items-center">
-              <input
-                type="radio"
-                name={`consultationStatus-${activeMemoId}`}
-                value={status}
-                checked={activeMemoStatus === status}
-                onChange={(e) => handleStatusChange(e.target.value)}
-                className="absolute opacity-0 w-full h-full cursor-pointer"
-              />
-              <div
-                className={`px-3 py-1 text-xs rounded-full cursor-pointer transition-colors ${
-                  activeMemoStatus === status 
-                  ? 'bg-blue-600 text-white font-semibold' 
-                  : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-                }`}
-              >
-                {status}
-              </div>
-            </label>
+            <button
+              key={status}
+              onClick={() => handleStatusChange(status)}
+              className={`px-3 py-1 text-xs rounded-full cursor-pointer transition-colors ${
+                activeMemoStatus === status 
+                ? 'bg-blue-600 text-white font-semibold' 
+                : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+              }`}
+            >
+              {status}
+            </button>
           ))}
+          {/* ▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲ */}
         </div>
       </div>
     </div>
   );
 }
 
+
+// ------------------ 고객센터 팝업 컴포넌트 ------------------
+function CustomerServicePopup({ onClose }) {
+  const mainContacts = [
+    { name: '삼성닷컴 대표번호(자급제 문의)', number: '1588-6084' },
+    { name: '삼성닷컴 서비스/멤버십/가전 설치&수리', number: '1588-3366' },
+    { name: 'SGI 서울보증보험', number: '1670-7000' },
+    { name: '삼성케어플러스', number: '1566-4590' },
+    { name: '민팃', number: '1877-5446' }
+  ];
+
+  const arsContacts = [
+    { name: 'SKT', number: '1566-1509' },
+    { name: 'SKT MVNO', number: '1599-0133' },
+    { name: 'KT & KT MVNO', number: '1588-2935' },
+    { name: 'LGU+ & LGU+ MVNO', number: '1544-3553' }
+  ];
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+      <div className="bg-white p-6 rounded-lg shadow-xl relative w-auto min-w-[500px] max-w-lg">
+        <button onClick={onClose} className="absolute top-3 right-3 text-gray-400 hover:text-gray-800 text-2xl leading-none">&times;</button>
+        <div className="text-center">
+            <h2 className="text-xl font-bold mb-5 text-gray-800">고객센터 연락처</h2>
+        </div>
+        
+        <table className="w-full text-sm mb-6 border-t">
+          <tbody>
+            {mainContacts.map(contact => (
+              <tr key={contact.name} className="border-b">
+                <td className="py-2 pr-4 text-gray-600">{contact.name}</td>
+                <td className="py-2 text-gray-900 font-semibold text-right">{contact.number}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+
+        <div className="border-t pt-4">
+            <h3 className="text-center text-md font-bold text-gray-800">[번호이동 사전동의 ARS]</h3>
+        </div>
+        
+        <table className="w-full text-sm mt-3">
+          <tbody>
+            {arsContacts.map(contact => (
+              <tr key={contact.name} className="border-b">
+                <td className="py-2 pr-4 text-gray-600">{contact.name}</td>
+                <td className="py-2 text-gray-900 font-semibold text-right">{contact.number}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+}
+
+
 // ------------------ 렌더링 ------------------
 function App() {
   const [operator, setOperator] = useState('KT');
   const [trackingNumber, setTrackingNumber] = useState('');
+  const [showPopup, setShowPopup] = useState(false);
   
-  // ▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼
-  // 수정된 부분: 메모 관련 상태 및 핸들러를 App 컴포넌트로 이동
   const [memos, setMemos] = useState([{ id: 1, title: '메모 1', content: '', status: null }]);
   const [activeMemoId, setActiveMemoId] = useState(1);
   const [editingTabId, setEditingTabId] = useState(null);
@@ -606,25 +657,40 @@ function App() {
   }
 
   const handleStatusChange = (newStatus) => {
-    setMemos(memos.map(memo => 
-      memo.id === activeMemoId ? { ...memo, status: newStatus } : memo
-    ));
+    setMemos(memos.map(memo => {
+      if (memo.id === activeMemoId) {
+        const updatedStatus = memo.status === newStatus ? null : newStatus;
+        return { ...memo, status: updatedStatus };
+      }
+      return memo;
+    }));
   };
 
-  // 새로 추가된 '메모 저장' 기능 (개선: 탭 제목 길이에 맞춰 = 선을 생성)
+  // ▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼
+  // 수정된 부분: 메모 저장 시 상담 현황 텍스트 추가
   const handleSaveMemosToFile = () => {
-    if (memos.every(memo => memo.content.trim() === '')) {
-      alert('저장할 메모 내용이 없습니다.');
+    const isSaveable = memos.some(memo => memo.content.trim() !== '' || memo.status !== null);
+    if (!isSaveable) {
+      alert('저장할 내용이 없습니다.');
       return;
     }
 
     const fileContent = memos.map(memo => {
-      // 제목 양옆에 공백을 두어 가독성 확보
       const sidePad = 2;
       const titleText = memo.title || '';
       const titleLine = ' '.repeat(sidePad) + titleText + ' '.repeat(sidePad);
       const border = '='.repeat(Math.max(titleLine.length, titleText.length + sidePad * 2));
-      return `${border}\n${titleLine}\n${border}\n${memo.content}`;
+      
+      let contentToSave = memo.content;
+
+      if (memo.status) {
+        if (contentToSave.trim() !== '') {
+          contentToSave += '\n\n';
+        }
+        contentToSave += `상담 현황: ${memo.status}`;
+      }
+      
+      return `${border}\n${titleLine}\n${border}\n${contentToSave}`;
     }).join('\n\n');
 
     const blob = new Blob([fileContent], { type: 'text/plain;charset=utf-8' });
@@ -637,7 +703,7 @@ function App() {
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
   };
-  // ▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲
+  // ▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲
 
   const handleTrackingSearch = () => {
     if (!trackingNumber || !/^\d+$/.test(trackingNumber)) {
@@ -702,16 +768,20 @@ function App() {
           </a>
         </div>
         
-        {/* ▼▼▼ '메모 저장' 버튼 추가 ▼▼▼ */}
-        <div className="flex items-center ml-2">
+        <div className="flex items-center ml-2 gap-2">
           <button
             onClick={handleSaveMemosToFile}
             className="bg-emerald-600 text-white px-3 py-2 rounded hover:bg-emerald-700 text-sm"
           >
             메모 저장
           </button>
+          <button
+            onClick={() => setShowPopup(true)}
+            className="bg-gray-600 text-white px-3 py-2 rounded hover:bg-gray-700 text-sm"
+          >
+            고객센터
+          </button>
         </div>
-        {/* ▲▲▲ '메모 저장' 버튼 추가 ▲▲▲ */}
 
         <div className="flex items-center ml-auto gap-2">
           <input
@@ -759,6 +829,8 @@ function App() {
         handleAddMemo={handleAddMemo}
         handleStatusChange={handleStatusChange}
       />
+      
+      {showPopup && <CustomerServicePopup onClose={() => setShowPopup(false)} />}
     </div>
   );
 }
