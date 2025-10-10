@@ -217,12 +217,9 @@ function RequestFormPopup({ onClose }) {
             <div key={index}>
               <h3 className="text-lg font-semibold text-gray-700 mb-2">{section.title}</h3>
               <div className="relative">
-                {/* ▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼ */}
-                {/* 수정된 부분: select-all 클래스 제거하여 드래그 복사 가능하게 함 */}
                 <pre className="bg-gray-100 p-3 rounded text-sm text-gray-800 whitespace-pre-wrap break-words font-sans">
                   {section.content}
                 </pre>
-                {/* ▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲ */}
                 <button 
                   onClick={() => handleCopy(section.content)}
                   className="absolute top-2 right-2 bg-gray-300 hover:bg-gray-400 text-gray-800 text-xs px-2 py-1 rounded"
@@ -233,6 +230,179 @@ function RequestFormPopup({ onClose }) {
             </div>
           ))}
         </div>
+      </div>
+    </div>
+  );
+}
+
+// ------------------ 관계자 외 출입금지 팝업 컴포넌트 (수정됨) ------------------
+function RestrictedAccessPopup({ onClose }) {
+  // ▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼
+  // 비밀번호는 여기 'your_password_here' 부분에 입력하세요.
+  const CORRECT_PASSWORD = 'qlalfqjsgh'; 
+  // ▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲
+  
+  const [password, setPassword] = useState('');
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [searchTerm, setSearchTerm] = useState('');
+  const passwordInputRef = useRef(null);
+
+  const storeData = useMemo(() => [
+    { name: '울산 현대차 문화회관', days: '월요일 ~ 토요일', time: '09시 ~ 18시' },
+    { name: '울산대학교 병원', days: '월요일 ~ 토요일', time: '09시 ~ 18시' },
+    { name: '스마트시티2 캠퍼스', days: '월요일 ~ 금요일', time: '10시 ~ 19시' },
+    { name: '광명 기아자동차', days: '월요일 ~ 토요일', time: '09시 ~ 19시' },
+    { name: '판교 SDS', days: '월요일 ~ 금요일', time: '09시 ~ 19시' },
+    { name: '수원 삼성전기', days: '월요일 ~ 토요일', time: '09시 ~ 19시' },
+    { name: '수원 삼성디지털시티2호', days: '월요일 ~ 금요일', time: '09시 ~ 19시' },
+    { name: '용인 에버랜드', days: '월요일 ~ 금요일', time: '09시 ~ 19시' },
+    { name: '평택 캠퍼스', days: '월요일 ~ 토요일', time: '09시 ~ 19시, (토) 09시 ~ 13시 30분' },
+    { name: '화성 DSR', days: '월요일 ~ 금요일', time: '09시 ~ 19시' },
+    { name: '수원 삼성디지털시티', days: '월요일 ~ 금요일', time: '09시 ~ 19시' },
+    { name: '기흥 캠퍼스', days: '월요일 ~ 금요일', time: '09시 ~ 19시' },
+    { name: '화성 캠퍼스2호', days: '월요일 ~ 금요일', time: '09시 ~ 19시' },
+    { name: '송도 바이오로직스', days: '월요일 ~ 금요일', time: '09시 ~ 18시' },
+    { name: '타임스퀘어 영등포모바일', days: '연중무휴', time: '11시 ~ 20시' },
+    { name: 'CJ 제일제당', days: '월요일 ~ 금요일', time: '09시 ~ 19시 30분' },
+    { name: '강남 삼성병원', days: '월요일 ~ 금요일', time: '08시 ~ 18시 30분' },
+    { name: '잠실 SDS', days: '월요일 ~ 금요일', time: '09시 ~ 19시' },
+    { name: '서울 RnD캠퍼스', days: '월요일 ~ 금요일', time: '08시 30분 ~ 18시 30분' },
+    { name: '삼성 GEC', days: '월요일 ~ 토요일', time: '09시 ~ 19시, (토) 10시 ~ 15시' },
+    { name: '잠실 SDS타워', days: '월요일 ~ 금요일', time: '09시 ~ 19시' },
+    { name: '태평로 삼성본관', days: '월요일 ~ 금요일', time: '09시 ~ 19시' },
+    { name: '아산 현대자동차', days: '월요일 ~ 금요일', time: '09시 ~ 19시' },
+    { name: '대전 삼성생명', days: '월요일 ~ 금요일', time: '09시 ~ 19시' },
+    { name: '아산 1캠퍼스', days: '월요일 ~ 금요일', time: '09시 ~ 19시' },
+    { name: '아산 2캠퍼스', days: '월요일 ~ 금요일', time: '09시 ~ 18시' },
+    { name: '천안 캠퍼스', days: '월요일 ~ 금요일', time: '09시 ~ 19시' },
+    { name: '천안 삼성SDI', days: '월요일 ~ 금요일', time: '09시 ~ 19시' },
+    { name: '세종 삼성전기', days: '월요일 ~ 금요일', time: '09시 ~ 19시' },
+    { name: '전주 시청', days: '월요일 ~ 토요일', time: '09시 ~ 19시 30분' },
+    { name: '광주 앰코', days: '월요일 ~ 금요일', time: '09시 ~ 19시' },
+    { name: '전주 현대자동차', days: '월요일 ~ 금요일', time: '09시 ~ 19시' },
+    { name: '광주 삼성화재', days: '월요일 ~ 금요일', time: '09시 ~ 19시' }
+  ], []);
+
+  useEffect(() => {
+    if (!isAuthenticated) {
+      passwordInputRef.current?.focus();
+    }
+  }, [isAuthenticated]);
+
+  const processedData = useMemo(() => {
+    const lowercasedFilter = searchTerm.toLowerCase();
+    const filtered = searchTerm
+      ? storeData.filter(item => item.name.toLowerCase().includes(lowercasedFilter))
+      : storeData;
+
+    const sorted = [...filtered].sort((a, b) => {
+      const dayComparison = a.days.localeCompare(b.days);
+      if (dayComparison !== 0) return dayComparison;
+      return a.time.localeCompare(b.time);
+    });
+
+    return sorted.map((item, index, array) => {
+      const isFirstOfDayGroup = index === 0 || item.days !== array[index - 1].days;
+      const isFirstOfTimeGroup = index === 0 || item.days !== array[index - 1].days || item.time !== array[index - 1].time;
+      
+      let daySpan = 0;
+      if (isFirstOfDayGroup) {
+        daySpan = 1;
+        for (let i = index + 1; i < array.length; i++) {
+          if (array[i].days === item.days) daySpan++;
+          else break;
+        }
+      }
+      
+      let timeSpan = 0;
+      if (isFirstOfTimeGroup) {
+        timeSpan = 1;
+        for (let i = index + 1; i < array.length; i++) {
+          if (array[i].days === item.days && array[i].time === item.time) timeSpan++;
+          else break;
+        }
+      }
+      
+      return { ...item, daySpan, timeSpan };
+    });
+  }, [searchTerm, storeData]);
+  
+  const handlePasswordSubmit = (e) => {
+    e.preventDefault();
+    if (password === CORRECT_PASSWORD) {
+      setIsAuthenticated(true);
+    } else {
+      alert('응 그거 아니야~');
+      setPassword('');
+      passwordInputRef.current?.focus();
+    }
+  };
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+      <div className="bg-white p-6 rounded-lg shadow-xl relative w-full max-w-3xl max-h-[90vh] flex flex-col">
+        <button onClick={onClose} className="absolute top-3 right-3 text-gray-400 hover:text-gray-800 text-2xl leading-none">&times;</button>
+        <h2 className="text-xl font-bold mb-5 text-center text-gray-800">궁금해 죽겠지?</h2>
+        
+        {!isAuthenticated ? (
+          <form onSubmit={handlePasswordSubmit} className="flex flex-col items-center gap-4">
+            <input
+              ref={passwordInputRef}
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              placeholder="비밀번호를 입력하세요"
+              className="border p-2 rounded w-64 text-center"
+            />
+            <button type="submit" className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
+              확인
+            </button>
+          </form>
+        ) : (
+          <>
+            <div className="mb-4">
+              <input
+                type="text"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                placeholder="매장명 검색..."
+                className="border p-2 rounded w-full"
+              />
+            </div>
+            <div className="overflow-auto">
+              <table className="w-full text-sm text-left text-gray-500 border-collapse table-auto">
+                <thead className="text-xs text-gray-700 uppercase bg-gray-100 sticky top-0">
+                  <tr>
+                    <th scope="col" className="px-6 py-3 border">점명</th>
+                    <th scope="col" className="px-6 py-3 border text-center">운영 요일</th>
+                    <th scope="col" className="px-6 py-3 border text-center">운영 시간</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {processedData.length > 0 ? processedData.map((item, index) => (
+                    <tr key={index} className="bg-white hover:bg-gray-50">
+                      <td className="px-6 py-2 border font-medium text-gray-900">{item.name}</td>
+                      {item.daySpan > 0 && (
+                        <td className="px-6 py-2 border text-center align-middle" rowSpan={item.daySpan}>
+                          {item.days}
+                        </td>
+                      )}
+                      {item.timeSpan > 0 && (
+                         <td className="px-6 py-2 border text-center align-middle" rowSpan={item.timeSpan}>
+                          {item.time}
+                        </td>
+                      )}
+                    </tr>
+                  )) : (
+                    <tr>
+                      <td colSpan="3" className="px-6 py-4 text-center border">검색 결과가 없습니다.</td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </>
+        )}
       </div>
     </div>
   );
@@ -259,7 +429,8 @@ function Calculator({
   handleDeleteMemo,
   handleAddMemo,
   handleStatusChange,
-  setShowRequestFormPopup
+  setShowRequestFormPopup,
+  setShowRestrictedPopup // 신규 추가
 }) {
   const [selectedDevice, setSelectedDevice] = useState(CATEGORIZED_DEVICE_LIST[0].devices[0].name);
   const [selectedPlan, setSelectedPlan] = useState(plans[0].name);
@@ -493,12 +664,20 @@ function Calculator({
         </div>
         <div className="flex flex-col">
            <label className="text-sm mb-1 text-center">&nbsp;</label>
-           <button
-            onClick={() => setShowRequestFormPopup(true)}
-            className="bg-purple-600 text-white px-3 py-2 rounded hover:bg-purple-700 h-[34px] text-sm"
-          >
-            요청 양식
-          </button>
+           <div className="flex gap-2">
+            <button
+                onClick={() => setShowRequestFormPopup(true)}
+                className="bg-purple-600 text-white px-3 py-2 rounded hover:bg-purple-700 h-[34px] text-sm"
+            >
+                요청 양식
+            </button>
+            <button
+                onClick={() => setShowRestrictedPopup(true)}
+                className="bg-red-600 text-white px-3 py-2 rounded hover:bg-red-700 h-[34px] text-sm"
+            >
+                관계자 외 출입금지
+            </button>
+           </div>
         </div>
       </div>
 
@@ -668,7 +847,8 @@ function App() {
   const [operator, setOperator] = useState('KT');
   const [trackingNumber, setTrackingNumber] = useState('');
   const [showPopup, setShowPopup] = useState(false);
-  const [showRequestFormPopup, setShowRequestFormPopup] = useState(false); // 요청 양식 팝업 상태
+  const [showRequestFormPopup, setShowRequestFormPopup] = useState(false);
+  const [showRestrictedPopup, setShowRestrictedPopup] = useState(false); // 신규 추가
   
   const [memos, setMemos] = useState([{ id: 1, title: '메모 1', content: '', status: null }]);
   const [activeMemoId, setActiveMemoId] = useState(1);
@@ -898,10 +1078,12 @@ function App() {
         handleAddMemo={handleAddMemo}
         handleStatusChange={handleStatusChange}
         setShowRequestFormPopup={setShowRequestFormPopup}
+        setShowRestrictedPopup={setShowRestrictedPopup} // 신규 추가
       />
       
       {showPopup && <CustomerServicePopup onClose={() => setShowPopup(false)} />}
       {showRequestFormPopup && <RequestFormPopup onClose={() => setShowRequestFormPopup(false)} />}
+      {showRestrictedPopup && <RestrictedAccessPopup onClose={() => setShowRestrictedPopup(false)} />}
     </div>
   );
 }
