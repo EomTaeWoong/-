@@ -177,6 +177,7 @@ function normalizePlanKey(name) {
 }
 
 
+// --- (팝업 컴포넌트들 생략 - 이전과 동일) ---
 // ------------------ 요청 양식 팝업 컴포넌트 ------------------
 function RequestFormPopup({ onClose }) {
   const sections = [
@@ -205,13 +206,13 @@ function RequestFormPopup({ onClose }) {
       alert('복사에 실패했습니다.');
     });
   };
-  
+
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
       <div className="bg-white p-6 rounded-lg shadow-xl relative w-full max-w-md max-h-[90vh] overflow-y-auto">
         <button onClick={onClose} className="absolute top-3 right-3 text-gray-400 hover:text-gray-800 text-2xl leading-none">&times;</button>
         <h2 className="text-xl font-bold mb-5 text-center text-gray-800">요청 양식</h2>
-        
+
         <div className="space-y-6">
           {sections.map((section, index) => (
             <div key={index}>
@@ -220,7 +221,7 @@ function RequestFormPopup({ onClose }) {
                 <pre className="bg-gray-100 p-3 rounded text-sm text-gray-800 whitespace-pre-wrap break-words font-sans">
                   {section.content}
                 </pre>
-                <button 
+                <button
                   onClick={() => handleCopy(section.content)}
                   className="absolute top-2 right-2 bg-gray-300 hover:bg-gray-400 text-gray-800 text-xs px-2 py-1 rounded"
                 >
@@ -239,9 +240,9 @@ function RequestFormPopup({ onClose }) {
 function RestrictedAccessPopup({ onClose }) {
   // ▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼
   // 비밀번호는 여기 'your_password_here' 부분에 입력하세요.
-  const CORRECT_PASSWORD = 'qlalfqjsgh'; 
+  const CORRECT_PASSWORD = 'qlalfqjsgh';
   // ▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲
-  
+
   const [password, setPassword] = useState('');
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
@@ -304,7 +305,7 @@ function RestrictedAccessPopup({ onClose }) {
     return sorted.map((item, index, array) => {
       const isFirstOfDayGroup = index === 0 || item.days !== array[index - 1].days;
       const isFirstOfTimeGroup = index === 0 || item.days !== array[index - 1].days || item.time !== array[index - 1].time;
-      
+
       let daySpan = 0;
       if (isFirstOfDayGroup) {
         daySpan = 1;
@@ -313,7 +314,7 @@ function RestrictedAccessPopup({ onClose }) {
           else break;
         }
       }
-      
+
       let timeSpan = 0;
       if (isFirstOfTimeGroup) {
         timeSpan = 1;
@@ -322,11 +323,11 @@ function RestrictedAccessPopup({ onClose }) {
           else break;
         }
       }
-      
+
       return { ...item, daySpan, timeSpan };
     });
   }, [searchTerm, storeData]);
-  
+
   const handlePasswordSubmit = (e) => {
     e.preventDefault();
     if (password === CORRECT_PASSWORD) {
@@ -343,7 +344,7 @@ function RestrictedAccessPopup({ onClose }) {
       <div className="bg-white p-6 rounded-lg shadow-xl relative w-full max-w-3xl max-h-[90vh] flex flex-col">
         <button onClick={onClose} className="absolute top-3 right-3 text-gray-400 hover:text-gray-800 text-2xl leading-none">&times;</button>
         <h2 className="text-xl font-bold mb-5 text-center text-gray-800">궁금해 죽겠지?</h2>
-        
+
         {!isAuthenticated ? (
           <form onSubmit={handlePasswordSubmit} className="flex flex-col items-center gap-4">
             <input
@@ -408,12 +409,70 @@ function RestrictedAccessPopup({ onClose }) {
   );
 }
 
-// ------------------ 계산기 컴포넌트 ------------------
-function Calculator({ 
-  plans, 
-  features, 
-  operator, 
-  memos, 
+// ------------------ 고객센터 팝업 컴포넌트 ------------------
+function CustomerServicePopup({ onClose }) {
+  const mainContacts = [
+    { name: '삼성닷컴 대표번호(자급제 문의)', number: '1588-6084' },
+    { name: '삼성닷컴 서비스/멤버십/가전 설치&수리', number: '1588-3366' },
+    { name: 'SGI 서울보증보험', number: '1670-7000' },
+    { name: '삼성케어플러스', number: '1566-4590' },
+    { name: '워치/케이스/액세서리 쿠폰', number: '1811-6043' },
+    { name: '간편 보상문의', number: '1599-5161' },
+    { name: '민팃', number: '1877-5446' }
+  ];
+
+  const arsContacts = [
+    { name: 'SKT', number: '1566-1509' },
+    { name: 'SKT MVNO', number: '1599-0133' },
+    { name: 'KT & KT MVNO', number: '1588-2935' },
+    { name: 'LGU+ & LGU+ MVNO', number: '1544-3553' }
+  ];
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+      <div className="bg-white p-6 rounded-lg shadow-xl relative w-auto min-w-[500px] max-w-lg">
+        <button onClick={onClose} className="absolute top-3 right-3 text-gray-400 hover:text-gray-800 text-2xl leading-none">&times;</button>
+        <div className="text-center">
+            <h2 className="text-xl font-bold mb-5 text-gray-800">고객센터 연락처</h2>
+        </div>
+
+        <table className="w-full text-sm mb-6 border-t">
+          <tbody>
+            {mainContacts.map(contact => (
+              <tr key={contact.name} className="border-b">
+                <td className="py-2 pr-4 text-gray-600">{contact.name}</td>
+                <td className="py-2 text-gray-900 font-semibold text-right">{contact.number}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+
+        <div className="border-t pt-4">
+            <h3 className="text-center text-md font-bold text-gray-800">[번호이동 사전동의 ARS]</h3>
+        </div>
+
+        <table className="w-full text-sm mt-3">
+          <tbody>
+            {arsContacts.map(contact => (
+              <tr key={contact.name} className="border-b">
+                <td className="py-2 pr-4 text-gray-600">{contact.name}</td>
+                <td className="py-2 text-gray-900 font-semibold text-right">{contact.number}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+}
+
+
+// ------------------ 계산기 컴포넌트 (수정됨) ------------------
+function Calculator({
+  plans,
+  features,
+  operator,
+  memos,
   activeMemoId,
   setActiveMemoId,
   editingTabId,
@@ -430,36 +489,57 @@ function Calculator({
   handleAddMemo,
   handleStatusChange,
   setShowRequestFormPopup,
-  setShowRestrictedPopup // 신규 추가
+  setShowRestrictedPopup
 }) {
   const [selectedDevice, setSelectedDevice] = useState(CATEGORIZED_DEVICE_LIST[0].devices[0].name);
-  const [selectedPlan, setSelectedPlan] = useState(plans[0].name);
+  const [selectedPlan, setSelectedPlan] = useState(plans[0]?.name || '');
   const [installMonths, setInstallMonths] = useState(24);
   const [interestRate] = useState(0.059);
+
+  // '공통지원' 입력/계산용 state
   const [commonSupport, setCommonSupport] = useState(300000);
   const [additionalSupport, setAdditionalSupport] = useState(0);
   const [additionalEdited, setAdditionalEdited] = useState(false);
-  const [preDiscount, setPreDiscount] = useState(0);
+  const [preDiscountPublic, setPreDiscountPublic] = useState(0); // 공통지원용 선할인
+
+  // '선택약정' 입력/계산용 state
+  const [preDiscountSelective, setPreDiscountSelective] = useState(0); // 선택약정용 선할인
+
+  // UI 제어용 state
   const [contractType, setContractType] = useState('공통지원');
 
+  // '공통지원' 값 복원용 state
+  const [savedCommonSupport, setSavedCommonSupport] = useState(300000);
+  const [savedAdditionalSupport, setSavedAdditionalSupport] = useState(0);
+  const [savedAdditionalEdited, setSavedAdditionalEdited] = useState(false);
+
+  // --- useEffect Hooks ---
   useEffect(() => {
     setSelectedPlan(plans[0]?.name || '');
   }, [plans]);
-  
+
+  // KT 자동계산 로직: commonSupport, operator, additionalEdited 값이 바뀔때마다 실행
   useEffect(() => {
-    if (contractType === '선택약정') {
-      setAdditionalSupport(0);
-      setAdditionalEdited(false);
-      return;
-    }
-    if (operator === 'KT' && contractType === '공통지원') {
+    // contractType 상태와 관계없이, 내부 계산용 state 값 기준으로 계산
+    if (operator === 'KT' && !additionalEdited) {
       const calculatedSupport = Math.floor((commonSupport * 0.15) / 100) * 100;
-      if (!additionalEdited) {
-        setAdditionalSupport(calculatedSupport);
-      }
+      setAdditionalSupport(calculatedSupport);
+       // 복원용 값도 업데이트 (자동계산 시 복원용 값도 일치해야 함)
+      setSavedAdditionalSupport(calculatedSupport);
+      setSavedAdditionalEdited(false); // 자동계산 했으므로 false
     }
-  }, [commonSupport, contractType, operator, additionalEdited]);
-  
+     // 공통지원금이 바뀔때 저장용 값도 업데이트
+    setSavedCommonSupport(commonSupport);
+
+  }, [commonSupport, operator, additionalEdited]); // contractType 의존성 제거
+
+  // 추가 지원금 수동 편집 시 저장용 값 업데이트
+   useEffect(() => {
+       setSavedAdditionalSupport(additionalSupport);
+       setSavedAdditionalEdited(additionalEdited);
+   }, [additionalSupport, additionalEdited]);
+
+
   useEffect(() => {
     if (editingTabId !== null && titleInputRef.current) {
       titleInputRef.current.focus();
@@ -467,91 +547,128 @@ function Calculator({
     }
   }, [editingTabId]);
 
+  // --- 공통 계산 (기본값) ---
   const devicePrice = useMemo(()=> DEVICE_LIST.find(d=>d.name===selectedDevice)?.price || 0, [selectedDevice]);
-
-  const originalPlanPrice = useMemo(() => {
-    return plans.find(p => p.name === selectedPlan)?.price || 0;
-  }, [selectedPlan, plans]);
-
-  const monthlyPlanDiscount = useMemo(() => {
-    return Math.round(originalPlanPrice * 0.25);
-  }, [originalPlanPrice]);
-  
-  const totalPlanDiscount = useMemo(() => {
-    return monthlyPlanDiscount * 24;
-  }, [monthlyPlanDiscount]);
-
-  const totalDiscountDisplay = useMemo(() => {
-    if (contractType === '공통지원') {
-      return commonSupport + additionalSupport + preDiscount;
-    } else {
-      return preDiscount + totalPlanDiscount;
-    }
-  }, [contractType, commonSupport, additionalSupport, preDiscount, totalPlanDiscount]);
-
-  const totalDiscountElement = useMemo(() => {
-    if (contractType === '선택약정') {
-      return (
-        <span>
-          - {totalDiscountDisplay.toLocaleString()}원
-          <span className="text-sm font-normal ml-2 text-gray-600">
-            (선할인 {preDiscount.toLocaleString()}원 + 통신요금 25% 할인 월 {monthlyPlanDiscount.toLocaleString()}원 (총 {totalPlanDiscount.toLocaleString()}원))
-          </span>
-        </span>
-      );
-    }
-    return <span>- {totalDiscountDisplay.toLocaleString()}원</span>;
-  }, [contractType, totalDiscountDisplay, preDiscount, monthlyPlanDiscount, totalPlanDiscount]);
-
-  const finalDevicePrice = useMemo(() => {
-    let totalDeviceDiscount = preDiscount; 
-    if (contractType === '공통지원') {
-      totalDeviceDiscount += commonSupport + additionalSupport;
-    }
-    return devicePrice - totalDeviceDiscount;
-  }, [devicePrice, commonSupport, additionalSupport, preDiscount, contractType]);
-
-  const monthlyDevice = useMemo(()=>{
-    if(installMonths === 0) return 0;
-    const principal = finalDevicePrice > 0 ? finalDevicePrice : 0;
-    return Math.round(pmt(interestRate/12, installMonths, principal));
-  }, [finalDevicePrice, installMonths, interestRate]);
-    
-  const totalRepayment = useMemo(() => {
-    if (installMonths === 0) return finalDevicePrice > 0 ? finalDevicePrice : 0;
-    return monthlyDevice * installMonths;
-  }, [monthlyDevice, installMonths, finalDevicePrice]);
-
-  const totalInterest = useMemo(() => {
-    if (installMonths === 0) return 0;
-    const interest = totalRepayment - (finalDevicePrice > 0 ? finalDevicePrice : 0);
-    return interest > 0 ? Math.round(interest) : 0;
-  }, [totalRepayment, finalDevicePrice, installMonths]);
-
-  const planPrice = useMemo(()=>{
-    let price = originalPlanPrice;
-    if(contractType==='선택약정') price = Math.round(price * 0.75);
-    return price;
-  }, [originalPlanPrice, contractType]);
-
+  const originalPlanPrice = useMemo(() => plans.find(p => p.name === selectedPlan)?.price || 0, [selectedPlan, plans]);
+  const monthlyPlanDiscount = useMemo(() => Math.round(originalPlanPrice * 0.25), [originalPlanPrice]);
+  const totalPlanDiscount = useMemo(() => monthlyPlanDiscount * 24, [monthlyPlanDiscount]);
   const featureText = useMemo(()=>{
     const normalized = normalizePlanKey(selectedPlan);
     return features[normalized] || '';
   }, [selectedPlan, features]);
 
-  const totalMonthly = monthlyDevice + planPrice;
+
+  // --- 계산 로직 (UI 상태와 완전히 분리됨) ---
+
+  // --- 시나리오 1: 공통지원 (Public Subsidy) Calculations ---
+  // state: commonSupport, additionalSupport, preDiscountPublic 사용
+  const totalDiscount_Public = useMemo(() => {
+    return commonSupport + additionalSupport + preDiscountPublic;
+  }, [commonSupport, additionalSupport, preDiscountPublic]);
+
+  const finalDevicePrice_Public = useMemo(() => {
+    return devicePrice - totalDiscount_Public;
+  }, [devicePrice, totalDiscount_Public]);
+
+  const principal_Public = useMemo(() => {
+    return finalDevicePrice_Public > 0 ? finalDevicePrice_Public : 0;
+  }, [finalDevicePrice_Public]);
+
+  const monthlyDevice_Public = useMemo(() => {
+    if(installMonths === 0) return 0;
+    return Math.round(pmt(interestRate/12, installMonths, principal_Public));
+  }, [principal_Public, installMonths, interestRate]);
+
+  const totalRepayment_Public = useMemo(() => {
+    if (installMonths === 0) return principal_Public;
+    return monthlyDevice_Public * installMonths;
+  }, [monthlyDevice_Public, installMonths, principal_Public]);
+
+  const totalInterest_Public = useMemo(() => {
+    if (installMonths === 0) return 0;
+    const interest = totalRepayment_Public - principal_Public;
+    return interest > 0 ? Math.round(interest) : 0;
+  }, [totalRepayment_Public, principal_Public, installMonths]);
+
+  const planPrice_Public = originalPlanPrice;
+
+  const totalMonthly_Public = useMemo(() => {
+    return monthlyDevice_Public + planPrice_Public;
+  }, [monthlyDevice_Public, planPrice_Public]);
+
+
+  // --- 시나리오 2: 선택약정 (Selective Contract) Calculations ---
+  // state: preDiscountSelective 사용
+  const totalDiscount_Selective = useMemo(() => {
+    return preDiscountSelective + totalPlanDiscount;
+  }, [preDiscountSelective, totalPlanDiscount]);
+
+  const finalDevicePrice_Selective = useMemo(() => {
+    return devicePrice - preDiscountSelective;
+  }, [devicePrice, preDiscountSelective]);
+
+  const principal_Selective = useMemo(() => {
+    return finalDevicePrice_Selective > 0 ? finalDevicePrice_Selective : 0;
+  }, [finalDevicePrice_Selective]);
+
+  const monthlyDevice_Selective = useMemo(() => {
+    if(installMonths === 0) return 0;
+    return Math.round(pmt(interestRate/12, installMonths, principal_Selective));
+  }, [principal_Selective, installMonths, interestRate]);
+
+  const totalRepayment_Selective = useMemo(() => {
+    if (installMonths === 0) return principal_Selective;
+    return monthlyDevice_Selective * installMonths;
+  }, [monthlyDevice_Selective, installMonths, principal_Selective]);
+
+  const totalInterest_Selective = useMemo(() => {
+    if (installMonths === 0) return 0;
+    const interest = totalRepayment_Selective - principal_Selective;
+    return interest > 0 ? Math.round(interest) : 0;
+  }, [totalRepayment_Selective, principal_Selective, installMonths]);
+
+  const planPrice_Selective = useMemo(() => {
+    return Math.round(originalPlanPrice * 0.75); // 25% 할인
+  }, [originalPlanPrice]);
+
+  const totalMonthly_Selective = useMemo(() => {
+    return monthlyDevice_Selective + planPrice_Selective;
+  }, [monthlyDevice_Selective, planPrice_Selective]);
+
+
+  // --- 하이라이트 로직: '유리한 쪽'(더 저렴한 쪽)에 녹색 하이라이트 ---
+  let highlightClassPublic = 'bg-white';
+  let highlightClassSelective = 'bg-white';
+  const highlightStyle = 'bg-green-50 ring-2 ring-green-500 z-10'; // Green highlight
+
+  // 계산된 최종 월 납부금액 비교
+  if (totalMonthly_Public < totalMonthly_Selective) {
+    highlightClassPublic = highlightStyle;
+  } else if (totalMonthly_Selective < totalMonthly_Public) {
+    highlightClassSelective = highlightStyle;
+  }
+
+
   const handleFocus = (e) => e.target.select();
 
   const activeMemo = memos.find(memo => memo.id === activeMemoId);
   const activeMemoContent = activeMemo?.content || '';
   const activeMemoStatus = activeMemo?.status;
-
   const consultationStatuses = ['상담완료', '상담부재', '서식지 작성안내완료', '서식지 미접수(부재)', '보류'];
+
+
+  // --- 약정 변경 핸들러 (UI 제어 전용) ---
+  const handleContractTypeChange = (newType) => {
+     setContractType(newType); // UI 상태만 변경
+  };
+
 
   return (
     <div className="p-4 max-w-4xl mx-auto">
+      {/* --- 입력 폼 --- */}
       <div className="mb-4 flex flex-wrap gap-4">
-        <select value={selectedDevice} onChange={e=>setSelectedDevice(e.target.value)} className="border p-2 rounded w-[40%]">
+        {/* 단말기, 요금제, 할부 개월 수 선택 (이전과 동일) */}
+         <select value={selectedDevice} onChange={e=>setSelectedDevice(e.target.value)} className="border p-2 rounded w-[40%]">
           {CATEGORIZED_DEVICE_LIST.map(group => (
             <optgroup key={group.category} label={group.category}>
               {group.devices.map(d => (
@@ -581,47 +698,64 @@ function Calculator({
       <div className="mb-4 flex flex-wrap items-end gap-4">
         <div className="flex flex-col">
           <label className="text-sm text-center">공통지원금</label>
-          <input 
-            type="text" 
+          <input
+            type="text"
             inputMode="numeric"
-            value={contractType==='선택약정' ? '0' : commonSupport.toLocaleString()} 
-            disabled={contractType==='선택약정'} 
+            // UI 표시: 공통지원 상태일때는 실제 값, 아니면 저장된 값 (0 아님!)
+            value={(contractType === '공통지원' ? commonSupport : savedCommonSupport).toLocaleString()}
+            disabled={contractType === '선택약정'}
             onChange={e => {
+              // 실제 값 업데이트는 항상 함
               const v = Number(e.target.value.replace(/\D/g, '')) || 0;
               setCommonSupport(v);
               setAdditionalEdited(false);
-            }} 
+            }}
             onFocus={handleFocus}
-            className="border p-1 rounded w-32 text-center"
+            className={`border p-1 rounded w-32 text-center ${contractType === '선택약정' ? 'bg-gray-100' : 'bg-white'}`}
           />
         </div>
         <div className="flex flex-col">
           <label className="text-sm text-center">추가지원금</label>
-          <input 
-            type="text" 
+          <input
+            type="text"
             inputMode="numeric"
-            value={contractType==='선택약정' ? '0' : additionalSupport.toLocaleString()} 
-            disabled={contractType==='선택약정'} 
+             // UI 표시: 공통지원 상태일때는 실제 값, 아니면 저장된 값 (0 아님!)
+            value={(contractType === '공통지원' ? additionalSupport : savedAdditionalSupport).toLocaleString()}
+            disabled={contractType === '선택약정'}
             onChange={e => {
+              // 실제 값 업데이트는 항상 함
               const v = Number(e.target.value.replace(/\D/g, '')) || 0;
               setAdditionalSupport(v);
               setAdditionalEdited(true);
-            }} 
+            }}
             onFocus={handleFocus}
-            className="border p-1 rounded w-32 text-center"
+            className={`border p-1 rounded w-32 text-center ${contractType === '선택약정' ? 'bg-gray-100' : 'bg-white'}`}
           />
         </div>
+
+        {/* --- 선할인 입력 (분리됨) --- */}
         <div className="flex flex-col">
           <label className="text-sm text-center">선할인</label>
-          <input 
-            type="text" 
+          <input
+            type="text"
             inputMode="numeric"
-            value={preDiscount.toLocaleString()} 
-            onChange={e => setPreDiscount(Number(e.target.value.replace(/\D/g, '')) || 0)} 
+            // contractType에 따라 다른 state의 값을 보여줌
+            value={contractType === '공통지원' ? preDiscountPublic.toLocaleString() : preDiscountSelective.toLocaleString()}
+            onChange={e => {
+              const v = Number(e.target.value.replace(/\D/g, '')) || 0;
+              // contractType에 따라 다른 state를 업데이트함
+              if (contractType === '공통지원') {
+                setPreDiscountPublic(v);
+              } else {
+                setPreDiscountSelective(v);
+              }
+            }}
             onFocus={handleFocus}
-            className="border p-1 rounded w-32 text-center"
+            className="border p-1 rounded w-32 text-center" // 항상 활성화
           />
         </div>
+
+        {/* 약정 선택 버튼 */}
         <div className="flex flex-col">
           <label className="text-sm mb-1 text-center">약정</label>
           <div className="flex border rounded overflow-hidden h-[34px]">
@@ -631,7 +765,7 @@ function Calculator({
                 name="contractType"
                 value="공통지원"
                 checked={contractType === '공통지원'}
-                onChange={e => setContractType(e.target.value)}
+                onChange={() => handleContractTypeChange('공통지원')} // UI 상태 변경 핸들러 호출
                 className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
               />
               <div
@@ -649,7 +783,7 @@ function Calculator({
                 name="contractType"
                 value="선택약정"
                 checked={contractType === '선택약정'}
-                onChange={e => setContractType(e.target.value)}
+                onChange={() => handleContractTypeChange('선택약정')} // UI 상태 변경 핸들러 호출
                 className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
               />
               <div
@@ -662,6 +796,7 @@ function Calculator({
             </label>
           </div>
         </div>
+         {/* 버튼들 */}
         <div className="flex flex-col">
            <label className="text-sm mb-1 text-center">&nbsp;</label>
            <div className="flex gap-2">
@@ -681,23 +816,93 @@ function Calculator({
         </div>
       </div>
 
-      <div className="border p-4 rounded bg-white shadow-md flex flex-col gap-2">
-        <div className="text-black font-bold text-xl">단말기 출고가: {devicePrice.toLocaleString()}원</div>
-        <div className="text-red-600 font-bold text-xl">총 할인액: {totalDiscountElement}</div>
-        <div className="text-green-600 font-bold text-xl">
-          단말기 할부원금: {(finalDevicePrice > 0 ? finalDevicePrice : 0).toLocaleString()}원
-          {installMonths > 0 && finalDevicePrice > 0 && (
-            <span className="text-sm font-normal ml-2 text-gray-600">
-              (총 이자: {totalInterest.toLocaleString()}원, 총 상환액: {totalRepayment.toLocaleString()}원)
-            </span>
-          )}
+      {/* --- 결과 표시 영역 (하이라이트 로직 적용됨) --- */}
+      <div className="mt-4">
+        {/* 공통 정보 */}
+        <div className="p-4 rounded-t bg-white shadow-md border-b border-gray-200">
+          <div className="text-black font-bold text-xl">
+            단말기 출고가: {devicePrice.toLocaleString()}원
+          </div>
+          <div className="text-gray-700 text-lg">
+            기본 통신요금: {originalPlanPrice.toLocaleString()}원
+            {featureText && <span className="text-gray-600 text-sm ml-2">({featureText})</span>}
+          </div>
         </div>
-        <div className="text-blue-600 font-bold text-xl">월 할부금(할부이자 5.9% 포함): {monthlyDevice.toLocaleString()}원</div>
-        <div className="text-blue-600 font-bold text-xl">월 통신요금: {planPrice.toLocaleString()}원 {featureText && <span className="text-gray-600 text-sm">({featureText})</span>}</div>
-        <div className="text-black-600 font-bold text-2xl">월 납부 예상금액: {totalMonthly.toLocaleString()}원</div>
+
+        {/* 비교 그리드 */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-px bg-gray-200 rounded-b shadow-md overflow-hidden">
+
+          {/* Column 1: 공통지원 */}
+          <div className={`p-4 flex flex-col gap-1.5 transition-all ${highlightClassPublic}`}>
+            <h3 className="text-xl font-bold text-center text-blue-700 mb-2">공통지원</h3>
+
+            <div className="text-red-600 font-bold text-lg">
+              {/* 계산된 공통지원 총 할인액 표시 */}
+              총 할인액: <span>- {totalDiscount_Public.toLocaleString()}원</span>
+            </div>
+            <div className="text-green-600 font-bold text-lg">
+              단말기 할부원금: {principal_Public.toLocaleString()}원
+              {installMonths > 0 && principal_Public > 0 && (
+                <span className="text-sm font-normal ml-2 text-gray-600">
+                  (총 이자: {totalInterest_Public.toLocaleString()}원)
+                </span>
+              )}
+            </div>
+            <div className="text-blue-600 font-bold text-lg">
+              월 할부금: {monthlyDevice_Public.toLocaleString()}원
+            </div>
+            <div className="text-blue-600 font-bold text-lg">
+              월 통신요금: {planPrice_Public.toLocaleString()}원
+            </div>
+            <div className="text-black font-bold text-2xl mt-2 pt-2 border-t border-gray-300">
+              월 납부 예상금액:
+              <span className="ml-2">{totalMonthly_Public.toLocaleString()}원</span>
+            </div>
+          </div>
+
+          {/* Column 2: 선택약정 */}
+          <div className={`p-4 flex flex-col gap-1.5 transition-all ${highlightClassSelective}`}>
+            <h3 className="text-xl font-bold text-center text-blue-700 mb-2">선택약정 (25% 요금할인)</h3>
+
+            <div className="text-red-600 font-bold text-lg">
+              총 할인액:
+              <span>
+                - {totalDiscount_Selective.toLocaleString()}원
+                <span className="block text-sm font-normal text-gray-600">
+                  (선할인 {preDiscountSelective.toLocaleString()}원 + 요금할인 {totalPlanDiscount.toLocaleString()}원)
+                </span>
+              </span>
+            </div>
+
+            <div className="text-green-600 font-bold text-lg">
+              단말기 할부원금: {principal_Selective.toLocaleString()}원
+               {installMonths > 0 && principal_Selective > 0 && (
+                <span className="text-sm font-normal ml-2 text-gray-600">
+                  (총 이자: {totalInterest_Selective.toLocaleString()}원)
+                </span>
+              )}
+            </div>
+            <div className="text-blue-600 font-bold text-lg">
+              월 할부금: {monthlyDevice_Selective.toLocaleString()}원
+            </div>
+            <div className="text-blue-600 font-bold text-lg">
+              월 통신요금: {planPrice_Selective.toLocaleString()}원
+              <span className="text-sm font-normal ml-2 text-gray-600">
+                ({monthlyPlanDiscount.toLocaleString()}원 할인)
+              </span>
+            </div>
+            <div className="text-black font-bold text-2xl mt-2 pt-2 border-t border-gray-300">
+              월 납부 예상금액:
+              <span className="ml-2">{totalMonthly_Selective.toLocaleString()}원</span>
+            </div>
+          </div>
+
+        </div>
       </div>
-      
-      <div className="mt-6">
+
+      {/* --- 메모장 (기존과 동일) --- */}
+       {/* ... (메모장 JSX 생략) ... */}
+       <div className="mt-6">
         <div className="flex items-center border-b border-gray-200">
           {memos.map(memo => (
             <div key={memo.id} className="relative group">
@@ -723,7 +928,7 @@ function Calculator({
                 )}
               </button>
               {memos.length > 1 && (
-                <button 
+                <button
                   onClick={() => handleDeleteMemo(memo.id)}
                   className="absolute top-0 right-0 p-1 text-gray-400 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity"
                   title="탭 삭제"
@@ -769,8 +974,8 @@ function Calculator({
               key={status}
               onClick={() => handleStatusChange(status)}
               className={`px-3 py-1 text-xs rounded-full cursor-pointer transition-colors ${
-                activeMemoStatus === status 
-                ? 'bg-blue-600 text-white font-semibold' 
+                activeMemoStatus === status
+                ? 'bg-blue-600 text-white font-semibold'
                 : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
               }`}
             >
@@ -784,72 +989,15 @@ function Calculator({
 }
 
 
-// ------------------ 고객센터 팝업 컴포넌트 ------------------
-function CustomerServicePopup({ onClose }) {
-  const mainContacts = [
-    { name: '삼성닷컴 대표번호(자급제 문의)', number: '1588-6084' },
-    { name: '삼성닷컴 서비스/멤버십/가전 설치&수리', number: '1588-3366' },
-    { name: 'SGI 서울보증보험', number: '1670-7000' },
-    { name: '삼성케어플러스', number: '1566-4590' },
-    { name: '워치/케이스/액세서리 쿠폰', number: '1811-6043' },
-    { name: '간편 보상문의', number: '1599-5161' },
-    { name: '민팃', number: '1877-5446' }
-  ];
-
-  const arsContacts = [
-    { name: 'SKT', number: '1566-1509' },
-    { name: 'SKT MVNO', number: '1599-0133' },
-    { name: 'KT & KT MVNO', number: '1588-2935' },
-    { name: 'LGU+ & LGU+ MVNO', number: '1544-3553' }
-  ];
-
-  return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white p-6 rounded-lg shadow-xl relative w-auto min-w-[500px] max-w-lg">
-        <button onClick={onClose} className="absolute top-3 right-3 text-gray-400 hover:text-gray-800 text-2xl leading-none">&times;</button>
-        <div className="text-center">
-            <h2 className="text-xl font-bold mb-5 text-gray-800">고객센터 연락처</h2>
-        </div>
-        
-        <table className="w-full text-sm mb-6 border-t">
-          <tbody>
-            {mainContacts.map(contact => (
-              <tr key={contact.name} className="border-b">
-                <td className="py-2 pr-4 text-gray-600">{contact.name}</td>
-                <td className="py-2 text-gray-900 font-semibold text-right">{contact.number}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-
-        <div className="border-t pt-4">
-            <h3 className="text-center text-md font-bold text-gray-800">[번호이동 사전동의 ARS]</h3>
-        </div>
-        
-        <table className="w-full text-sm mt-3">
-          <tbody>
-            {arsContacts.map(contact => (
-              <tr key={contact.name} className="border-b">
-                <td className="py-2 pr-4 text-gray-600">{contact.name}</td>
-                <td className="py-2 text-gray-900 font-semibold text-right">{contact.number}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-    </div>
-  );
-}
-
-
+// --- (App, ReactDOM.render 등 나머지 코드 생략 - 이전과 동일) ---
 // ------------------ 렌더링 ------------------
 function App() {
   const [operator, setOperator] = useState('KT');
   const [trackingNumber, setTrackingNumber] = useState('');
   const [showPopup, setShowPopup] = useState(false);
   const [showRequestFormPopup, setShowRequestFormPopup] = useState(false);
-  const [showRestrictedPopup, setShowRestrictedPopup] = useState(false); // 신규 추가
-  
+  const [showRestrictedPopup, setShowRestrictedPopup] = useState(false);
+
   const [memos, setMemos] = useState([{ id: 1, title: '메모 1', content: '', status: null }]);
   const [activeMemoId, setActiveMemoId] = useState(1);
   const [editingTabId, setEditingTabId] = useState(null);
@@ -862,7 +1010,7 @@ function App() {
     setMemos([...memos, newMemo]);
     setActiveMemoId(newId);
   };
-  
+
   const handleMemoChange = (e) => {
     setMemos(memos.map(memo =>
       memo.id === activeMemoId ? { ...memo, content: e.target.value } : memo
@@ -917,7 +1065,7 @@ function App() {
       return memo;
     }));
   };
-  
+
   const handleSaveMemosToFile = () => {
     const isSaveable = memos.some(memo => memo.content.trim() !== '' || memo.status !== null);
     if (!isSaveable) {
@@ -930,7 +1078,7 @@ function App() {
       const titleText = memo.title || '';
       const titleLine = ' '.repeat(sidePad) + titleText + ' '.repeat(sidePad);
       const border = '='.repeat(Math.max(titleLine.length, titleText.length + sidePad * 2));
-      
+
       let contentToSave = memo.content;
 
       if (memo.status) {
@@ -939,7 +1087,7 @@ function App() {
         }
         contentToSave += `상담 현황: ${memo.status}`;
       }
-      
+
       return `${border}\n${titleLine}\n${border}\n${contentToSave}`;
     }).join('\n\n');
 
@@ -962,7 +1110,7 @@ function App() {
     const url = `https://www.cjlogistics.com/ko/tool/parcel/tracking?gnbInvcNo=${trackingNumber}`;
     const popupFeatures = 'width=1600,height=900,scrollbars=yes,resizable=yes';
     window.open(url, 'cjTrackingPopup', popupFeatures);
-    setTrackingNumber(''); 
+    setTrackingNumber('');
   };
 
   const plans = useMemo(()=> operator==='KT'?PLAN_LIST_KT:PLAN_LIST_U, [operator]);
@@ -1004,7 +1152,7 @@ function App() {
           >
             U+닷컴
           </a>
-        )} 
+        )}
 
         <div className="flex items-center ml-4">
           <a
@@ -1016,7 +1164,7 @@ function App() {
             삼성닷컴
           </a>
         </div>
-        
+
         <div className="flex items-center ml-2 gap-2">
           <button
             onClick={handleSaveMemosToFile}
@@ -1057,9 +1205,9 @@ function App() {
         </div>
       </div>
 
-      <Calculator 
-        plans={plans} 
-        features={features} 
+      <Calculator
+        plans={plans}
+        features={features}
         operator={operator}
         memos={memos}
         activeMemoId={activeMemoId}
@@ -1078,9 +1226,9 @@ function App() {
         handleAddMemo={handleAddMemo}
         handleStatusChange={handleStatusChange}
         setShowRequestFormPopup={setShowRequestFormPopup}
-        setShowRestrictedPopup={setShowRestrictedPopup} // 신규 추가
+        setShowRestrictedPopup={setShowRestrictedPopup}
       />
-      
+
       {showPopup && <CustomerServicePopup onClose={() => setShowPopup(false)} />}
       {showRequestFormPopup && <RequestFormPopup onClose={() => setShowRequestFormPopup(false)} />}
       {showRestrictedPopup && <RestrictedAccessPopup onClose={() => setShowRestrictedPopup(false)} />}
