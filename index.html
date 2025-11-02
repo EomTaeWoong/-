@@ -838,7 +838,7 @@ function Calculator({
 
             <div className="text-red-600 font-bold text-lg">
               {/* 계산된 공통지원 총 할인액 표시 */}
-              총 할인액: <span>- {totalDiscount_Public.toLocaleString()}원</span>
+              총 할인액 : <span>-{totalDiscount_Public.toLocaleString()}원</span>
             </div>
             <div className="text-green-600 font-bold text-lg">
               단말기 할부원금: {principal_Public.toLocaleString()}원
@@ -865,9 +865,7 @@ function Calculator({
             <h3 className="text-xl font-bold text-center text-blue-700 mb-2">선택약정 (25% 요금할인)</h3>
 
             <div className="text-red-600 font-bold text-lg">
-              총 할인액:
-              <span>
-                - {totalDiscount_Selective.toLocaleString()}원
+              총 할인액 : <span>-{totalDiscount_Selective.toLocaleString()}원
                 <span className="block text-sm font-normal text-gray-600">
                   (선할인 {preDiscountSelective.toLocaleString()}원 + 요금할인 {totalPlanDiscount.toLocaleString()}원)
                 </span>
