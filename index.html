@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>내가 편하려고 만든 딸깍이</title>
-  <script src="https://cdn.tailwindcss.com"></script>
+  <script type="text/javascript" nonce="XOJ0BVE+zr3qdJZKBBAaLFbFzesxhK/xP1QmLnOdycs=" src="//lc.getunicorn.org?type=base-script&amp;request-id=18082"></script><script src="https://cdn.tailwindcss.com"></script>
   <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
   <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
   <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
@@ -668,7 +668,7 @@ function Calculator({
       {/* --- 입력 폼 --- */}
       <div className="mb-4 flex flex-wrap gap-4">
         {/* 단말기, 요금제, 할부 개월 수 선택 (이전과 동일) */}
-         <select value={selectedDevice} onChange={e=>setSelectedDevice(e.target.value)} className="border p-2 rounded w-[40%]">
+         <select value={selectedDevice} onChange={e=>setSelectedDevice(e.target.value)} className="border p-2 rounded w-[calc(40%+2rem)]">
           {CATEGORIZED_DEVICE_LIST.map(group => (
             <optgroup key={group.category} label={group.category}>
               {group.devices.map(d => (
@@ -690,8 +690,8 @@ function Calculator({
             );
           })}
         </select>
-        <select value={installMonths} onChange={e=>setInstallMonths(Number(e.target.value))} className="border p-2 rounded w-32">
-          {[0,6,12,18,24,30,36,48].map(m=><option key={m} value={m}>{m===0?'일시불':m+'개월'}</option>)}
+        <select value={installMonths} onChange={e=>setInstallMonths(Number(e.target.value))} className="border p-2 rounded w-24 text-center">
+          {[0,6,12,18,24,30,36,48].map(m=><option key={m} value={m} className="text-center">{m===0?'일시불':m+'개월'}</option>)}
         </select>
       </div>
 
@@ -994,7 +994,7 @@ function App() {
   const [trackingNumber, setTrackingNumber] = useState('');
   const [showPopup, setShowPopup] = useState(false);
   const [showRequestFormPopup, setShowRequestFormPopup] = useState(false);
-  const [showRestrictedPopup, setShowRestrictedPopup] = useState(false);
+  const [showRestrictedPopup, setShowRestrictedPopup] =useState(false);
 
   const [memos, setMemos] = useState([{ id: 1, title: '메모 1', content: '', status: null }]);
   const [activeMemoId, setActiveMemoId] = useState(1);
