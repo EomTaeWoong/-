@@ -1105,7 +1105,7 @@ function App() {
       alert('숫자로 된 송장번호를 입력해주세요.');
       return;
     }
-    const url = `https://www.cjlogistics.com/ko/tool/parcel/tracking?gnbInvcNo=${trackingNumber}`;
+    const url = `https://trace.cjlogistics.com/next/tracking.html?wblNo=${trackingNumber}`;
     const popupFeatures = 'width=1600,height=900,scrollbars=yes,resizable=yes';
     window.open(url, 'cjTrackingPopup', popupFeatures);
     setTrackingNumber('');
@@ -1239,4 +1239,3 @@ ReactDOM.createRoot(document.getElementById('root')).render(<App/>);
 </script>
 </body>
 </html>
-
