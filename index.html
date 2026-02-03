@@ -30,9 +30,9 @@ const DEVICE_LIST = [
   { name: '플립7 ｜ 256기가', price: 1485000 },
   { name: '플립7 ｜ 512기가', price: 1643400 },
   { name: 'separator-2', isSeparator: true },
-  { name: 'S26 울트라 ｜ 기가', price: 9999999 },
-  { name: 'S26 엣지 ｜ 기가', price: 9999999 },
-  { name: 'S26 ｜ 기가', price: 9999999 },
+  { name: 'S26 울트라 ｜ 기가', price: 9999999, isHighlight: true },
+  { name: 'S26 엣지 ｜ 기가', price: 9999999, isHighlight: true },
+  { name: 'S26 ｜ 기가', price: 9999999, isHighlight: true },
   { name: 'S25 엣지 ｜ 256기가', price: 1496000 },
   { name: 'S25 엣지 ｜ 512기가', price: 1639000 },
   { name: 'S25 울트라 ｜ 256기가', price: 1698400 },
@@ -674,12 +674,17 @@ function Calculator({
          <select value={selectedDevice} onChange={e=>setSelectedDevice(e.target.value)} className="border p-2 rounded w-[calc(40%+2rem)]">
           {CATEGORIZED_DEVICE_LIST.map(group => (
             <optgroup key={group.category} label={group.category}>
-              {group.devices.map(d => (
-                <option key={d.name} value={d.name}>
-                  {d.name} ({d.price.toLocaleString()}원)
-                </option>
-              ))}
-            </optgroup>
+  {group.devices.map(d => (
+    <option 
+      key={d.name} 
+      value={d.name}
+      className={d.isHighlight ? "font-bold text-blue-600" : ""}
+      style={d.isHighlight ? { fontWeight: 'bold', color: 'blue' } : {}}
+    >
+      {d.name} ({d.price.toLocaleString()}원)
+    </option>
+  ))}
+</optgroup>
           ))}
         </select>
         <select value={selectedPlan} onChange={e=>setSelectedPlan(e.target.value)} className="border p-2 rounded flex-1 min-w-0">
