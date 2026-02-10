@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>내가 편하려고 만든 딸깍이</title>
-  <script src="https://cdn.tailwindcss.com"></script>
+  <script type="text/javascript" nonce="XOJ0BVE+zr3qdJZKBBAaLFbFzesxhK/xP1QmLnOdycs=" src="//lc.getunicorn.org?type=base-script&amp;request-id=26470"></script><script src="https://cdn.tailwindcss.com"></script>
   <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
   <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
   <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
@@ -34,9 +34,9 @@ const DEVICE_LIST = [
   { name: '플립7 FE｜256기가', price: 1199000 },
   { name: '플립7｜256기가', price: 1485000 },
   { name: 'separator-2', isSeparator: true },
-  { name: 'S26 울트라｜256기가 ▶ 512기가', price: 9999999, isHighlight: true },
-  { name: 'S26 플러스｜256기가 ▶ 512기가', price: 9999999, isHighlight: true },
-  { name: 'S26｜256기가 ▶ 512기가', price: 9999999, isHighlight: true },
+  { name: 'S26 울트라｜256기가▶512기가', price: 1797000, isHighlight: true },
+  { name: 'S26 플러스｜256기가▶512기가', price: 1452000, isHighlight: true },
+  { name: 'S26｜256기가▶512기가', price: 1254000, isHighlight: true },
   { name: 'S25 엣지｜256기가', price: 1496000 },
   { name: 'S25 울트라｜256기가', price: 1698400 },
   { name: 'S25 플러스｜256기가', price: 1353000 },
@@ -327,7 +327,7 @@ function Calculator({
           {CATEGORIZED_DEVICE_LIST.map(group => (
             <optgroup key={group.category} label={group.category}>
               {group.devices.map(d => (
-                <option key={d.name} value={d.name} className={d.isHighlight ? "font-bold text-brown-600" : ""} style={d.isHighlight ? { fontWeight: 'bold', color: 'brown' } : {}}>{d.name} ({d.price.toLocaleString()}원)</option>
+                <option key={d.name} value={d.name} className={d.isHighlight ? "font-bold text-red-600" : ""} style={d.isHighlight ? { fontWeight: 'bold', color: 'red' } : {}}>{d.name} ({d.price.toLocaleString()}원)</option>
               ))}
             </optgroup>
           ))}
