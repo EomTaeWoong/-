@@ -155,7 +155,6 @@ function PlanSummaryPopup({ operator, onClose }) {
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      {/* 팝업 컨테이너: 내용물(이미지) 크기에 맞춤 (fit), 화면 넘치면 스크롤 */}
       <div className="bg-white p-1 rounded-lg shadow-xl relative w-fit max-w-[95vw] max-h-[95vh] overflow-auto flex flex-col">
         <button 
           onClick={onClose} 
@@ -164,7 +163,6 @@ function PlanSummaryPopup({ operator, onClose }) {
           &times;
         </button>
         <div className="overflow-auto">
-           {/* 이미지가 로드되면 팝업 크기가 이미지에 맞춰짐 */}
            <img src={imageSrc} alt={`${operator} 요금제 정리`} className="block max-w-full h-auto" />
         </div>
       </div>
@@ -202,39 +200,38 @@ function RequestFormPopup({ onClose }) {
   );
 }
 
-// ------------------ 관계자 외 출입금지 팝업 컴포넌트 ------------------
-function RestrictedAccessPopup({ onClose }) {
-  const CORRECT_PASSWORD = 'qlalfqjsgh';
-  const [password, setPassword] = useState('');
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [searchTerm, setSearchTerm] = useState('');
-  const passwordInputRef = useRef(null);
-  const storeData = useMemo(() => [
-    { name: '울산 현대차 문화회관', days: '월요일 ~ 토요일', time: '09시 ~ 18시' }, { name: '울산대학교 병원', days: '월요일 ~ 토요일', time: '09시 ~ 18시' }, { name: '스마트시티2 캠퍼스', days: '월요일 ~ 금요일', time: '10시 ~ 19시' }, { name: '광명 기아자동차', days: '월요일 ~ 토요일', time: '09시 ~ 19시' }, { name: '판교 SDS', days: '월요일 ~ 금요일', time: '09시 ~ 19시' }, { name: '수원 삼성전기', days: '월요일 ~ 토요일', time: '09시 ~ 19시' }, { name: '수원 삼성디지털시티2호', days: '월요일 ~ 금요일', time: '09시 ~ 19시' }, { name: '용인 에버랜드', days: '월요일 ~ 금요일', time: '09시 ~ 19시' }, { name: '평택 캠퍼스', days: '월요일 ~ 토요일', time: '09시 ~ 19시, (토) 09시 ~ 13시 30분' }, { name: '화성 DSR', days: '월요일 ~ 금요일', time: '09시 ~ 19시' }, { name: '수원 삼성디지털시티', days: '월요일 ~ 금요일', time: '09시 ~ 19시' }, { name: '기흥 캠퍼스', days: '월요일 ~ 금요일', time: '09시 ~ 19시' }, { name: '화성 캠퍼스2호', days: '월요일 ~ 금요일', time: '09시 ~ 19시' }, { name: '송도 바이오로직스', days: '월요일 ~ 금요일', time: '09시 ~ 18시' }, { name: '타임스퀘어 영등포모바일', days: '연중무휴', time: '11시 ~ 20시' }, { name: 'CJ 제일제당', days: '월요일 ~ 금요일', time: '09시 ~ 19시 30분' }, { name: '강남 삼성병원', days: '월요일 ~ 금요일', time: '08시 ~ 18시 30분' }, { name: '잠실 SDS', days: '월요일 ~ 금요일', time: '09시 ~ 19시' }, { name: '서울 RnD캠퍼스', days: '월요일 ~ 금요일', time: '08시 30분 ~ 18시 30분' }, { name: '삼성 GEC', days: '월요일 ~ 토요일', time: '09시 ~ 19시, (토) 10시 ~ 15시' }, { name: '잠실 SDS타워', days: '월요일 ~ 금요일', time: '09시 ~ 19시' }, { name: '태평로 삼성본관', days: '월요일 ~ 금요일', time: '09시 ~ 19시' }, { name: '아산 현대자동차', days: '월요일 ~ 금요일', time: '09시 ~ 19시' }, { name: '대전 삼성생명', days: '월요일 ~ 금요일', time: '09시 ~ 19시' }, { name: '아산 1캠퍼스', days: '월요일 ~ 금요일', time: '09시 ~ 19시' }, { name: '아산 2캠퍼스', days: '월요일 ~ 금요일', time: '09시 ~ 18시' }, { name: '천안 캠퍼스', days: '월요일 ~ 금요일', time: '09시 ~ 19시' }, { name: '천안 삼성SDI', days: '월요일 ~ 금요일', time: '09시 ~ 19시' }, { name: '세종 삼성전기', days: '월요일 ~ 금요일', time: '09시 ~ 19시' }, { name: '전주 시청', days: '월요일 ~ 토요일', time: '09시 ~ 19시 30분' }, { name: '광주 앰코', days: '월요일 ~ 금요일', time: '09시 ~ 19시' }, { name: '전주 현대자동차', days: '월요일 ~ 금요일', time: '09시 ~ 19시' }, { name: '광주 삼성화재', days: '월요일 ~ 금요일', time: '09시 ~ 19시' }
-  ], []);
-  useEffect(() => { if (!isAuthenticated) passwordInputRef.current?.focus(); }, [isAuthenticated]);
-  const processedData = useMemo(() => {
-    const f = searchTerm ? storeData.filter(i => i.name.toLowerCase().includes(searchTerm.toLowerCase())) : storeData;
-    const s = [...f].sort((a, b) => a.days.localeCompare(b.days) || a.time.localeCompare(b.time));
-    return s.map((item, index, array) => {
-      const isFirstOfDay = index === 0 || item.days !== array[index - 1].days;
-      const isFirstOfTime = index === 0 || item.days !== array[index - 1].days || item.time !== array[index - 1].time;
-      let daySpan = 0; if (isFirstOfDay) { daySpan = 1; for (let i = index + 1; i < array.length; i++) { if (array[i].days === item.days) daySpan++; else break; } }
-      let timeSpan = 0; if (isFirstOfTime) { timeSpan = 1; for (let i = index + 1; i < array.length; i++) { if (array[i].days === item.days && array[i].time === item.time) timeSpan++; else break; } }
-      return { ...item, daySpan, timeSpan };
-    });
-  }, [searchTerm, storeData]);
-  const handlePasswordSubmit = (e) => { e.preventDefault(); if (password === CORRECT_PASSWORD) setIsAuthenticated(true); else { alert('응 그거 아니야~'); setPassword(''); passwordInputRef.current?.focus(); } };
+// ------------------ (NEW) 단말기 색상 팝업 컴포넌트 (수정됨) ------------------
+function DeviceColorPopup({ onClose }) {
+  
+  // 전달해주신 URL
+  const imageSrc = "https://img1.daumcdn.net/thumb/R1280x0/?scode=mtistory2&fname=https%3A%2F%2Fblog.kakaocdn.net%2Fdna%2FcB18bh%2FdJMcaaRO8D5%2FAAAAAAAAAAAAAAAAAAAAAEKn-RgCHNMbVIKOXrA77M0SaWfANTzJqBEYhGmIEe5y%2Fimg.png%3Fcredential%3DyqXZFxpELC7KVnFOS48ylbz2pIh7yKj8%26expires%3D1772290799%26allow_ip%3D%26allow_referer%3D%26signature%3DHn5PAsVvPKkP%252BZK3OaEO8grd0cY%253D"; 
+
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white p-6 rounded-lg shadow-xl relative w-full max-w-3xl max-h-[90vh] flex flex-col">
-        <button onClick={onClose} className="absolute top-3 right-3 text-gray-400 hover:text-gray-800 text-2xl leading-none">&times;</button>
-        <h2 className="text-xl font-bold mb-5 text-center text-gray-800">궁금해 죽겠지?</h2>
-        {!isAuthenticated ? (
-          <form onSubmit={handlePasswordSubmit} className="flex flex-col items-center gap-4"><input ref={passwordInputRef} type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="비밀번호" className="border p-2 rounded w-64 text-center" /><button type="submit" className="bg-blue-600 text-white px-4 py-2 rounded">확인</button></form>
-        ) : (
-          <><div className="mb-4"><input type="text" value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} placeholder="검색..." className="border p-2 rounded w-full" /></div><div className="overflow-auto"><table className="w-full text-sm text-left border-collapse border"><thead><tr className="bg-gray-100 text-xs uppercase"><th className="px-6 py-3 border">점명</th><th className="px-6 py-3 border text-center">요일</th><th className="px-6 py-3 border text-center">시간</th></tr></thead><tbody>{processedData.length > 0 ? processedData.map((item, index) => (<tr key={index} className="bg-white hover:bg-gray-50"><td className="px-6 py-2 border font-medium">{item.name}</td>{item.daySpan > 0 && (<td className="px-6 py-2 border text-center align-middle" rowSpan={item.daySpan}>{item.days}</td>)}{item.timeSpan > 0 && (<td className="px-6 py-2 border text-center align-middle" rowSpan={item.timeSpan}>{item.time}</td>)}</tr>)) : <tr><td colSpan="3" className="px-6 py-4 text-center border">검색 결과가 없습니다.</td></tr>}</tbody></table></div></>
-        )}
+      {/* 팝업 컨테이너: 높이를 화면의 90%로 고정(h-[90vh])하고 내부 요소 배치를 flex-col로 설정 */}
+      <div className="bg-white p-2 rounded-lg shadow-xl relative w-full max-w-5xl h-[90vh] flex flex-col">
+        
+        {/* 1. 상단 닫기 버튼 (스크롤해도 사라지지 않고 위에 고정됨) */}
+        <div className="flex justify-end p-1 shrink-0">
+          <button 
+            onClick={onClose} 
+            className="text-gray-500 hover:text-gray-800 text-4xl leading-none font-bold px-2"
+          >
+            &times;
+          </button>
+        </div>
+
+        {/* 2. 이미지 스크롤 영역 (남은 공간을 모두 차지하며 스크롤 생김) */}
+        <div className="overflow-y-auto flex-1 bg-gray-50 rounded border">
+           {imageSrc ? (
+             // w-full로 너비를 꽉 채우고, 높이는 비율대로 늘어나게 설정
+             <img src={imageSrc} alt="단말기 색상" className="w-full h-auto object-contain" /> 
+           ) : (
+             <div className="h-full flex items-center justify-center text-gray-500">
+               이미지를 불러올 수 없습니다.
+             </div>
+           )}
+        </div>
       </div>
     </div>
   );
@@ -259,19 +256,19 @@ function CustomerServicePopup({ onClose }) {
 
 // ------------------ 계산기 컴포넌트 ------------------
 function Calculator({
-  plans, features, operator, memos, activeMemoId, setActiveMemoId, editingTabId, setEditingTabId, tempTitle, setTempTitle, titleInputRef, handleMemoChange, handleStartEditing, handleTitleChange, handleSaveTitle, handleKeyDown, handleDeleteMemo, handleAddMemo, handleStatusChange, setShowRequestFormPopup, setShowRestrictedPopup, setShowPlanSummaryPopup
+  plans, features, operator, memos, activeMemoId, setActiveMemoId, editingTabId, setEditingTabId, tempTitle, setTempTitle, titleInputRef, handleMemoChange, handleStartEditing, handleTitleChange, handleSaveTitle, handleKeyDown, handleDeleteMemo, handleAddMemo, handleStatusChange, setShowRequestFormPopup, setShowDeviceColorPopup, setShowPlanSummaryPopup
 }) {
   const [selectedDevice, setSelectedDevice] = useState(CATEGORIZED_DEVICE_LIST[0].devices[0].name);
   const [selectedPlan, setSelectedPlan] = useState(plans[0]?.name || '');
   const [installMonths, setInstallMonths] = useState(24);
   const [interestRate] = useState(0.059);
-  const [commonSupport, setCommonSupport] = useState(300000);
+  const [commonSupport, setCommonSupport] = useState(0);
   const [additionalSupport, setAdditionalSupport] = useState(0);
   const [additionalEdited, setAdditionalEdited] = useState(false);
   const [preDiscountPublic, setPreDiscountPublic] = useState(0);
   const [preDiscountSelective, setPreDiscountSelective] = useState(0);
   const [contractType, setContractType] = useState('공통지원');
-  const [savedCommonSupport, setSavedCommonSupport] = useState(300000);
+  const [savedCommonSupport, setSavedCommonSupport] = useState(0);
   const [savedAdditionalSupport, setSavedAdditionalSupport] = useState(0);
   
   // 선택약정 전용 추가지원금(구 선할인)
@@ -358,7 +355,7 @@ function Calculator({
            <div className="flex gap-2">
             <button onClick={() => setShowPlanSummaryPopup(true)} className="bg-blue-500 text-white px-3 py-2 rounded hover:bg-blue-600 h-[34px] text-sm">요금제 정리</button>
             <button onClick={() => setShowRequestFormPopup(true)} className="bg-purple-600 text-white px-3 py-2 rounded hover:bg-purple-700 h-[34px] text-sm">요청 양식</button>
-            <button onClick={() => setShowRestrictedPopup(true)} className="bg-red-600 text-white px-3 py-2 rounded hover:bg-red-700 h-[34px] text-sm">관계자 외 출입금지</button>
+            <button onClick={() => setShowDeviceColorPopup(true)} className="bg-pink-600 text-white px-3 py-2 rounded hover:bg-pink-700 h-[34px] text-sm">단말기 색상</button>
            </div>
         </div>
       </div>
@@ -385,7 +382,7 @@ function App() {
   const [trackingNumber, setTrackingNumber] = useState('');
   const [showPopup, setShowPopup] = useState(false);
   const [showRequestFormPopup, setShowRequestFormPopup] = useState(false);
-  const [showRestrictedPopup, setShowRestrictedPopup] = useState(false);
+  const [showDeviceColorPopup, setShowDeviceColorPopup] = useState(false); // 기존 RestrictedPopup State 변경
   const [showPlanSummaryPopup, setShowPlanSummaryPopup] = useState(false);
   const [memos, setMemos] = useState([{ id: 1, title: '메모 1', content: '', status: null }]);
   const [activeMemoId, setActiveMemoId] = useState(1);
@@ -424,10 +421,10 @@ function App() {
           <button onClick={handleTrackingSearch} className="bg-amber-500 text-white px-3 py-2 rounded hover:bg-amber-600 h-[40px] text-sm">배송조회</button>
         </div>
       </div>
-      <Calculator plans={plans} features={features} operator={operator} memos={memos} activeMemoId={activeMemoId} setActiveMemoId={setActiveMemoId} editingTabId={editingTabId} setEditingTabId={setEditingTabId} tempTitle={tempTitle} setTempTitle={setTempTitle} titleInputRef={titleInputRef} handleMemoChange={handleMemoChange} handleStartEditing={handleStartEditing} handleTitleChange={handleTitleChange} handleSaveTitle={handleSaveTitle} handleKeyDown={handleKeyDown} handleDeleteMemo={handleDeleteMemo} handleAddMemo={handleAddMemo} handleStatusChange={handleStatusChange} setShowRequestFormPopup={setShowRequestFormPopup} setShowRestrictedPopup={setShowRestrictedPopup} setShowPlanSummaryPopup={setShowPlanSummaryPopup} />
+      <Calculator plans={plans} features={features} operator={operator} memos={memos} activeMemoId={activeMemoId} setActiveMemoId={setActiveMemoId} editingTabId={editingTabId} setEditingTabId={setEditingTabId} tempTitle={tempTitle} setTempTitle={setTempTitle} titleInputRef={titleInputRef} handleMemoChange={handleMemoChange} handleStartEditing={handleStartEditing} handleTitleChange={handleTitleChange} handleSaveTitle={handleSaveTitle} handleKeyDown={handleKeyDown} handleDeleteMemo={handleDeleteMemo} handleAddMemo={handleAddMemo} handleStatusChange={handleStatusChange} setShowRequestFormPopup={setShowRequestFormPopup} setShowDeviceColorPopup={setShowDeviceColorPopup} setShowPlanSummaryPopup={setShowPlanSummaryPopup} />
       {showPopup && <CustomerServicePopup onClose={() => setShowPopup(false)} />}
       {showRequestFormPopup && <RequestFormPopup onClose={() => setShowRequestFormPopup(false)} />}
-      {showRestrictedPopup && <RestrictedAccessPopup onClose={() => setShowRestrictedPopup(false)} />}
+      {showDeviceColorPopup && <DeviceColorPopup onClose={() => setShowDeviceColorPopup(false)} />}
       {showPlanSummaryPopup && <PlanSummaryPopup operator={operator} onClose={() => setShowPlanSummaryPopup(false)} />}
     </div>
   );
@@ -437,6 +434,3 @@ ReactDOM.createRoot(document.getElementById('root')).render(<App/>);
 </script>
 </body>
 </html>
-
-
-
