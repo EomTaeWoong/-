@@ -152,6 +152,32 @@ const U_COMMON_SUPPORT_MAP = {
   75000: 133000, 85000: 151000, 95000: 168000, 105000: 186000, 115000: 204000, 130000: 230000
 };
 
+// ------------------ (NEW) KT 공통지원금 요금제 매핑 ------------------
+// 필요하신 요금제 가격과 그에 맞는 공통지원금으로 자유롭게 수정 및 추가하세요!
+const KT_COMMON_SUPPORT_MAP = {
+  33000: 60000,
+  37000: 69000,
+  41000: 75000,
+  42000: 77000,
+  44000: 78000,
+  45000: 85000,
+  47000: 86000,
+  49000: 89000,
+  55000: 100000,
+  58000: 107000,
+  61000: 111000,
+  63000: 116000,
+  65000: 119000,
+  67000: 122000,
+  69000: 127000,
+  80000: 147000,
+  89000: 150000,
+  90000: 150000,
+  100000: 183000,
+  110000: 201000,
+  130000: 250000
+};
+
 function normalizePlanKey(name) {
   let n = (name || '').replace(/\(.*?\)/g, '').trim();
   if (n === '스페셜 A') n = '데이터 스페셜 A';
@@ -267,55 +293,66 @@ function Calculator({
     setSelectiveAdditionalSupport(0);
   }, [operator]);
 
-  // U+ 탭 선택 시 요금제 가격에 따른 공통지원금 자동 매핑 (사전예약 단말기 한정 + 공통지원 약정일 때만)
+  // KT / U+ 탭 선택 시 요금제 가격에 따른 공통지원금 자동 매핑 (사전예약 단말기 한정 + 공통지원 약정일 때만)
   useEffect(() => {
-    if (operator === 'U' && selectedDevice.includes('(사전예약)') && contractType === '공통지원') {
+    if (selectedDevice.includes('(사전예약)') && contractType === '공통지원') {
       const planInfo = plans.find(p => p.name === selectedPlan);
-      if (planInfo && U_COMMON_SUPPORT_MAP[planInfo.price] !== undefined) {
-        setCommonSupport(U_COMMON_SUPPORT_MAP[planInfo.price]);
+      if (planInfo) {
+        if (operator === 'U' && U_COMMON_SUPPORT_MAP[planInfo.price] !== undefined) {
+          setCommonSupport(U_COMMON_SUPPORT_MAP[planInfo.price]);
+        } else if (operator === 'KT' && KT_COMMON_SUPPORT_MAP[planInfo.price] !== undefined) {
+          setCommonSupport(KT_COMMON_SUPPORT_MAP[planInfo.price]);
+        }
       }
     }
   }, [selectedPlan, operator, plans, selectedDevice, contractType]);
 
   const originalPlanPrice = useMemo(() => plans.find(p => p.name === selectedPlan)?.price || 0, [selectedPlan, plans]);
 
-  // 닷컴/갤캠스 추가지원금 적용 (양쪽 카드에 동시 반영, U+ 탭에서만 동작)
+  // 닷컴/갤캠스 추가지원금 적용 (양쪽 카드에 동시 반영, KT/U+ 모두 동작)
   useEffect(() => {
-    if (operator !== 'U') return; // KT 탭에서는 동작 안함
-
     let autoAddSupport = 0;
 
     if (siteOption !== '' && selectedDevice.includes('(사전예약)')) {
       const planPrice = originalPlanPrice;
       
-      // 조건 1: 요금제 61,000 이상 ~ 95,000 미만
-      if (planPrice >= 61000 && planPrice < 95000) {
-        if (siteOption === '닷컴') autoAddSupport = 30000;
-        else if (siteOption === '갤캠스') autoAddSupport = 50000;
-      } 
-      // 조건 2 & 3: 요금제 95,000 이상
-      else if (planPrice >= 95000) {
-        if (selectedDevice === 'S26 플러스｜256기가 (사전예약)' || selectedDevice === 'S26｜256기가 (사전예약)') {
-          if (siteOption === '닷컴') autoAddSupport = 250000;
-          else if (siteOption === '갤캠스') autoAddSupport = 300000;
-        } else if (selectedDevice === 'S26 울트라｜256기가 (사전예약)') {
-          if (siteOption === '닷컴') autoAddSupport = 350000;
-          else if (siteOption === '갤캠스') autoAddSupport = 400000;
+      if (operator === 'U') {
+        // U+ 로직
+        if (planPrice >= 61000 && planPrice < 95000) {
+          if (siteOption === '닷컴') autoAddSupport = 30000;
+          else if (siteOption === '갤캠스') autoAddSupport = 50000;
+        } else if (planPrice >= 95000) {
+          if (selectedDevice === 'S26 플러스｜256기가 (사전예약)' || selectedDevice === 'S26｜256기가 (사전예약)') {
+            if (siteOption === '닷컴') autoAddSupport = 250000;
+            else if (siteOption === '갤캠스') autoAddSupport = 300000;
+          } else if (selectedDevice === 'S26 울트라｜256기가 (사전예약)') {
+            if (siteOption === '닷컴') autoAddSupport = 350000;
+            else if (siteOption === '갤캠스') autoAddSupport = 400000;
+          }
+        }
+      } else if (operator === 'KT') {
+        // KT 로직 (9만원 이상)
+        if (planPrice >= 90000) {
+          if (selectedDevice === 'S26 플러스｜256기가 (사전예약)' || selectedDevice === 'S26｜256기가 (사전예약)') {
+            if (siteOption === '닷컴') autoAddSupport = 250000;
+            else if (siteOption === '갤캠스') autoAddSupport = 300000;
+          } else if (selectedDevice === 'S26 울트라｜256기가 (사전예약)') {
+            if (siteOption === '닷컴') autoAddSupport = 350000;
+            else if (siteOption === '갤캠스') autoAddSupport = 400000;
+          }
         }
       }
     }
 
     // 🔥 약정(공통/선택) 상관없이 양쪽 상태 모두 업데이트하여 하단 결과창 두 곳에 동시 반영되도록 처리
-    setAdditionalSupport(autoAddSupport);
-    setSelectiveAdditionalSupport(autoAddSupport);
-    
-    // 수동 입력처럼 처리하여 다른 자동화 로직(KT 등)과 충돌 방지
     if (siteOption !== '') {
-      setAdditionalEdited(true); 
+      setAdditionalSupport(autoAddSupport);
+      setSelectiveAdditionalSupport(autoAddSupport);
+      setAdditionalEdited(true); // 수동 입력처럼 처리하여 KT 15% 자동화 로직과 충돌 방지
     }
   }, [siteOption, selectedDevice, originalPlanPrice, operator]);
 
-  // KT 추가지원금 15% 자동 세팅
+  // KT 추가지원금 15% 자동 세팅 (닷컴/갤캠스 미선택 시에만 작동)
   useEffect(() => {
     if (operator === 'KT' && !additionalEdited && siteOption === '') {
       const calculatedSupport = Math.floor((commonSupport * 0.15) / 100) * 100;
@@ -332,7 +369,17 @@ function Calculator({
   // 체크박스 토글 함수
   const handleSiteOptionToggle = (val) => {
     if (siteOption === val) {
-      setSiteOption(''); // 해제 (useEffect에서 자동으로 양쪽 금액이 0으로 초기화됨)
+      setSiteOption(''); // 해제
+      // 해제 시 금액 초기화
+      if (contractType === '공통지원') {
+        setAdditionalSupport(0); // KT의 경우 아래 줄에 의해 15%로 다시 자동 계산됨
+      }
+      setSelectiveAdditionalSupport(0);
+      
+      // KT에서 체크박스를 풀면 다시 15% 룰을 타도록 허용
+      if (operator === 'KT') {
+        setAdditionalEdited(false);
+      }
     } else {
       setSiteOption(val); // 선택
     }
