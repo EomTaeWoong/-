@@ -332,14 +332,23 @@ function Calculator({
 
   // KT / U+ 탭 선택 시 요금제 가격에 따른 공통지원금 자동 매핑 (사전예약 단말기 한정 + 공통지원 약정일 때만)
   useEffect(() => {
-    if (selectedDevice.includes('(사전예약)') && contractType === '공통지원') {
-      const planInfo = plans.find(p => p.name === selectedPlan);
-      if (planInfo) {
-        if (operator === 'U' && U_COMMON_SUPPORT_MAP[planInfo.price] !== undefined) {
-          setCommonSupport(U_COMMON_SUPPORT_MAP[planInfo.price]);
-        } else if (operator === 'KT' && KT_COMMON_SUPPORT_MAP[planInfo.price] !== undefined) {
-          setCommonSupport(KT_COMMON_SUPPORT_MAP[planInfo.price]);
+    if (contractType === '공통지원') {
+      if (selectedDevice.includes('(사전예약)')) {
+        const planInfo = plans.find(p => p.name === selectedPlan);
+        if (planInfo) {
+          let mappedSupport = 0;
+          if (operator === 'U' && U_COMMON_SUPPORT_MAP[planInfo.price] !== undefined) {
+            mappedSupport = U_COMMON_SUPPORT_MAP[planInfo.price];
+          } else if (operator === 'KT' && KT_COMMON_SUPPORT_MAP[planInfo.price] !== undefined) {
+            mappedSupport = KT_COMMON_SUPPORT_MAP[planInfo.price];
+          }
+          setCommonSupport(mappedSupport);
+        } else {
+          setCommonSupport(0);
         }
+      } else {
+        // 지정해놓은 단말기(사전예약)가 아닌 경우 0원 처리
+        setCommonSupport(0);
       }
     }
   }, [selectedPlan, operator, plans, selectedDevice, contractType]);
