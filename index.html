@@ -9,7 +9,7 @@
   <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
   <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
   <style>
-    /* 팝업 스크롤바 커스텀 */
+    /* 팝업 및 드롭다운 스크롤바 커스텀 */
     ::-webkit-scrollbar { width: 8px; height: 8px; }
     ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
     ::-webkit-scrollbar-track { background: #f1f5f9; }
@@ -153,7 +153,6 @@ const U_COMMON_SUPPORT_MAP = {
 };
 
 // ------------------ (NEW) KT 공통지원금 요금제 매핑 ------------------
-// 필요하신 요금제 가격과 그에 맞는 공통지원금으로 자유롭게 수정 및 추가하세요!
 const KT_COMMON_SUPPORT_MAP = {
   33000: 60000,
   37000: 69000,
@@ -284,7 +283,45 @@ function Calculator({
   // 닷컴/갤캠스 상태 추가
   const [siteOption, setSiteOption] = useState('');
 
-  useEffect(() => { setSelectedPlan(plans[0]?.name || ''); }, [plans]);
+  // ----------------- 검색형 요금제 드롭다운 관련 State -----------------
+  const [planSearchTerm, setPlanSearchTerm] = useState('');
+  const [isPlanDropdownOpen, setIsPlanDropdownOpen] = useState(false);
+  const planDropdownRef = useRef(null);
+
+  // 선택된 요금제가 외부(예: 통신사 변경)에서 바뀌면 검색어 입력창도 동기화
+  useEffect(() => { 
+    setSelectedPlan(plans[0]?.name || ''); 
+  }, [plans]);
+
+  useEffect(() => {
+    setPlanSearchTerm(selectedPlan);
+  }, [selectedPlan]);
+
+  // 요금제 드롭다운 외부 클릭 시 닫기
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (planDropdownRef.current && !planDropdownRef.current.contains(event.target)) {
+        setIsPlanDropdownOpen(false);
+        setPlanSearchTerm(selectedPlan); // 정상적으로 선택된 요금제 이름으로 복구
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [selectedPlan]);
+
+  // 검색어에 따른 요금제 필터링
+  const filteredPlans = useMemo(() => {
+    const term = planSearchTerm.trim().toLowerCase();
+    // 아무것도 입력하지 않았거나, 현재 선택된 요금제 이름과 완전히 동일하면(즉 초기 상태면) 전체 표시
+    if (!term || term === selectedPlan.toLowerCase()) return plans;
+    return plans.filter(p => 
+      p.name.toLowerCase().includes(term) || 
+      p.price.toString().includes(term.replace(/,/g, '')) ||
+      p.category.toLowerCase().includes(term)
+    );
+  }, [plans, planSearchTerm, selectedPlan]);
+  // ----------------------------------------------------------------------
+
 
   // 통신사 변경 시 체크박스 및 금액 초기화
   useEffect(() => {
@@ -416,7 +453,8 @@ function Calculator({
   return (
     <div className="p-4 max-w-4xl mx-auto">
       <div className="mb-4 flex flex-wrap gap-4">
-        <select value={selectedDevice} onChange={e=>setSelectedDevice(e.target.value)} className="border p-2 rounded w-[calc(40%+2rem)]">
+        
+        <select value={selectedDevice} onChange={e=>setSelectedDevice(e.target.value)} className="border p-2 rounded w-[calc(40%+2rem)] outline-none focus:ring-2 focus:ring-blue-500">
           {CATEGORIZED_DEVICE_LIST.map(group => (
             <optgroup key={group.category} label={group.category}>
               {group.devices.map(d => (
@@ -425,13 +463,39 @@ function Calculator({
             </optgroup>
           ))}
         </select>
-        <select value={selectedPlan} onChange={e=>setSelectedPlan(e.target.value)} className="border p-2 rounded flex-1 min-w-0">
-          {['LTE','시니어','Y','5G'].map(cat=> {
-            const f = plans.filter(p=>p.category===cat);
-            return f.length > 0 && <optgroup key={cat} label={cat}>{f.map(p=><option key={p.name} value={p.name}>{p.name} ({p.price.toLocaleString()}원)</option>)}</optgroup>
-          })}
-        </select>
-        <select value={installMonths} onChange={e=>setInstallMonths(Number(e.target.value))} className="border p-2 rounded w-24 text-center">
+        
+        {/* --- 변경된 요금제 검색 드롭다운 UI --- */}
+        <div className="relative flex-1 min-w-0" ref={planDropdownRef}>
+          <input 
+            type="text" 
+            value={planSearchTerm} 
+            onChange={(e) => { setPlanSearchTerm(e.target.value); setIsPlanDropdownOpen(true); }}
+            onClick={(e) => { setIsPlanDropdownOpen(true); e.target.select(); }}
+            placeholder="요금제 이름 또는 가격 검색..."
+            className="border p-2 rounded w-full outline-none focus:ring-2 focus:ring-blue-500"
+          />
+          {isPlanDropdownOpen && (
+            <div className="absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded shadow-lg max-h-60 overflow-y-auto">
+              {filteredPlans.length > 0 ? (
+                filteredPlans.map(p => (
+                  <div 
+                    key={p.name} 
+                    onClick={() => { setSelectedPlan(p.name); setPlanSearchTerm(p.name); setIsPlanDropdownOpen(false); }}
+                    className={`px-3 py-2 cursor-pointer hover:bg-blue-50 text-sm border-b last:border-b-0 ${selectedPlan === p.name ? 'bg-blue-100 font-bold' : ''}`}
+                  >
+                    <span className="text-gray-500 text-xs mr-1">[{p.category}]</span> 
+                    {p.name} <span className="text-gray-700 ml-1">({p.price.toLocaleString()}원)</span>
+                  </div>
+                ))
+              ) : (
+                <div className="px-3 py-2 text-sm text-gray-500 text-center">검색 결과가 없습니다.</div>
+              )}
+            </div>
+          )}
+        </div>
+        {/* ------------------------------------- */}
+
+        <select value={installMonths} onChange={e=>setInstallMonths(Number(e.target.value))} className="border p-2 rounded w-24 text-center outline-none focus:ring-2 focus:ring-blue-500">
           {[0,6,12,18,24,30,36,48].map(m=><option key={m} value={m}>{m===0?'일시불':m+'개월'}</option>)}
         </select>
       </div>
