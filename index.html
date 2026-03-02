@@ -273,18 +273,15 @@ function Calculator({
   const [selectedPlan, setSelectedPlan] = useState(plans[0]?.name || '');
   const [installMonths, setInstallMonths] = useState(24);
   const [interestRate] = useState(0.059);
+  
   const [commonSupport, setCommonSupport] = useState(0);
   const [additionalSupport, setAdditionalSupport] = useState(0);
+  const [selectiveAdditionalSupport, setSelectiveAdditionalSupport] = useState(0); // 선택약정 전용 추가지원금(구 선할인)
   const [additionalEdited, setAdditionalEdited] = useState(false);
   const [contractType, setContractType] = useState('공통지원');
-  const [savedCommonSupport, setSavedCommonSupport] = useState(0);
-  const [savedAdditionalSupport, setSavedAdditionalSupport] = useState(0);
   
-  // 선택약정 전용 추가지원금(구 선할인)
-  const [selectiveAdditionalSupport, setSelectiveAdditionalSupport] = useState(0);
-
-  // 닷컴/갤캠스 상태 추가
-  const [siteOption, setSiteOption] = useState('');
+  // 갤캠스 상태 추가 (체크안됨=닷컴 기본적용, 체크됨=갤캠스)
+  const [isGalcams, setIsGalcams] = useState(false);
 
   // ----------------- 검색형 요금제 드롭다운 관련 State -----------------
   const [planSearchTerm, setPlanSearchTerm] = useState('');
@@ -315,7 +312,6 @@ function Calculator({
   // 검색어에 따른 요금제 필터링
   const filteredPlans = useMemo(() => {
     const term = planSearchTerm.trim().toLowerCase();
-    // 아무것도 입력하지 않았거나, 현재 선택된 요금제 이름과 완전히 동일하면(즉 초기 상태면) 전체 표시
     if (!term || term === selectedPlan.toLowerCase()) return plans;
     return plans.filter(p => 
       p.name.toLowerCase().includes(term) || 
@@ -323,116 +319,86 @@ function Calculator({
       p.category.toLowerCase().includes(term)
     );
   }, [plans, planSearchTerm, selectedPlan]);
-  // ----------------------------------------------------------------------
-
-
-  // 통신사 변경 시 체크박스 및 금액 초기화
-  useEffect(() => {
-    setSiteOption('');
-    setAdditionalEdited(false);
-    setSelectiveAdditionalSupport(0);
-  }, [operator]);
-
-  // KT / U+ 탭 선택 시 요금제 가격에 따른 공통지원금 자동 매핑 (사전예약 단말기 한정 + 공통지원 약정일 때만)
-  useEffect(() => {
-    if (contractType === '공통지원') {
-      if (selectedDevice.includes('(사전예약)')) {
-        const planInfo = plans.find(p => p.name === selectedPlan);
-        if (planInfo) {
-          let mappedSupport = 0;
-          if (operator === 'U' && U_COMMON_SUPPORT_MAP[planInfo.price] !== undefined) {
-            mappedSupport = U_COMMON_SUPPORT_MAP[planInfo.price];
-          } else if (operator === 'KT' && KT_COMMON_SUPPORT_MAP[planInfo.price] !== undefined) {
-            mappedSupport = KT_COMMON_SUPPORT_MAP[planInfo.price];
-          }
-          setCommonSupport(mappedSupport);
-        } else {
-          setCommonSupport(0);
-        }
-      } else {
-        // 지정해놓은 단말기(사전예약)가 아닌 경우 0원 처리
-        setCommonSupport(0);
-      }
-    }
-  }, [selectedPlan, operator, plans, selectedDevice, contractType]);
 
   const originalPlanPrice = useMemo(() => plans.find(p => p.name === selectedPlan)?.price || 0, [selectedPlan, plans]);
 
-  // 닷컴/갤캠스 추가지원금 적용 (양쪽 카드에 동시 반영, KT/U+ 모두 동작)
+  // ----------------- 로직 1: 단말기, 요금제, 통신사 변경 시 지원금 완전 초기화 및 맵핑 -----------------
   useEffect(() => {
-    let autoAddSupport = 0;
+    let newCommonSupport = 0;
+    
+    // 단말기가 사전예약인 경우에만 요금제 기반 매핑된 공통지원금 설정
+    if (selectedDevice.includes('(사전예약)')) {
+        const planInfo = plans.find(p => p.name === selectedPlan);
+        if (planInfo) {
+            if (operator === 'U' && U_COMMON_SUPPORT_MAP[planInfo.price] !== undefined) {
+                newCommonSupport = U_COMMON_SUPPORT_MAP[planInfo.price];
+            } else if (operator === 'KT' && KT_COMMON_SUPPORT_MAP[planInfo.price] !== undefined) {
+                newCommonSupport = KT_COMMON_SUPPORT_MAP[planInfo.price];
+            }
+        }
+    }
+    
+    // 조건에 맞지 않으면(사전예약 아니거나 설정된 요금제가 아니면) 0원 처리
+    setCommonSupport(newCommonSupport);
+    
+    // 단말기/요금제가 바뀌었으므로 수동입력 플래그 무조건 해제
+    setAdditionalEdited(false);
 
-    if (siteOption !== '' && selectedDevice.includes('(사전예약)')) {
+    // 단말기가 사전예약이 아니면 추가지원금(선할인 포함)도 0원으로 확실하게 완전 초기화
+    // (사전예약인 경우는 아래의 닷컴/갤캠스 useEffect에서 금액을 자동으로 채워줍니다)
+    if (!selectedDevice.includes('(사전예약)')) {
+        setAdditionalSupport(0);
+        setSelectiveAdditionalSupport(0);
+        setIsGalcams(false); // 통신사나 단말기 바뀔 때 갤캠스 체크도 깔끔하게 풀어줌
+    }
+  }, [selectedDevice, selectedPlan, operator, plans]);
+
+  // ----------------- 로직 2: 닷컴/갤캠스에 따른 사전예약 추가지원금 세팅 -----------------
+  useEffect(() => {
+    if (selectedDevice.includes('(사전예약)')) {
+      let autoAddSupport = 0;
       const planPrice = originalPlanPrice;
+      const currentOption = isGalcams ? '갤캠스' : '닷컴';
       
       if (operator === 'U') {
-        // U+ 로직
         if (planPrice >= 61000 && planPrice < 95000) {
-          if (siteOption === '닷컴') autoAddSupport = 30000;
-          else if (siteOption === '갤캠스') autoAddSupport = 50000;
+          autoAddSupport = currentOption === '닷컴' ? 30000 : 50000;
         } else if (planPrice >= 95000) {
           if (selectedDevice === 'S26 플러스｜256기가 (사전예약)' || selectedDevice === 'S26｜256기가 (사전예약)') {
-            if (siteOption === '닷컴') autoAddSupport = 250000;
-            else if (siteOption === '갤캠스') autoAddSupport = 300000;
+            autoAddSupport = currentOption === '닷컴' ? 250000 : 300000;
           } else if (selectedDevice === 'S26 울트라｜256기가 (사전예약)') {
-            if (siteOption === '닷컴') autoAddSupport = 350000;
-            else if (siteOption === '갤캠스') autoAddSupport = 400000;
+            autoAddSupport = currentOption === '닷컴' ? 350000 : 400000;
           }
         }
       } else if (operator === 'KT') {
-        // KT 로직 (9만원 이상)
         if (planPrice >= 90000) {
           if (selectedDevice === 'S26 플러스｜256기가 (사전예약)' || selectedDevice === 'S26｜256기가 (사전예약)') {
-            if (siteOption === '닷컴') autoAddSupport = 250000;
-            else if (siteOption === '갤캠스') autoAddSupport = 300000;
+            autoAddSupport = currentOption === '닷컴' ? 250000 : 300000;
           } else if (selectedDevice === 'S26 울트라｜256기가 (사전예약)') {
-            if (siteOption === '닷컴') autoAddSupport = 350000;
-            else if (siteOption === '갤캠스') autoAddSupport = 400000;
+            autoAddSupport = currentOption === '닷컴' ? 350000 : 400000;
           }
         }
       }
-    }
 
-    // 🔥 약정(공통/선택) 상관없이 양쪽 상태 모두 업데이트하여 하단 결과창 두 곳에 동시 반영되도록 처리
-    if (siteOption !== '') {
+      // 약정(공통/선택) 상관없이 양쪽 상태 모두 업데이트하여 하단 두 결과창에 동시 반영되도록 처리
       setAdditionalSupport(autoAddSupport);
       setSelectiveAdditionalSupport(autoAddSupport);
-      setAdditionalEdited(true); // 수동 입력처럼 처리하여 KT 15% 자동화 로직과 충돌 방지
+      setAdditionalEdited(true); // 자동 맵핑이 적용되었으므로 KT 15% 로직이 이를 덮어쓰지 못하게 막음
     }
-  }, [siteOption, selectedDevice, originalPlanPrice, operator]);
+  }, [isGalcams, selectedDevice, originalPlanPrice, operator]);
 
-  // KT 추가지원금 15% 자동 세팅 (닷컴/갤캠스 미선택 시에만 작동)
+  // ----------------- 로직 3: 일반 단말기 KT 공통지원금 15% 추가지원금 자동 세팅 -----------------
   useEffect(() => {
-    if (operator === 'KT' && !additionalEdited && siteOption === '') {
+    // 사전예약 닷컴/갤캠스 금액이 적용되지 않은 일반 단말기 & 수동 입력 안했을 때만 15% 자동 계산
+    if (operator === 'KT' && !additionalEdited && !selectedDevice.includes('(사전예약)')) {
       const calculatedSupport = Math.floor((commonSupport * 0.15) / 100) * 100;
       setAdditionalSupport(calculatedSupport);
-      setSavedAdditionalSupport(calculatedSupport);
     }
-    setSavedCommonSupport(commonSupport);
-  }, [commonSupport, operator, additionalEdited, siteOption]);
+  }, [commonSupport, operator, additionalEdited, selectedDevice]);
 
   useEffect(() => {
     if (editingTabId !== null && titleInputRef.current) { titleInputRef.current.focus(); titleInputRef.current.select(); }
   }, [editingTabId]);
-
-  // 체크박스 토글 함수
-  const handleSiteOptionToggle = (val) => {
-    if (siteOption === val) {
-      setSiteOption(''); // 해제
-      // 해제 시 금액 초기화
-      if (contractType === '공통지원') {
-        setAdditionalSupport(0); // KT의 경우 아래 줄에 의해 15%로 다시 자동 계산됨
-      }
-      setSelectiveAdditionalSupport(0);
-      
-      // KT에서 체크박스를 풀면 다시 15% 룰을 타도록 허용
-      if (operator === 'KT') {
-        setAdditionalEdited(false);
-      }
-    } else {
-      setSiteOption(val); // 선택
-    }
-  };
 
   const devicePrice = useMemo(()=> DEVICE_LIST.find(d=>d.name===selectedDevice)?.price || 0, [selectedDevice]);
   const monthlyPlanDiscount = useMemo(() => Math.round(originalPlanPrice * 0.25), [originalPlanPrice]);
@@ -476,7 +442,7 @@ function Calculator({
           ))}
         </select>
         
-        {/* --- 변경된 요금제 검색 드롭다운 UI --- */}
+        {/* 요금제 검색 드롭다운 UI */}
         <div className="relative flex-1 min-w-0" ref={planDropdownRef}>
           <input 
             type="text" 
@@ -505,7 +471,6 @@ function Calculator({
             </div>
           )}
         </div>
-        {/* ------------------------------------- */}
 
         <select value={installMonths} onChange={e=>setInstallMonths(Number(e.target.value))} className="border p-2 rounded w-24 text-center outline-none focus:ring-2 focus:ring-blue-500">
           {[0,6,12,18,24,30,36,48].map(m=><option key={m} value={m}>{m===0?'일시불':m+'개월'}</option>)}
@@ -537,12 +502,8 @@ function Calculator({
            <label className="text-sm mb-1 text-center">&nbsp;</label>
            <div className="flex gap-2 items-center h-[34px]">
             
-            <label className="flex items-center text-sm cursor-pointer text-gray-700 whitespace-nowrap font-medium mr-1">
-              <input type="checkbox" checked={siteOption === '닷컴'} onChange={() => handleSiteOptionToggle('닷컴')} className="mr-1 w-4 h-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500" />
-              닷컴
-            </label>
             <label className="flex items-center text-sm cursor-pointer text-gray-700 whitespace-nowrap font-medium mr-2">
-              <input type="checkbox" checked={siteOption === '갤캠스'} onChange={() => handleSiteOptionToggle('갤캠스')} className="mr-1 w-4 h-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500" />
+              <input type="checkbox" checked={isGalcams} onChange={() => setIsGalcams(!isGalcams)} className="mr-1 w-4 h-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500" />
               갤캠스
             </label>
 
