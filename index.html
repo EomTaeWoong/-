@@ -41,9 +41,9 @@ const DEVICE_LIST = [
   { name: 'S26 울트라｜512기가', price: 2050400 },
   { name: 'S26 플러스｜512기가', price: 1705000 },
   { name: 'S26｜512기가', price: 1507000 },
-  { name: 'S26 울트라｜256기가 (사전예약)', price: 1797400, isHighlight: true },
-  { name: 'S26 플러스｜256기가 (사전예약)', price: 1452000, isHighlight: true },
-  { name: 'S26｜256기가 (사전예약)', price: 1254000, isHighlight: true },
+  { name: 'S26 울트라｜256기가', price: 1797400, isHighlight: true },
+  { name: 'S26 플러스｜256기가', price: 1452000, isHighlight: true },
+  { name: 'S26｜256기가', price: 1254000, isHighlight: true },
   { name: 'S25 엣지｜256기가', price: 1496000 },
   { name: 'S25 울트라｜256기가', price: 1698400 },
   { name: 'S25 플러스｜256기가', price: 1353000 },
@@ -280,7 +280,8 @@ function Calculator({
   const [additionalEdited, setAdditionalEdited] = useState(false);
   const [contractType, setContractType] = useState('공통지원');
   
-  // 갤캠스 상태 추가 (체크안됨=닷컴 기본적용, 체크됨=갤캠스)
+  // (NEW) 사전예약 체크박스와 갤캠스 체크박스 상태
+  const [isPreorder, setIsPreorder] = useState(false);
   const [isGalcams, setIsGalcams] = useState(false);
 
   // ----------------- 검색형 요금제 드롭다운 관련 State -----------------
@@ -288,7 +289,6 @@ function Calculator({
   const [isPlanDropdownOpen, setIsPlanDropdownOpen] = useState(false);
   const planDropdownRef = useRef(null);
 
-  // 선택된 요금제가 외부(예: 통신사 변경)에서 바뀌면 검색어 입력창도 동기화
   useEffect(() => { 
     setSelectedPlan(plans[0]?.name || ''); 
   }, [plans]);
@@ -297,19 +297,17 @@ function Calculator({
     setPlanSearchTerm(selectedPlan);
   }, [selectedPlan]);
 
-  // 요금제 드롭다운 외부 클릭 시 닫기
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (planDropdownRef.current && !planDropdownRef.current.contains(event.target)) {
         setIsPlanDropdownOpen(false);
-        setPlanSearchTerm(selectedPlan); // 정상적으로 선택된 요금제 이름으로 복구
+        setPlanSearchTerm(selectedPlan);
       }
     };
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [selectedPlan]);
 
-  // 검색어에 따른 요금제 필터링
   const filteredPlans = useMemo(() => {
     const term = planSearchTerm.trim().toLowerCase();
     if (!term || term === selectedPlan.toLowerCase()) return plans;
@@ -322,83 +320,103 @@ function Calculator({
 
   const originalPlanPrice = useMemo(() => plans.find(p => p.name === selectedPlan)?.price || 0, [selectedPlan, plans]);
 
-  // ----------------- 로직 1: 단말기, 요금제, 통신사 변경 시 지원금 완전 초기화 및 맵핑 -----------------
+  // 통신사 변경 시 상태 및 금액 초기화
+  useEffect(() => {
+    setIsPreorder(false);
+    setIsGalcams(false);
+    setAdditionalEdited(false);
+    setSelectiveAdditionalSupport(0);
+  }, [operator]);
+
+  // 단말기 변경 시 '사전예약' 체크박스가 풀리면서 자동 초기화 되도록 처리
+  useEffect(() => {
+    setIsPreorder(false);
+    setIsGalcams(false);
+  }, [selectedDevice]);
+
+
+  // [로직 1] 공통지원금 자동 매핑 (사전예약 체크 & 지정된 단말기 & 매핑된 요금제일 때만)
   useEffect(() => {
     let newCommonSupport = 0;
     
-    // 단말기가 사전예약인 경우에만 요금제 기반 매핑된 공통지원금 설정
-    if (selectedDevice.includes('(사전예약)')) {
-        const planInfo = plans.find(p => p.name === selectedPlan);
-        if (planInfo) {
-            if (operator === 'U' && U_COMMON_SUPPORT_MAP[planInfo.price] !== undefined) {
-                newCommonSupport = U_COMMON_SUPPORT_MAP[planInfo.price];
-            } else if (operator === 'KT' && KT_COMMON_SUPPORT_MAP[planInfo.price] !== undefined) {
-                newCommonSupport = KT_COMMON_SUPPORT_MAP[planInfo.price];
+    // 사전예약 체크가 되어있고, 지정된 단말기(S26 시리즈 혹은 이름에 사전예약 포함)일 때만 매핑 실행
+    if (isPreorder) {
+        const isDesignatedDevice = selectedDevice.includes('S26') || selectedDevice.includes('사전예약');
+        if (isDesignatedDevice) {
+            const planInfo = plans.find(p => p.name === selectedPlan);
+            if (planInfo) {
+                if (operator === 'U' && U_COMMON_SUPPORT_MAP[planInfo.price] !== undefined) {
+                    newCommonSupport = U_COMMON_SUPPORT_MAP[planInfo.price];
+                } else if (operator === 'KT' && KT_COMMON_SUPPORT_MAP[planInfo.price] !== undefined) {
+                    newCommonSupport = KT_COMMON_SUPPORT_MAP[planInfo.price];
+                }
             }
         }
     }
     
-    // 조건에 맞지 않으면(사전예약 아니거나 설정된 요금제가 아니면) 0원 처리
+    // 맵핑 조건에 안맞으면 즉시 0원 처리
     setCommonSupport(newCommonSupport);
     
-    // 단말기/요금제가 바뀌었으므로 수동입력 플래그 무조건 해제
+    // 항목 변경 시 추가지원금 수동입력 상태 해제
     setAdditionalEdited(false);
 
-    // 단말기가 사전예약이 아니면 추가지원금(선할인 포함)도 0원으로 확실하게 완전 초기화
-    // (사전예약인 경우는 아래의 닷컴/갤캠스 useEffect에서 금액을 자동으로 채워줍니다)
-    if (!selectedDevice.includes('(사전예약)')) {
+    // 사전예약이 해제된 상태라면 모든 추가지원금도 확실히 0원으로 초기화
+    if (!isPreorder) {
         setAdditionalSupport(0);
         setSelectiveAdditionalSupport(0);
-        setIsGalcams(false); // 통신사나 단말기 바뀔 때 갤캠스 체크도 깔끔하게 풀어줌
+        setIsGalcams(false);
     }
-  }, [selectedDevice, selectedPlan, operator, plans]);
+  }, [selectedDevice, selectedPlan, operator, plans, isPreorder]);
 
-  // ----------------- 로직 2: 닷컴/갤캠스에 따른 사전예약 추가지원금 세팅 -----------------
+  // [로직 2] 닷컴(기본)/갤캠스 추가지원금 자동 셋팅 (양쪽 약정 동시 반영)
   useEffect(() => {
-    if (selectedDevice.includes('(사전예약)')) {
+    if (isPreorder) {
       let autoAddSupport = 0;
       const planPrice = originalPlanPrice;
       const currentOption = isGalcams ? '갤캠스' : '닷컴';
+      const isDesignatedDevice = selectedDevice.includes('S26') || selectedDevice.includes('사전예약');
       
-      if (operator === 'U') {
-        if (planPrice >= 61000 && planPrice < 95000) {
-          autoAddSupport = currentOption === '닷컴' ? 30000 : 50000;
-        } else if (planPrice >= 95000) {
-          if (selectedDevice === 'S26 플러스｜256기가 (사전예약)' || selectedDevice === 'S26｜256기가 (사전예약)') {
-            autoAddSupport = currentOption === '닷컴' ? 250000 : 300000;
-          } else if (selectedDevice === 'S26 울트라｜256기가 (사전예약)') {
-            autoAddSupport = currentOption === '닷컴' ? 350000 : 400000;
+      if (isDesignatedDevice) {
+          if (operator === 'U') {
+            if (planPrice >= 61000 && planPrice < 95000) {
+              autoAddSupport = currentOption === '닷컴' ? 30000 : 50000;
+            } else if (planPrice >= 95000) {
+              if (selectedDevice.includes('S26 플러스') || selectedDevice.includes('S26｜')) {
+                autoAddSupport = currentOption === '닷컴' ? 250000 : 300000;
+              } else if (selectedDevice.includes('S26 울트라')) {
+                autoAddSupport = currentOption === '닷컴' ? 350000 : 400000;
+              }
+            }
+          } else if (operator === 'KT') {
+            if (planPrice >= 90000) {
+              if (selectedDevice.includes('S26 플러스') || selectedDevice.includes('S26｜')) {
+                autoAddSupport = currentOption === '닷컴' ? 250000 : 300000;
+              } else if (selectedDevice.includes('S26 울트라')) {
+                autoAddSupport = currentOption === '닷컴' ? 350000 : 400000;
+              }
+            }
           }
-        }
-      } else if (operator === 'KT') {
-        if (planPrice >= 90000) {
-          if (selectedDevice === 'S26 플러스｜256기가 (사전예약)' || selectedDevice === 'S26｜256기가 (사전예약)') {
-            autoAddSupport = currentOption === '닷컴' ? 250000 : 300000;
-          } else if (selectedDevice === 'S26 울트라｜256기가 (사전예약)') {
-            autoAddSupport = currentOption === '닷컴' ? 350000 : 400000;
-          }
-        }
       }
 
-      // 약정(공통/선택) 상관없이 양쪽 상태 모두 업데이트하여 하단 두 결과창에 동시 반영되도록 처리
+      // 약정(공통/선택) 상관없이 양쪽 상태 모두 업데이트 (하단 카드에 동시 반영됨)
       setAdditionalSupport(autoAddSupport);
       setSelectiveAdditionalSupport(autoAddSupport);
-      setAdditionalEdited(true); // 자동 맵핑이 적용되었으므로 KT 15% 로직이 이를 덮어쓰지 못하게 막음
+      setAdditionalEdited(true); // 자동 맵핑이므로 KT 15% 로직이 덮어쓰지 않도록 설정
     }
-  }, [isGalcams, selectedDevice, originalPlanPrice, operator]);
+  }, [isGalcams, selectedDevice, originalPlanPrice, operator, isPreorder]);
 
-  // ----------------- 로직 3: 일반 단말기 KT 공통지원금 15% 추가지원금 자동 세팅 -----------------
+  // [로직 3] KT 일반 단말기 15% 추가지원금 자동 셋팅
   useEffect(() => {
-    // 사전예약 닷컴/갤캠스 금액이 적용되지 않은 일반 단말기 & 수동 입력 안했을 때만 15% 자동 계산
-    if (operator === 'KT' && !additionalEdited && !selectedDevice.includes('(사전예약)')) {
+    if (operator === 'KT' && !additionalEdited && !isPreorder) {
       const calculatedSupport = Math.floor((commonSupport * 0.15) / 100) * 100;
       setAdditionalSupport(calculatedSupport);
     }
-  }, [commonSupport, operator, additionalEdited, selectedDevice]);
+  }, [commonSupport, operator, additionalEdited, isPreorder]);
 
   useEffect(() => {
     if (editingTabId !== null && titleInputRef.current) { titleInputRef.current.focus(); titleInputRef.current.select(); }
   }, [editingTabId]);
+
 
   const devicePrice = useMemo(()=> DEVICE_LIST.find(d=>d.name===selectedDevice)?.price || 0, [selectedDevice]);
   const monthlyPlanDiscount = useMemo(() => Math.round(originalPlanPrice * 0.25), [originalPlanPrice]);
@@ -477,39 +495,43 @@ function Calculator({
         </select>
       </div>
 
-      <div className="mb-4 flex flex-nowrap items-end gap-3 w-full overflow-x-auto pb-2 hide-scroll-bar">
+<div className="mb-4 flex flex-nowrap items-end gap-1.5 w-full">
         
         <div className="flex flex-col shrink-0">
           <label className="text-sm text-center">공통지원금</label>
-          <input type="text" value={commonSupport.toLocaleString()} disabled={contractType === '선택약정'} onChange={e => { setCommonSupport(Number(e.target.value.replace(/\D/g, '')) || 0); setAdditionalEdited(false); }} className={`border p-1 rounded w-28 text-center ${contractType === '선택약정' ? 'bg-gray-200 text-gray-400' : 'bg-white'}`} onFocus={e=>e.target.select()} />
+          <input type="text" value={commonSupport.toLocaleString()} disabled={contractType === '선택약정'} onChange={e => { setCommonSupport(Number(e.target.value.replace(/\D/g, '')) || 0); setAdditionalEdited(false); }} className={`border p-1 rounded w-24 text-center ${contractType === '선택약정' ? 'bg-gray-200 text-gray-400' : 'bg-white'}`} onFocus={e=>e.target.select()} />
         </div>
         
         <div className="flex flex-col shrink-0">
           <label className="text-sm text-center">추가지원금</label>
-          <input type="text" value={(contractType === '공통지원' ? additionalSupport : selectiveAdditionalSupport).toLocaleString()} onChange={e => { const v = Number(e.target.value.replace(/\D/g, '')) || 0; if (contractType === '공통지원') { setAdditionalSupport(v); setAdditionalEdited(true); } else { setSelectiveAdditionalSupport(v); } }} className="border p-1 rounded w-28 text-center bg-white" onFocus={e=>e.target.select()} />
+          <input type="text" value={(contractType === '공통지원' ? additionalSupport : selectiveAdditionalSupport).toLocaleString()} onChange={e => { const v = Number(e.target.value.replace(/\D/g, '')) || 0; if (contractType === '공통지원') { setAdditionalSupport(v); setAdditionalEdited(true); } else { setSelectiveAdditionalSupport(v); } }} className="border p-1 rounded w-24 text-center bg-white" onFocus={e=>e.target.select()} />
         </div>
 
         <div className="flex flex-col shrink-0">
           <label className="text-sm mb-1 text-center">약정</label>
           <div className="flex border rounded overflow-hidden h-[34px]">
-            <button onClick={()=>handleContractTypeChange('공통지원')} className={`px-3 text-sm transition-colors whitespace-nowrap ${contractType==='공통지원'?'bg-blue-600 text-white':'bg-white text-gray-700 hover:bg-gray-100'}`}>공통지원</button>
+            <button onClick={()=>handleContractTypeChange('공통지원')} className={`px-2 text-sm transition-colors whitespace-nowrap ${contractType==='공통지원'?'bg-blue-600 text-white':'bg-white text-gray-700 hover:bg-gray-100'}`}>공통지원</button>
             <div className="border-l"></div>
-            <button onClick={()=>handleContractTypeChange('선택약정')} className={`px-3 text-sm transition-colors whitespace-nowrap ${contractType==='선택약정'?'bg-blue-600 text-white':'bg-white text-gray-700 hover:bg-gray-100'}`}>선택약정</button>
+            <button onClick={()=>handleContractTypeChange('선택약정')} className={`px-2 text-sm transition-colors whitespace-nowrap ${contractType==='선택약정'?'bg-blue-600 text-white':'bg-white text-gray-700 hover:bg-gray-100'}`}>선택약정</button>
           </div>
         </div>
         
         <div className="flex flex-col shrink-0">
            <label className="text-sm mb-1 text-center">&nbsp;</label>
-           <div className="flex gap-2 items-center h-[34px]">
+           <div className="flex gap-1.5 items-center h-[34px]">
             
-            <label className="flex items-center text-sm cursor-pointer text-gray-700 whitespace-nowrap font-medium mr-2">
-              <input type="checkbox" checked={isGalcams} onChange={() => setIsGalcams(!isGalcams)} className="mr-1 w-4 h-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500" />
+            <label className="flex items-center text-[13px] cursor-pointer text-gray-700 whitespace-nowrap font-medium">
+              <input type="checkbox" checked={isPreorder} onChange={() => setIsPreorder(!isPreorder)} className="mr-1 w-3.5 h-3.5 text-blue-600 rounded border-gray-300 focus:ring-blue-500" />
+              사전예약
+            </label>
+            <label className={`flex items-center text-[13px] cursor-pointer text-gray-700 whitespace-nowrap font-medium ml-1 mr-1 ${!isPreorder ? 'opacity-50 cursor-not-allowed' : ''}`}>
+              <input type="checkbox" checked={isGalcams} onChange={() => setIsGalcams(!isGalcams)} disabled={!isPreorder} className="mr-1 w-3.5 h-3.5 text-blue-600 rounded border-gray-300 focus:ring-blue-500 disabled:cursor-not-allowed" />
               갤캠스
             </label>
 
-            <button onClick={() => setShowPlanSummaryPopup(true)} className="bg-blue-500 text-white px-3 rounded hover:bg-blue-600 h-[34px] flex items-center justify-center text-sm whitespace-nowrap">요금제 정리</button>
-            <button onClick={() => setShowRequestFormPopup(true)} className="bg-purple-600 text-white px-3 rounded hover:bg-purple-700 h-[34px] flex items-center justify-center text-sm whitespace-nowrap">요청 양식</button>
-            <button onClick={() => setShowDeviceColorPopup(true)} className="bg-pink-600 text-white px-3 rounded hover:bg-pink-700 h-[34px] flex items-center justify-center text-sm whitespace-nowrap">단말기 색상</button>
+            <button onClick={() => setShowPlanSummaryPopup(true)} className="bg-blue-500 text-white px-2.5 rounded hover:bg-blue-600 h-[34px] flex items-center justify-center text-[13px] font-medium whitespace-nowrap">요금제 정리</button>
+            <button onClick={() => setShowRequestFormPopup(true)} className="bg-purple-600 text-white px-2.5 rounded hover:bg-purple-700 h-[34px] flex items-center justify-center text-[13px] font-medium whitespace-nowrap">요청 양식</button>
+            <button onClick={() => setShowDeviceColorPopup(true)} className="bg-pink-600 text-white px-2.5 rounded hover:bg-pink-700 h-[34px] flex items-center justify-center text-[13px] font-medium whitespace-nowrap">단말기 색상</button>
            </div>
         </div>
       </div>
@@ -588,4 +610,3 @@ ReactDOM.createRoot(document.getElementById('root')).render(<App/>);
 </script>
 </body>
 </html>
-
