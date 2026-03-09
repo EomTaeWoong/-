@@ -41,9 +41,9 @@ const DEVICE_LIST = [
   { name: 'S26 울트라｜512기가', price: 2050400 },
   { name: 'S26 플러스｜512기가', price: 1705000 },
   { name: 'S26｜512기가', price: 1507000 },
-  { name: 'S26 울트라｜256기가', price: 1797400, isHighlight: true },
-  { name: 'S26 플러스｜256기가', price: 1452000, isHighlight: true },
-  { name: 'S26｜256기가', price: 1254000, isHighlight: true },
+  { name: 'S26 울트라｜256기가 (사전예약)', price: 1797400, isHighlight: true },
+  { name: 'S26 플러스｜256기가 (사전예약)', price: 1452000, isHighlight: true },
+  { name: 'S26｜256기가 (사전예약)', price: 1254000, isHighlight: true },
   { name: 'S25 엣지｜256기가', price: 1496000 },
   { name: 'S25 울트라｜256기가', price: 1698400 },
   { name: 'S25 플러스｜256기가', price: 1353000 },
@@ -207,7 +207,7 @@ function PlanSummaryPopup({ operator, onClose }) {
 function RequestFormPopup({ onClose }) {
   const sections = [
     { title: '[반품접수 양식]', content: `최초 개통일 :\n닷컴 주문번호 :\n고객명 :\n핸드폰 번호 :\n단말기 모델명 :\n일련번호 :\nCJ 송장번호 :` },
-    { title: '[상담메모 양식]', content: `#단말기 :\n#요금제 :\n#약정 :\n#할부 :\n#유심 :\n#기타 : ` },
+    { title: '[정책금액 확인요청 양식]', content: `통신사 :\n닷컴 주문번호 :\n고객명 :\n단말기 모델명 :\n요금제 :\n공통 지원금 : *원 (추가지원금 *원)\n선할인 : *원\n단말대금 : *원\n오류내용 : SIMS에 *원으로 적용되어야하나 *원으로 팝업 생성됩니다. 확인 부탁드립니다.` },
     { title: '[취소 사유]', content: `@할부회선\n@신용불량\n@유지기간\n@잔여약정\n@자급제 오신청\n@단순변심\n@서류 오작성\n@가격불만\n@사은품불만\n@조건불만\n@재고부족\n@중복접수\n@신청유형변경\n@부재` },
     { title: '[세금계산서 발행 신청양식]', content: `개인사업자 번호\n사업자 등록증 사진 (PDF 파일)\n└ hyejin1106.min@samsung.com (혜진 프로님)\n고객 이메일 주소\n발행 등록할 연락처\n\n* 통신요금 관련은 통신사 고객센터 안내` }
   ];
@@ -328,95 +328,99 @@ function Calculator({
     setSelectiveAdditionalSupport(0);
   }, [operator]);
 
-  // 단말기 변경 시 '사전예약' 체크박스가 풀리면서 자동 초기화 되도록 처리
+  // 단말기 변경 시 '사전예약' 체크박스가 풀리면서 관련 상태 자동 초기화
   useEffect(() => {
     setIsPreorder(false);
     setIsGalcams(false);
+    setAdditionalEdited(false);
   }, [selectedDevice]);
 
 
-  // [로직 1] 공통지원금 자동 매핑 (사전예약 체크 & 지정된 단말기 & 매핑된 요금제일 때만)
+  // [로직 1] 공통지원금 전체 제어 및 자동 매핑 (단말기/요금제 변경 시 초기화 포함)
   useEffect(() => {
     let newCommonSupport = 0;
     
-    // 사전예약 체크가 되어있고, 지정된 단말기(S26 시리즈 혹은 이름에 사전예약 포함)일 때만 매핑 실행
-    if (isPreorder) {
-        const isDesignatedDevice = selectedDevice.includes('S26') || selectedDevice.includes('사전예약');
-        if (isDesignatedDevice) {
-            const planInfo = plans.find(p => p.name === selectedPlan);
-            if (planInfo) {
-                if (operator === 'U' && U_COMMON_SUPPORT_MAP[planInfo.price] !== undefined) {
-                    newCommonSupport = U_COMMON_SUPPORT_MAP[planInfo.price];
-                } else if (operator === 'KT' && KT_COMMON_SUPPORT_MAP[planInfo.price] !== undefined) {
-                    newCommonSupport = KT_COMMON_SUPPORT_MAP[planInfo.price];
-                }
+    // 조건: S26 시리즈이면서 256기가인 단말기만 매핑 적용
+    const isS26_256GB = selectedDevice.includes('S26') && selectedDevice.includes('256기가');
+    
+    if (isPreorder && isS26_256GB) {
+        const planInfo = plans.find(p => p.name === selectedPlan);
+        if (planInfo) {
+            if (operator === 'U' && U_COMMON_SUPPORT_MAP[planInfo.price] !== undefined) {
+                newCommonSupport = U_COMMON_SUPPORT_MAP[planInfo.price];
+            } else if (operator === 'KT' && KT_COMMON_SUPPORT_MAP[planInfo.price] !== undefined) {
+                newCommonSupport = KT_COMMON_SUPPORT_MAP[planInfo.price];
             }
         }
     }
     
-    // 맵핑 조건에 안맞으면 즉시 0원 처리
+    // 조건에 안맞으면(사전예약 대상이 아니거나, 맵핑되지 않은 요금제일 때) 깔끔하게 0원 처리
     setCommonSupport(newCommonSupport);
     
-    // 항목 변경 시 추가지원금 수동입력 상태 해제
+    // 단말기/요금제가 바뀌면 추가지원금 수동입력 상태 해제
     setAdditionalEdited(false);
 
-    // 사전예약이 해제된 상태라면 모든 추가지원금도 확실히 0원으로 초기화
-    if (!isPreorder) {
+    // 사전예약 체크가 해제되어 있거나 대상 단말기(S26 256GB)가 아니면 추가지원금도 확실히 0원으로 초기화
+    if (!isPreorder || !isS26_256GB) {
         setAdditionalSupport(0);
         setSelectiveAdditionalSupport(0);
         setIsGalcams(false);
     }
-  }, [selectedDevice, selectedPlan, operator, plans, isPreorder]);
+  }, [selectedDevice, selectedPlan, operator, plans, isPreorder]); 
+  // ※ contractType을 의존성 배열에서 제거했으므로, 약정을 변경해도 입력/계산된 금액이 날아가지 않습니다.
+
 
   // [로직 2] 닷컴(기본)/갤캠스 추가지원금 자동 셋팅 (양쪽 약정 동시 반영)
   useEffect(() => {
-    if (isPreorder) {
+    const isS26_256GB = selectedDevice.includes('S26') && selectedDevice.includes('256기가');
+
+    if (isPreorder && isS26_256GB) {
       let autoAddSupport = 0;
       const planPrice = originalPlanPrice;
-      const currentOption = isGalcams ? '갤캠스' : '닷컴';
-      const isDesignatedDevice = selectedDevice.includes('S26') || selectedDevice.includes('사전예약');
+      const currentOption = isGalcams ? '갤캠스' : '닷컴'; // 갤캠스 안누르면 무조건 '닷컴' 기준
       
-      if (isDesignatedDevice) {
-          if (operator === 'U') {
-            if (planPrice >= 61000 && planPrice < 95000) {
-              autoAddSupport = currentOption === '닷컴' ? 30000 : 50000;
-            } else if (planPrice >= 95000) {
-              if (selectedDevice.includes('S26 플러스') || selectedDevice.includes('S26｜')) {
-                autoAddSupport = currentOption === '닷컴' ? 250000 : 300000;
-              } else if (selectedDevice.includes('S26 울트라')) {
-                autoAddSupport = currentOption === '닷컴' ? 350000 : 400000;
-              }
-            }
-          } else if (operator === 'KT') {
-            if (planPrice >= 90000) {
-              if (selectedDevice.includes('S26 플러스') || selectedDevice.includes('S26｜')) {
-                autoAddSupport = currentOption === '닷컴' ? 250000 : 300000;
-              } else if (selectedDevice.includes('S26 울트라')) {
-                autoAddSupport = currentOption === '닷컴' ? 350000 : 400000;
-              }
-            }
+      if (operator === 'U') {
+        if (planPrice >= 61000 && planPrice < 95000) {
+          autoAddSupport = currentOption === '닷컴' ? 30000 : 50000;
+        } else if (planPrice >= 95000) {
+          if (selectedDevice.includes('S26 플러스') || selectedDevice.includes('S26｜')) {
+            autoAddSupport = currentOption === '닷컴' ? 250000 : 300000;
+          } else if (selectedDevice.includes('S26 울트라')) {
+            autoAddSupport = currentOption === '닷컴' ? 350000 : 400000;
           }
+        }
+      } else if (operator === 'KT') {
+        if (planPrice >= 90000) {
+          if (selectedDevice.includes('S26 플러스') || selectedDevice.includes('S26｜')) {
+            autoAddSupport = currentOption === '닷컴' ? 250000 : 300000;
+          } else if (selectedDevice.includes('S26 울트라')) {
+            autoAddSupport = currentOption === '닷컴' ? 350000 : 400000;
+          }
+        }
       }
 
-      // 약정(공통/선택) 상관없이 양쪽 상태 모두 업데이트 (하단 카드에 동시 반영됨)
+      // 약정(공통/선택) 상관없이 양쪽 상태 모두 업데이트하여 하단 두 결과창에 동시 반영되도록 처리
       setAdditionalSupport(autoAddSupport);
       setSelectiveAdditionalSupport(autoAddSupport);
-      setAdditionalEdited(true); // 자동 맵핑이므로 KT 15% 로직이 덮어쓰지 않도록 설정
+      setAdditionalEdited(true); // 자동 맵핑이 적용되었으므로 KT 15% 로직이 이를 덮어쓰지 못하게 막음
     }
   }, [isGalcams, selectedDevice, originalPlanPrice, operator, isPreorder]);
+  // ※ 여기도 contractType이 없으므로 약정을 토글해도 금액이 안전하게 유지됩니다.
 
-  // [로직 3] KT 일반 단말기 15% 추가지원금 자동 셋팅
+
+  // [로직 3] 일반 단말기 KT 공통지원금 15% 추가지원금 자동 세팅
   useEffect(() => {
-    if (operator === 'KT' && !additionalEdited && !isPreorder) {
+    const isS26_256GB = selectedDevice.includes('S26') && selectedDevice.includes('256기가');
+    // 사전예약 혜택이 적용되지 않은 일반 상태이고 수동 입력하지 않았을 때만 15% 계산
+    if (operator === 'KT' && !additionalEdited && !(isPreorder && isS26_256GB)) {
       const calculatedSupport = Math.floor((commonSupport * 0.15) / 100) * 100;
       setAdditionalSupport(calculatedSupport);
     }
-  }, [commonSupport, operator, additionalEdited, isPreorder]);
+  }, [commonSupport, operator, additionalEdited, isPreorder, selectedDevice]);
 
   useEffect(() => {
     if (editingTabId !== null && titleInputRef.current) { titleInputRef.current.focus(); titleInputRef.current.select(); }
   }, [editingTabId]);
-
 
   const devicePrice = useMemo(()=> DEVICE_LIST.find(d=>d.name===selectedDevice)?.price || 0, [selectedDevice]);
   const monthlyPlanDiscount = useMemo(() => Math.round(originalPlanPrice * 0.25), [originalPlanPrice]);
@@ -495,7 +499,7 @@ function Calculator({
         </select>
       </div>
 
-<div className="mb-4 flex flex-nowrap items-end gap-1.5 w-full">
+      <div className="mb-4 flex flex-nowrap items-end gap-1.5 w-full">
         
         <div className="flex flex-col shrink-0">
           <label className="text-sm text-center">공통지원금</label>
@@ -520,6 +524,7 @@ function Calculator({
            <label className="text-sm mb-1 text-center">&nbsp;</label>
            <div className="flex gap-1.5 items-center h-[34px]">
             
+            {/* 사전예약 체크박스와 갤캠스 단일 체크박스 */}
             <label className="flex items-center text-[13px] cursor-pointer text-gray-700 whitespace-nowrap font-medium">
               <input type="checkbox" checked={isPreorder} onChange={() => setIsPreorder(!isPreorder)} className="mr-1 w-3.5 h-3.5 text-blue-600 rounded border-gray-300 focus:ring-blue-500" />
               사전예약
