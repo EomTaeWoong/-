@@ -207,7 +207,7 @@ function PlanSummaryPopup({ operator, onClose }) {
 function RequestFormPopup({ onClose }) {
   const sections = [
     { title: '[반품접수 양식]', content: `최초 개통일 :\n닷컴 주문번호 :\n고객명 :\n핸드폰 번호 :\n단말기 모델명 :\n일련번호 :\nCJ 송장번호 :` },
-    { title: '[정책금액 확인요청 양식]', content: `통신사 :\n닷컴 주문번호 :\n고객명 :\n단말기 모델명 :\n요금제 :\n공통 지원금 : *원 (추가지원금 *원)\n선할인 : *원\n단말대금 : *원\n오류내용 : SIMS에 *원으로 적용되어야하나 *원으로 팝업 생성됩니다. 확인 부탁드립니다.` },
+    { title: '[상담메모 양식]', content: `#단말기 :\n#요금제 :\n#약정 :\n#약정 :\n#유심 :\n#기타 : ` },
     { title: '[취소 사유]', content: `@할부회선\n@신용불량\n@유지기간\n@잔여약정\n@자급제 오신청\n@단순변심\n@서류 오작성\n@가격불만\n@사은품불만\n@조건불만\n@재고부족\n@중복접수\n@신청유형변경\n@부재` },
     { title: '[세금계산서 발행 신청양식]', content: `개인사업자 번호\n사업자 등록증 사진 (PDF 파일)\n└ hyejin1106.min@samsung.com (혜진 프로님)\n고객 이메일 주소\n발행 등록할 연락처\n\n* 통신요금 관련은 통신사 고객센터 안내` }
   ];
@@ -615,4 +615,3 @@ ReactDOM.createRoot(document.getElementById('root')).render(<App/>);
 </script>
 </body>
 </html>
-
