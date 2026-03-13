@@ -564,24 +564,29 @@ function Calculator({
     setSelectedPlan(plans[0]?.name || ''); 
   }, [plans]);
 
-  useEffect(() => {
-    setPlanSearchTerm(selectedPlan);
-  }, [selectedPlan]);
+useEffect(() => {
+    const plan = plans.find(p => p.name === selectedPlan);
+    setPlanSearchTerm(plan ? `${plan.name} (${plan.price.toLocaleString()}원)` : selectedPlan);
+  }, [selectedPlan, plans]);
 
-  useEffect(() => {
+useEffect(() => {
     const handleClickOutside = (event) => {
       if (planDropdownRef.current && !planDropdownRef.current.contains(event.target)) {
         setIsPlanDropdownOpen(false);
-        setPlanSearchTerm(selectedPlan);
+        const plan = plans.find(p => p.name === selectedPlan);
+        setPlanSearchTerm(plan ? `${plan.name} (${plan.price.toLocaleString()}원)` : selectedPlan);
       }
     };
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, [selectedPlan]);
+  }, [selectedPlan, plans]);
 
-  const filteredPlans = useMemo(() => {
+const filteredPlans = useMemo(() => {
     const term = planSearchTerm.trim().toLowerCase();
-    if (!term || term === selectedPlan.toLowerCase()) return plans;
+    const plan = plans.find(p => p.name === selectedPlan);
+    const formattedSelected = plan ? `${plan.name} (${plan.price.toLocaleString()}원)`.toLowerCase() : selectedPlan.toLowerCase();
+    
+    if (!term || term === formattedSelected) return plans;
     return plans.filter(p => 
       (p.name || '').toLowerCase().includes(term) || 
       p.price.toString().includes(term.replace(/,/g, '')) ||
@@ -911,4 +916,3 @@ ReactDOM.createRoot(document.getElementById('root')).render(<App/>);
 </script>
 </body>
 </html>
-
