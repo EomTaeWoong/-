@@ -775,7 +775,7 @@ const filteredPlans = useMemo(() => {
                 filteredPlans.map(p => (
                   <div 
                     key={p.name} 
-                    onClick={() => { setSelectedPlan(p.name); setPlanSearchTerm(p.name); setIsPlanDropdownOpen(false); }}
+onClick={() => { setSelectedPlan(p.name); setPlanSearchTerm(`${p.name} (${p.price.toLocaleString()}원)`); setIsPlanDropdownOpen(false); }}
                     className={`px-3 py-2 cursor-pointer hover:bg-blue-50 text-sm border-b last:border-b-0 ${selectedPlan === p.name ? 'bg-blue-100 font-bold' : ''}`}
                   >
                     <span className="text-gray-500 text-xs mr-1">[{p.category}]</span> 
