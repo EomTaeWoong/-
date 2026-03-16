@@ -538,6 +538,21 @@ function CustomerServicePopup({ onClose }) {
   );
 }
 
+// ------------------ 안내 팝업 컴포넌트 ------------------
+function NoticePopup({ onClose }) {
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+      {/* 👇 아래 줄에 mb-[30vh]를 추가해서 위로 올리고, w-max로 한 줄에 다 들어가게 넓혔습니다 👇 */}
+      <div className="bg-white p-6 rounded-lg shadow-xl relative w-max max-w-[90vw] text-center mb-[20vh]">
+        <button onClick={onClose} className="absolute top-2 right-2 text-gray-400 hover:text-gray-800 text-2xl leading-none">&times;</button>
+        <h2 className="text-lg font-bold mb-4 text-blue-600">📢 안내</h2>
+        {/* 👇 아래 줄에 whitespace-nowrap을 추가해서 줄바꿈을 막았습니다 👇 */}
+        <p className="text-gray-800 font-medium whitespace-nowrap">2026년 3월 12일에 변경된 정책으로 계산됩니다.</p>
+        <button onClick={onClose} className="mt-6 bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 w-full font-bold text-sm">확인</button>
+      </div>
+    </div>
+  );
+}
 // ------------------ 계산기 컴포넌트 ------------------
 function Calculator({
   plans, features, operator, memos, activeMemoId, setActiveMemoId, editingTabId, setEditingTabId, tempTitle, setTempTitle, titleInputRef, handleMemoChange, handleStartEditing, handleTitleChange, handleSaveTitle, handleKeyDown, handleDeleteMemo, handleAddMemo, handleStatusChange, setShowRequestFormPopup, setShowDeviceColorPopup, setShowPlanSummaryPopup
@@ -866,11 +881,13 @@ function App() {
   const [showRequestFormPopup, setShowRequestFormPopup] = useState(false);
   const [showDeviceColorPopup, setShowDeviceColorPopup] = useState(false);
   const [showPlanSummaryPopup, setShowPlanSummaryPopup] = useState(false);
+  const [showNoticePopup, setShowNoticePopup] = useState(true);
   const [memos, setMemos] = useState([{ id: 1, title: '메모 1', content: '', status: null }]);
   const [activeMemoId, setActiveMemoId] = useState(1);
   const [editingTabId, setEditingTabId] = useState(null);
   const [tempTitle, setTempTitle] = useState('');
   const titleInputRef = useRef(null);
+
 
   const handleAddMemo = () => { const newId = (memos.length > 0 ? Math.max(...memos.map(m => m.id)) : 0) + 1; setMemos([...memos, { id: newId, title: `메모 ${newId}`, content: '', status: null }]); setActiveMemoId(newId); };
   const handleMemoChange = (e) => setMemos(memos.map(m => m.id === activeMemoId ? { ...m, content: e.target.value } : m));
@@ -908,6 +925,7 @@ function App() {
       {showRequestFormPopup && <RequestFormPopup onClose={() => setShowRequestFormPopup(false)} />}
       {showDeviceColorPopup && <DeviceColorPopup onClose={() => setShowDeviceColorPopup(false)} />}
       {showPlanSummaryPopup && <PlanSummaryPopup operator={operator} onClose={() => setShowPlanSummaryPopup(false)} />}
+      {showNoticePopup && <NoticePopup onClose={() => setShowNoticePopup(false)} />}
     </div>
   );
 }
