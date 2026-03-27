@@ -682,6 +682,18 @@ function MaintenanceCostPopup({ onClose, operator, plans, features, initialData 
   const highlightClassPublic2 = totalMonthly_Public2 < totalMonthly_Selective2 ? 'bg-green-50 ring-2 ring-green-500 z-10' : 'bg-white';
   const highlightClassSelective2 = totalMonthly_Selective2 < totalMonthly_Public2 ? 'bg-green-50 ring-2 ring-green-500 z-10' : 'bg-white';
 
+  // 1. 개통 요금제 유지 차액 계산
+  const totalCost1_Public = totalMonthly_Public * 24;
+  const totalCost1_Selective = totalMonthly_Selective * 24;
+  const diff1 = Math.abs(totalCost1_Public - totalCost1_Selective);
+  const winner1 = totalCost1_Public < totalCost1_Selective ? '공통지원' : (totalCost1_Selective < totalCost1_Public ? '선택약정' : '동일');
+
+  // 2. 6개월 후 요금제 변경 차액 계산
+  const totalCost2_Public = (totalMonthly_Public * 6) + (totalMonthly_Public2 * 18);
+  const totalCost2_Selective = (totalMonthly_Selective * 6) + (totalMonthly_Selective2 * 18);
+  const diff2 = Math.abs(totalCost2_Public - totalCost2_Selective);
+  const winner2 = totalCost2_Public < totalCost2_Selective ? '공통지원' : (totalCost2_Selective < totalCost2_Public ? '선택약정' : '동일');
+
   const handleContractTypeChange = (newType) => setContractType(newType);
 
   return (
@@ -764,31 +776,38 @@ function MaintenanceCostPopup({ onClose, operator, plans, features, initialData 
 
         {/* 계산 결과 1: 개통 요금제 유지 */}
         <div className="mt-8">
-          <h3 className="text-xl font-bold text-red-600 mb-2">개통 요금제 24개월 유지</h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-px bg-gray-200 rounded shadow-md overflow-hidden">
-            <div className={`p-4 flex flex-col gap-1.5 transition-all ${highlightClassPublic}`}>
+          <h3 className="text-xl font-bold text-red-600 mb-2">개통 요금제 24개월 사용하는 경우</h3>
+          <div className="relative grid grid-cols-1 md:grid-cols-2 gap-px bg-gray-200 rounded shadow-md overflow-hidden">
+            <div className={`p-4 pb-16 flex flex-col gap-1.5 transition-all relative ${highlightClassPublic}`}>
               <h3 className="text-xl font-bold text-center text-blue-700 mb-2">공통지원</h3>
               <div className="text-green-600 font-bold text-lg">단말기 할부원금: {principal_Public.toLocaleString()}원 {installMonths > 0 && principal_Public > 0 && <span className="text-sm font-normal ml-2 text-gray-600">(총 이자: {totalInterest_Public.toLocaleString()}원)</span>}</div>
               <div className="text-blue-600 font-bold text-lg">월 할부금: {monthlyDevice_Public.toLocaleString()}원</div>
               <div className="text-blue-600 font-bold text-lg">월 통신요금: {originalPlanPrice.toLocaleString()}원</div>
               <div className="text-black font-bold text-2xl mt-2 pt-2 border-t border-gray-300">월 납부 예상금액: <span className="ml-2">{totalMonthly_Public.toLocaleString()}원</span></div>
-              <div className="text-red-600 font-extrabold text-xl mt-1 pt-1 border-t border-dashed border-black">총 유지비용: <span className="ml-2">{(totalMonthly_Public * 24).toLocaleString()}원</span></div>
+              <div className="text-red-600 font-extrabold text-xl mt-1 pt-1 border-t border-dashed border-black">총 유지비용: <span className="ml-2">{(totalCost1_Public).toLocaleString()}원</span></div>
             </div>
-            <div className={`p-4 flex flex-col gap-1.5 transition-all ${highlightClassSelective}`}>
+            <div className={`p-4 pb-16 flex flex-col gap-1.5 transition-all relative ${highlightClassSelective}`}>
               <h3 className="text-xl font-bold text-center text-blue-700 mb-2">선택약정 (25% 요금할인)</h3>
               <div className="text-green-600 font-bold text-lg">단말기 할부원금: {principal_Selective.toLocaleString()}원 {installMonths > 0 && principal_Selective > 0 && <span className="text-sm font-normal ml-2 text-gray-600">(총 이자: {totalInterest_Selective.toLocaleString()}원)</span>}</div>
               <div className="text-blue-600 font-bold text-lg">월 할부금: {monthlyDevice_Selective.toLocaleString()}원</div>
               <div className="text-blue-600 font-bold text-lg">월 통신요금: {planPrice_Selective.toLocaleString()}원 <span className="text-sm font-normal ml-2 text-gray-600">({monthlyPlanDiscount.toLocaleString()}원 할인)</span></div>
               <div className="text-black font-bold text-2xl mt-2 pt-2 border-t border-gray-300">월 납부 예상금액: <span className="ml-2">{totalMonthly_Selective.toLocaleString()}원</span></div>
-              <div className="text-red-600 font-extrabold text-xl mt-1 pt-1 border-t border-dashed border-black">총 유지비용: <span className="ml-2">{(totalMonthly_Selective * 24).toLocaleString()}원</span></div>
+              <div className="text-red-600 font-extrabold text-xl mt-1 pt-1 border-t border-dashed border-black">총 유지비용: <span className="ml-2">{(totalCost1_Selective).toLocaleString()}원</span></div>
             </div>
+            
+            {/* 가운데 차액 표시 뱃지 */}
+            {diff1 > 0 && (
+              <div className="hidden md:flex absolute bottom-4 left-1/2 -translate-x-1/2 bg-white border-2 border-red-500 text-red-600 font-extrabold text-lg px-6 py-1.5 rounded-full shadow-[0_4px_12px_rgba(0,0,0,0.15)] z-20 items-center justify-center whitespace-nowrap">
+                {winner1} {diff1.toLocaleString()}원 더 유리함
+              </div>
+            )}
           </div>
         </div>
         
         {/* 계산 결과 2: 6개월 후 요금제 변경 */}
         <div className="mt-8 border-t-2 border-dashed border-black pt-6">
           <div className="flex items-end gap-4 mb-3 w-full">
-            <h3 className="text-xl font-bold text-red-600 pb-2">6개월 후 요금제 변경</h3>
+            <h3 className="text-xl font-bold text-red-600 pb-2">6개월 후 요금제 변경할 경우</h3>
             <div className="flex flex-col flex-1 min-w-0 max-w-[300px]">
               <div className="text-red-500 font-bold text-sm mb-1 text-center w-full">변경할 요금제</div>
               <div className="relative w-full" ref={planDropdownRef2}>
@@ -808,29 +827,36 @@ function MaintenanceCostPopup({ onClose, operator, plans, features, initialData 
             </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-px bg-gray-200 rounded shadow-md overflow-hidden">
-            <div className={`p-4 flex flex-col gap-1.5 transition-all ${highlightClassPublic2}`}>
+          <div className="relative grid grid-cols-1 md:grid-cols-2 gap-px bg-gray-200 rounded shadow-md overflow-hidden">
+            <div className={`p-4 pb-20 flex flex-col gap-1.5 transition-all relative ${highlightClassPublic2}`}>
               <h3 className="text-xl font-bold text-center text-blue-700 mb-2">공통지원</h3>
               <div className="text-green-600 font-bold text-lg">단말기 할부원금: {principal_Public.toLocaleString()}원 {installMonths > 0 && principal_Public > 0 && <span className="text-sm font-normal ml-2 text-gray-600">(총 이자: {totalInterest_Public.toLocaleString()}원)</span>}</div>
               <div className="text-blue-600 font-bold text-lg">월 할부금: {monthlyDevice_Public.toLocaleString()}원</div>
               <div className="text-blue-600 font-bold text-lg">월 통신요금: {originalPlanPrice2.toLocaleString()}원</div>
               <div className="text-black font-bold text-2xl mt-2 pt-2 border-t border-gray-300">월 납부 예상금액: <span className="ml-2">{totalMonthly_Public2.toLocaleString()}원</span></div>
               <div className="text-red-600 font-extrabold text-xl mt-1 pt-1 border-t border-dashed border-black">
-                총 유지비용: <span className="ml-2">{((totalMonthly_Public * 6) + (totalMonthly_Public2 * 18)).toLocaleString()}원</span>
-                <span className="block text-sm font-normal text-gray-500 mt-0.5">({totalMonthly_Public.toLocaleString()}원 × 6개월 + {totalMonthly_Public2.toLocaleString()}원 × 18개월)</span>
+                총 유지비용: <span className="ml-2">{totalCost2_Public.toLocaleString()}원</span>
+                <span className="block text-sm font-bold text-gray-700 mt-0.5">({totalMonthly_Public.toLocaleString()}원 × 6개월 + {totalMonthly_Public2.toLocaleString()}원 × 18개월)</span>
               </div>
             </div>
-            <div className={`p-4 flex flex-col gap-1.5 transition-all ${highlightClassSelective2}`}>
+            <div className={`p-4 pb-20 flex flex-col gap-1.5 transition-all relative ${highlightClassSelective2}`}>
               <h3 className="text-xl font-bold text-center text-blue-700 mb-2">선택약정 (25% 요금할인)</h3>
               <div className="text-green-600 font-bold text-lg">단말기 할부원금: {principal_Selective.toLocaleString()}원 {installMonths > 0 && principal_Selective > 0 && <span className="text-sm font-normal ml-2 text-gray-600">(총 이자: {totalInterest_Selective.toLocaleString()}원)</span>}</div>
               <div className="text-blue-600 font-bold text-lg">월 할부금: {monthlyDevice_Selective.toLocaleString()}원</div>
               <div className="text-blue-600 font-bold text-lg">월 통신요금: {planPrice_Selective2.toLocaleString()}원 <span className="text-sm font-normal ml-2 text-gray-600">({monthlyPlanDiscount2.toLocaleString()}원 할인)</span></div>
               <div className="text-black font-bold text-2xl mt-2 pt-2 border-t border-gray-300">월 납부 예상금액: <span className="ml-2">{totalMonthly_Selective2.toLocaleString()}원</span></div>
               <div className="text-red-600 font-extrabold text-xl mt-1 pt-1 border-t border-dashed border-black">
-                총 유지비용: <span className="ml-2">{((totalMonthly_Selective * 6) + (totalMonthly_Selective2 * 18)).toLocaleString()}원</span>
-                <span className="block text-sm font-normal text-gray-500 mt-0.5">({totalMonthly_Selective.toLocaleString()}원 × 6개월 + {totalMonthly_Selective2.toLocaleString()}원 × 18개월)</span>
+                총 유지비용: <span className="ml-2">{totalCost2_Selective.toLocaleString()}원</span>
+                <span className="block text-sm font-bold text-gray-700 mt-0.5">({totalMonthly_Selective.toLocaleString()}원 × 6개월 + {totalMonthly_Selective2.toLocaleString()}원 × 18개월)</span>
               </div>
             </div>
+            
+            {/* 가운데 차액 표시 뱃지 */}
+            {diff2 > 0 && (
+              <div className="hidden md:flex absolute bottom-4 left-1/2 -translate-x-1/2 bg-white border-2 border-red-500 text-red-600 font-extrabold text-lg px-6 py-1.5 rounded-full shadow-[0_4px_12px_rgba(0,0,0,0.15)] z-20 items-center justify-center whitespace-nowrap">
+                {winner2} {diff2.toLocaleString()}원 더 유리함
+              </div>
+            )}
           </div>
         </div>
 
