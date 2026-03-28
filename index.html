@@ -328,8 +328,6 @@ const CATEGORIZED_DEVICE_LIST = [
   }
 ];
 
-const DEVICE_LIST = CATEGORIZED_DEVICE_LIST.flatMap(group => group.devices);
-
 // ------------------ 요금제 데이터 ------------------
 const PLAN_LIST_KT = [
   { category: '5G', name: '5G 초이스 프리미엄', price: 130000 },
@@ -444,6 +442,8 @@ function normalizePlanKey(name) {
   if (n === '스페셜 B') n = '데이터 스페셜 B';
   return n;
 }
+
+const DEVICE_LIST = CATEGORIZED_DEVICE_LIST.flatMap(group => group.devices);
 
 // ------------------ 독립형 유지 비용 팝업 컴포넌트 ------------------
 function MaintenanceCostPopup({ onClose, operator, plans, features, initialData }) {
@@ -668,6 +668,12 @@ function MaintenanceCostPopup({ onClose, operator, plans, features, initialData 
   const totalMonthly_Selective = monthlyDevice_Selective + planPrice_Selective;
   const totalInterest_Selective = installMonths === 0 ? 0 : Math.max(0, (monthlyDevice_Selective * installMonths) - principal_Selective);
 
+  // 1. 개통 요금제 유지 차액 계산
+  const totalCost1_Public = totalMonthly_Public * 24;
+  const totalCost1_Selective = totalMonthly_Selective * 24;
+  const diff1 = Math.abs(totalCost1_Public - totalCost1_Selective);
+  const winner1 = totalCost1_Public < totalCost1_Selective ? '공통지원' : (totalCost1_Selective < totalCost1_Public ? '선택약정' : '동일');
+
   const highlightClassPublic = totalMonthly_Public < totalMonthly_Selective ? 'bg-green-50 ring-2 ring-green-500 z-10' : 'bg-white';
   const highlightClassSelective = totalMonthly_Selective < totalMonthly_Public ? 'bg-green-50 ring-2 ring-green-500 z-10' : 'bg-white';
   
@@ -679,20 +685,15 @@ function MaintenanceCostPopup({ onClose, operator, plans, features, initialData 
   const planPrice_Selective2 = Math.round(originalPlanPrice2 * 0.75);
   const totalMonthly_Selective2 = monthlyDevice_Selective + planPrice_Selective2;
 
-  const highlightClassPublic2 = totalMonthly_Public2 < totalMonthly_Selective2 ? 'bg-green-50 ring-2 ring-green-500 z-10' : 'bg-white';
-  const highlightClassSelective2 = totalMonthly_Selective2 < totalMonthly_Public2 ? 'bg-green-50 ring-2 ring-green-500 z-10' : 'bg-white';
-
-  // 1. 개통 요금제 유지 차액 계산
-  const totalCost1_Public = totalMonthly_Public * 24;
-  const totalCost1_Selective = totalMonthly_Selective * 24;
-  const diff1 = Math.abs(totalCost1_Public - totalCost1_Selective);
-  const winner1 = totalCost1_Public < totalCost1_Selective ? '공통지원' : (totalCost1_Selective < totalCost1_Public ? '선택약정' : '동일');
-
-  // 2. 6개월 후 요금제 변경 차액 계산
+  // 2. 6개월 후 요금제 변경 차액 계산 (총 유지비용 비교)
   const totalCost2_Public = (totalMonthly_Public * 6) + (totalMonthly_Public2 * 18);
   const totalCost2_Selective = (totalMonthly_Selective * 6) + (totalMonthly_Selective2 * 18);
   const diff2 = Math.abs(totalCost2_Public - totalCost2_Selective);
   const winner2 = totalCost2_Public < totalCost2_Selective ? '공통지원' : (totalCost2_Selective < totalCost2_Public ? '선택약정' : '동일');
+
+  // 변경된 하이라이트 로직: 총 유지비용(totalCost2) 기준으로 비교
+  const highlightClassPublic2 = totalCost2_Public < totalCost2_Selective ? 'bg-green-50 ring-2 ring-green-500 z-10' : 'bg-white';
+  const highlightClassSelective2 = totalCost2_Selective < totalCost2_Public ? 'bg-green-50 ring-2 ring-green-500 z-10' : 'bg-white';
 
   const handleContractTypeChange = (newType) => setContractType(newType);
 
