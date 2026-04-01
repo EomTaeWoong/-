@@ -1330,7 +1330,7 @@ function App() {
         </div>
         
         <div className="flex items-center ml-auto gap-2 shrink-0">
-          <input type="text" value={trackingNumber} onChange={(e) => setTrackingNumber(e.target.value.replace(/\D/g, ''))} onKeyDown={(e) => e.key === 'Enter' && handleTrackingSearch()} placeholder="CJ 대한통운 송장번호" className="border p-2 rounded w-36 h-[40px] text-sm" />
+          <input type="text" value={trackingNumber} onChange={(e) => setTrackingNumber(e.target.value.replace(/\D/g, ''))} onKeyDown={(e) => e.key === 'Enter' && handleTrackingSearch()} placeholder="CJ 대한통운 송장번호" className="border p-2 rounded w-40 h-[40px] text-sm" />
           <button onClick={handleTrackingSearch} className="bg-amber-500 text-white px-3 py-2 rounded hover:bg-amber-600 h-[40px] text-sm whitespace-nowrap">배송조회</button>
         </div>
       </div>
