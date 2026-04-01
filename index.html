@@ -869,7 +869,7 @@ function MaintenanceCostPopup({ onClose, operator, plans, features, initialData 
 // ------------------ 요금제 정리 팝업 ------------------
 function PlanSummaryPopup({ operator, onClose }) {
   const ktImage = "https://img1.daumcdn.net/thumb/R1280x0/?scode=mtistory2&fname=https%3A%2F%2Fblog.kakaocdn.net%2Fdna%2FevZYiJ%2FdJMb99Z9Az9%2FAAAAAAAAAAAAAAAAAAAAAPRMkixSiLJO6XMGYYlBSVDVSF8TXxjo5giBzWtkwLxq%2Fimg.png%3Fcredential%3DyqXZFxpELC7KVnFOS48ylbz2pIh7yKj8%26expires%3D1774969199%26allow_ip%3D%26allow_referer%3D%26signature%3Dnww2JGjldVW8Jn1g%252FR9kdDjehvM%253D";
-  const uImage = "https://img1.daumcdn.net/thumb/R1280x0/?scode=mtistory2&fname=https%3A%2F%2Fblog.kakaocdn.net%2Fdna%2FbgyLjn%2FdJMcagZexNw%2FAAAAAAAAAAAAAAAAAAAAAOqOLAPO9La9WYlHCqEIJSWh9otkciviC-Ok3Kjnd0Q7%2Fimg.png%3Fcredential%3DyqXZFxpELC7KVnFOS48ylbz2pIh7yKj8%26expires%3D1774969199%26allow_ip%3D%26allow_referer%3D%26signature%3Dw1FPsz5FWQoYQzSMr5VZBdrNYSQ%253D";
+  const uImage = "https://img1.daumcdn.net/thumb/R1280x0/?scode=mtistory2&fname=https%3A%2F%2Fblog.kakaocdn.net%2Fdna%2F6r5wU%2FdJMcahw9xVh%2FAAAAAAAAAAAAAAAAAAAAABYw_gUIzFwVLH71P1sS9k4GsIcOW3XJ4hE98FU32dZq%2Fimg.png%3Fcredential%3DyqXZFxpELC7KVnFOS48ylbz2pIh7yKj8%26expires%3D1777561199%26allow_ip%3D%26allow_referer%3D%26signature%3Dj5pcWdDxVrZY5dq%252F6hzhsu6xesc%253D";
   const imageSrc = operator === 'KT' ? ktImage : uImage;
 
   return (
@@ -1316,8 +1316,8 @@ function App() {
         <button className={`px-4 py-2 rounded text-sm font-bold shrink-0 ${operator === 'KT' ? 'bg-blue-600 text-white shadow' : 'bg-white border'}`} onClick={() => setOperator('KT')}>KT</button>
         <button className={`px-4 py-2 rounded text-sm font-bold shrink-0 ${operator === 'U' ? 'bg-green-600 text-white shadow' : 'bg-white border'}`} onClick={() => setOperator('U')}>U+</button>
         
-        {operator === 'KT' && <a href="https://shop.kt.com/mobile/products.do?&=&category=mobile" target="_blank" className="ml-2 bg-blue-500 text-white px-3 py-2 rounded hover:bg-blue-600 text-sm whitespace-nowrap shrink-0">KT닷컴</a>}
-        {operator === 'U' && <a href="https://www.lguplus.com/mobile/device/phone" target="_blank" className="ml-2 bg-green-500 text-white px-3 py-2 rounded hover:bg-green-600 text-sm whitespace-nowrap shrink-0">U+닷컴</a>}
+        {operator === 'KT' && <a href="https://shop.kt.com/smart/supportAmtList.do" target="_blank" className="ml-2 bg-blue-500 text-white px-3 py-2 rounded hover:bg-blue-600 text-sm whitespace-nowrap shrink-0">KT닷컴</a>}
+        {operator === 'U' && <a href="https://www.lguplus.com/mobile/financing-model" target="_blank" className="ml-2 bg-green-500 text-white px-3 py-2 rounded hover:bg-green-600 text-sm whitespace-nowrap shrink-0">U+닷컴</a>}
         
         <div className="flex items-center ml-2 shrink-0">
           <a href="https://www.samsung.com/sec/smartphones/all-smartphones/?carrier-phone" target="_blank" className="bg-gray-800 text-white px-3 py-2 rounded hover:bg-gray-900 text-sm whitespace-nowrap">삼성닷컴</a>
