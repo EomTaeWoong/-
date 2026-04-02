@@ -891,12 +891,32 @@ function RequestFormPopup({ onClose }) {
     { title: '[세금계산서 발행 신청양식]', content: `개인사업자 번호\n사업자 등록증 사진 (PDF 파일)\n└ hyejin1106.min@samsung.com (혜진 프로님)\n고객 이메일 주소\n발행 등록할 연락처\n\n* 통신요금 관련은 통신사 고객센터 안내` }
   ];
   const handleCopy = (text) => { navigator.clipboard.writeText(text).then(() => alert('복사되었습니다.')); };
+  
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
       <div className="bg-white p-6 rounded-lg shadow-xl relative w-full max-w-md max-h-[90vh] overflow-y-auto">
         <button onClick={onClose} className="absolute top-3 right-3 text-gray-400 hover:text-gray-800 text-2xl leading-none">&times;</button>
         <h2 className="text-xl font-bold mb-5 text-center text-gray-800">요청 양식</h2>
-        <div className="space-y-6">"https://img1.daumcdn.net/thumb/R1280x0/?scode=mtistory2&fname=https%3A%2F%2Fblog.kakaocdn.net%2Fdna%2FbevdsJ%2FdJMcagSj4SW%2FAAAAAAAAAAAAAAAAAAAAAMj01de6fYcg_ys7_QqkrBCaH_hOZpng5tj8L05Up44w%2Fimg.png%3Fcredential%3DyqXZFxpELC7KVnFOS48ylbz2pIh7yKj8%26expires%3D1777561199%26allow_ip%3D%26allow_referer%3D%26signature%3DhzoQqR3QfGeTlNmv5GDTjIJOs%252Fs%253D"; 
+        <div className="space-y-6">
+          {sections.map((sec, idx) => (
+            <div key={idx}>
+              <div className="flex justify-between items-center mb-2">
+                <h3 className="font-bold text-blue-600">{sec.title}</h3>
+                <button onClick={() => handleCopy(sec.content)} className="text-xs bg-gray-100 hover:bg-gray-200 border px-2 py-1 rounded">복사</button>
+              </div>
+              <pre className="bg-gray-50 p-3 rounded text-sm text-gray-700 whitespace-pre-wrap font-sans border border-gray-200">{sec.content}</pre>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ------------------ 단말기 색상 팝업 컴포넌트 ------------------
+function DeviceColorPopup({ onClose }) {
+  const imageSrc = "https://img1.daumcdn.net/thumb/R1280x0/?scode=mtistory2&fname=https%3A%2F%2Fblog.kakaocdn.net%2Fdna%2FbevdsJ%2FdJMcagSj4SW%2FAAAAAAAAAAAAAAAAAAAAAMj01de6fYcg_ys7_QqkrBCaH_hOZpng5tj8L05Up44w%2Fimg.png%3Fcredential%3DyqXZFxpELC7KVnFOS48ylbz2pIh7yKj8%26expires%3D1777561199%26allow_ip%3D%26allow_referer%3D%26signature%3DhzoQqR3QfGeTlNmv5GDTjIJOs%252Fs%253D"; 
+
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
       <div className="bg-white p-2 rounded-lg shadow-xl relative w-full max-w-5xl h-[90vh] flex flex-col">
@@ -1284,7 +1304,7 @@ function App() {
   const handleTitleChange = (e) => { if (e.target.value.length <= 8) setTempTitle(e.target.value); };
   const handleSaveTitle = (id) => { if(tempTitle.trim()) setMemos(memos.map(m => m.id === id ? { ...m, title: tempTitle } : m)); setEditingTabId(null); };
   const handleKeyDown = (e, id) => { if (e.key === 'Enter') handleSaveTitle(id); else if (e.key === 'Escape') setEditingTabId(null); };
-  const handleDeleteMemo = (id) => { if(memos.length <= 1) { alert("마지막 메모 탭은 삭제할 수 없습니다."); return; } const n = memos.filter(m => m.id !== id); setMemos(n); if(activeMemoId === id) setActiveMemoId(n[0].id); };
+  const handleDeleteMemo = (id) => { if(memos.length <= 1) { alert("마지막 메모 탭은 삭제할 수 테없습니다."); return; } const n = memos.filter(m => m.id !== id); setMemos(n); if(activeMemoId === id) setActiveMemoId(n[0].id); };
   const handleStatusChange = (s) => setMemos(memos.map(m => m.id === activeMemoId ? { ...m, status: m.status === s ? null : s } : m));
   const handleSaveMemosToFile = () => { if (!memos.some(m => m.content.trim() || m.status)) return alert('저장할 내용이 없습니다.'); const c = memos.map(m => `[${m.title}]\n${m.content}${m.status ? `\n\n상담 현황: ${m.status}` : ''}`).join('\n\n' + '='.repeat(20) + '\n\n'); const b = new Blob([c], { type: 'text/plain;charset=utf-8' }); const a = document.createElement('a'); a.href = URL.createObjectURL(b); a.download = '메모.txt'; a.click(); };
   const handleTrackingSearch = () => { if (!trackingNumber || !/^\d+$/.test(trackingNumber)) return alert('숫자로 된 송장번호를 입력해주세요.'); window.open(`https://trace.cjlogistics.com/next/tracking.html?wblNo=${trackingNumber}`, 'cjTrackingPopup', 'width=1600,height=900,scrollbars=yes,resizable=yes'); setTrackingNumber(''); };
