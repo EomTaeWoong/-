@@ -844,7 +844,7 @@ function MaintenanceCostPopup({ onClose, operator, plans, features, initialData 
 
                 <div className="flex justify-between text-black font-bold text-[15px] mb-1">
                   <span>할부원금</span>
-                  <span>{principal_Public.toLocaleString()} 원</span>
+                  <span className="flex items-center"><span className="text-red-600 font-black text-lg mr-1 leading-none">➔</span> {principal_Public.toLocaleString()} 원</span>
                 </div>
                 {installMonths > 0 && (
                   <div className="flex justify-between text-gray-500 text-[15px]">
@@ -926,7 +926,7 @@ function MaintenanceCostPopup({ onClose, operator, plans, features, initialData 
 
                 <div className="flex justify-between text-black font-bold text-[15px] mb-1">
                   <span>할부원금</span>
-                  <span>{principal_Selective.toLocaleString()} 원</span>
+                  <span className="flex items-center"><span className="text-red-600 font-black text-lg mr-1 leading-none">➔</span> {principal_Selective.toLocaleString()} 원</span>
                 </div>
                 {installMonths > 0 && (
                   <div className="flex justify-between text-gray-500 text-[15px]">
@@ -1049,7 +1049,7 @@ function MaintenanceCostPopup({ onClose, operator, plans, features, initialData 
 
                 <div className="flex justify-between text-black font-bold text-[15px] mb-1">
                   <span>할부원금</span>
-                  <span>{principal_Public.toLocaleString()} 원</span>
+                  <span className="flex items-center"><span className="text-red-600 font-black text-lg mr-1 leading-none">➔</span> {principal_Public.toLocaleString()} 원</span>
                 </div>
                 {installMonths > 0 && (
                   <div className="flex justify-between text-gray-500 text-[15px]">
@@ -1135,7 +1135,7 @@ function MaintenanceCostPopup({ onClose, operator, plans, features, initialData 
 
                 <div className="flex justify-between text-black font-bold text-[15px] mb-1">
                   <span>할부원금</span>
-                  <span>{principal_Selective.toLocaleString()} 원</span>
+                  <span className="flex items-center"><span className="text-red-600 font-black text-lg mr-1 leading-none">➔</span> {principal_Selective.toLocaleString()} 원</span>
                 </div>
                 {installMonths > 0 && (
                   <div className="flex justify-between text-gray-500 text-[15px]">
@@ -1634,7 +1634,7 @@ onClick={() => { setSelectedPlan(p.name); setPlanSearchTerm(`${p.name} (${p.pric
 
               <div className="flex justify-between text-black font-bold text-[15px] mb-1">
                 <span>할부원금</span>
-                <span>{principal_Public.toLocaleString()} 원</span>
+                <span className="flex items-center"><span className="text-red-600 font-black text-lg mr-1 leading-none">➔</span> {principal_Public.toLocaleString()} 원</span>
               </div>
               {installMonths > 0 && (
                 <div className="flex justify-between text-gray-500 text-[15px]">
@@ -1708,7 +1708,7 @@ onClick={() => { setSelectedPlan(p.name); setPlanSearchTerm(`${p.name} (${p.pric
 
               <div className="flex justify-between text-black font-bold text-[15px] mb-1">
                 <span>할부원금</span>
-                <span>{principal_Selective.toLocaleString()} 원</span>
+                <span className="flex items-center"><span className="text-red-600 font-black text-lg mr-1 leading-none">➔</span> {principal_Selective.toLocaleString()} 원</span>
               </div>
               {installMonths > 0 && (
                 <div className="flex justify-between text-gray-500 text-[15px]">
