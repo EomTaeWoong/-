@@ -445,6 +445,30 @@ function normalizePlanKey(name) {
 
 const DEVICE_LIST = CATEGORIZED_DEVICE_LIST.flatMap(group => group.devices);
 
+// ------------------ 매장 찾기 팝업 컴포넌트 ------------------
+function StoreMapPopup({ onClose }) {
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+      {/* 팝업의 가로 너비를 대폭 넓혀서(max-w-[1400px]) PC 버전 화면(가로 배치)이 나오도록 유도합니다 */}
+      <div className="bg-white p-4 rounded-lg shadow-xl relative w-[95vw] max-w-[1400px] h-[85vh] flex flex-col">
+        <div className="flex justify-between items-center mb-2 px-2 shrink-0">
+          <h2 className="text-xl font-bold text-gray-800">매장 찾기</h2>
+          <button onClick={onClose} className="text-gray-500 hover:text-gray-800 text-3xl leading-none font-bold">&times;</button>
+        </div>
+        <div className="relative flex-1 w-full bg-gray-50 rounded border overflow-hidden">
+          {/* 삼성스토어 사이트의 상단 헤더를 가리고 지도 부분만 보이기 위해 음수 마진 적용 */}
+          <iframe 
+            src="https://www.samsungstore.com/shop/selectFindShopMain.sesc?menu=w401" 
+            className="w-full"
+            style={{ height: 'calc(100% + 220px)', marginTop: '-220px', border: 'none' }}
+            title="매장 찾기 지도"
+          />
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ------------------ 독립형 유지 비용 팝업 컴포넌트 ------------------
 function MaintenanceCostPopup({ onClose, operator, plans, features, initialData }) {
   // 개통 요금제 State
@@ -694,7 +718,6 @@ function MaintenanceCostPopup({ onClose, operator, plans, features, initialData 
   const diff2 = Math.abs(totalCost2_Public - totalCost2_Selective);
   const winner2 = totalCost2_Public < totalCost2_Selective ? '공통지원' : (totalCost2_Selective < totalCost2_Public ? '선택약정' : '동일');
 
-  // 변경된 하이라이트 로직: 총 유지비용(totalCost2) 기준으로 비교
   const highlightClassPublic2 = totalCost2_Public < totalCost2_Selective ? 'bg-green-50 ring-2 ring-green-500 z-10' : 'bg-white';
   const highlightClassSelective2 = totalCost2_Selective < totalCost2_Public ? 'bg-green-50 ring-2 ring-green-500 z-10' : 'bg-white';
 
@@ -1283,7 +1306,8 @@ function NoticePopup({ onClose }) {
 
 // ------------------ 계산기 컴포넌트 ------------------
 function Calculator({
-  plans, features, operator, memos, activeMemoId, setActiveMemoId, editingTabId, setEditingTabId, tempTitle, setTempTitle, titleInputRef, handleMemoChange, handleStartEditing, handleTitleChange, handleSaveTitle, handleKeyDown, handleDeleteMemo, handleAddMemo, handleStatusChange, setShowRequestFormPopup, setShowDeviceColorPopup, setShowPlanSummaryPopup, showMaintenancePopup, setShowMaintenancePopup
+  plans, features, operator, 
+  setShowRequestFormPopup, setShowDeviceColorPopup, setShowPlanSummaryPopup, showMaintenancePopup, setShowMaintenancePopup
 }) {
   const [selectedDevice, setSelectedDevice] = useState(CATEGORIZED_DEVICE_LIST[0].devices[0].name);
   const [selectedPlan, setSelectedPlan] = useState(plans[0]?.name || '');
@@ -1438,10 +1462,6 @@ function Calculator({
   }, [selectedDevice, selectedPlan, operator, isGalcams, joinType, plans]);
 
 
-  useEffect(() => {
-    if (editingTabId !== null && titleInputRef.current) { titleInputRef.current.focus(); titleInputRef.current.select(); }
-  }, [editingTabId]);
-
   const devicePrice = useMemo(()=> DEVICE_LIST.find(d=>d.name===selectedDevice)?.price || 0, [selectedDevice]);
   const monthlyPlanDiscount = useMemo(() => Math.round(originalPlanPrice * 0.25), [originalPlanPrice]);
   const totalPlanDiscount = useMemo(() => monthlyPlanDiscount * 24, [monthlyPlanDiscount]);
@@ -1465,9 +1485,6 @@ function Calculator({
 
   const highlightClassPublic = totalMonthly_Public < totalMonthly_Selective ? 'bg-green-50 ring-2 ring-green-500 z-10' : 'bg-white';
   const highlightClassSelective = totalMonthly_Selective < totalMonthly_Public ? 'bg-green-50 ring-2 ring-green-500 z-10' : 'bg-white';
-
-  const activeMemo = memos.find(memo => memo.id === activeMemoId);
-  const consultationStatuses = ['상담완료', '상담부재', '서식지 작성안내완료', '서식지 미접수(부재)', '보류'];
 
   const handleContractTypeChange = (newType) => setContractType(newType);
 
@@ -1734,13 +1751,6 @@ onClick={() => { setSelectedPlan(p.name); setPlanSearchTerm(`${p.name} (${p.pric
           </div>
         </div>
       </div>
-
-      <div className="mt-3">
-        <div className="flex items-center border-b border-gray-200">{memos.map(memo => (
-          <div key={memo.id} className="relative group"><button onClick={() => setActiveMemoId(memo.id)} onDoubleClick={() => handleStartEditing(memo)} className={`px-4 py-2 text-sm font-medium border-b-2 -mb-px transition-colors duration-200 ease-in-out ${activeMemoId === memo.id ? 'border-blue-600 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'}`}>{editingTabId === memo.id ? <input ref={titleInputRef} type="text" value={tempTitle} onChange={handleTitleChange} onBlur={() => handleSaveTitle(memo.id)} onKeyDown={(e) => handleKeyDown(e, memo.id)} className="p-0 m-0 border-0 focus:ring-0 bg-transparent text-center" style={{ width: `${Math.max(3, tempTitle.length) + 1}ch` }} /> : <span>{memo.title}</span>}</button>{memos.length > 1 && <button onClick={() => handleDeleteMemo(memo.id)} className="absolute top-0 right-0 p-1 text-gray-400 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity">×</button>}</div>))}<button onClick={handleAddMemo} className="ml-2 px-3 py-1 text-sm text-gray-500 hover:text-blue-600 hover:bg-gray-100 rounded-full">+</button></div>
-        <textarea value={activeMemo?.content || ''} onChange={handleMemoChange} rows="6" className="p-2 border border-gray-300 rounded-b shadow-sm w-full focus:ring-blue-500 focus:border-blue-500 mt-[-1px]" placeholder={`[사용방법]\n1. "+" 버튼을 눌러 메모 탭을 추가할 수 있습니다.\n2. 각 탭의 제목을 더블클릭하여 글자 수정이 가능합니다. (한글기준 최대 8글자)\n3. 하단에 있는 상태값을 클릭하여 현황 체크가 가능합니다.\n   (활성화/비활성화 및 탭 마다 개별 지정 가능)\n4. 상단에 '메모 저장' 버튼을 누르면 메모 탭 전체가 저장됩니다.`} spellCheck="false"></textarea>
-      </div>
-      <div className="mt-3 p-3 border rounded bg-white shadow-sm"><div className="text-sm font-medium text-gray-700 mb-2">상담 현황</div><div className="flex flex-wrap gap-x-4 gap-y-2">{consultationStatuses.map(status => (<button key={status} onClick={() => handleStatusChange(status)} className={`px-3 py-1 text-xs rounded-full cursor-pointer transition-colors ${activeMemo?.status === status ? 'bg-blue-600 text-white font-semibold' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'}`}>{status}</button>))}</div></div>
       
       {/* 완전히 독립적으로 작동하는 유지 비용 팝업 (초기값으로 메인 화면의 데이터를 넘겨줌) */}
       {showMaintenancePopup && (
@@ -1769,22 +1779,8 @@ function App() {
   const [showPlanSummaryPopup, setShowPlanSummaryPopup] = useState(false);
   const [showNoticePopup, setShowNoticePopup] = useState(true);
   const [showMaintenancePopup, setShowMaintenancePopup] = useState(false);
-  const [memos, setMemos] = useState([{ id: 1, title: '메모 1', content: '', status: null }]);
-  const [activeMemoId, setActiveMemoId] = useState(1);
-  const [editingTabId, setEditingTabId] = useState(null);
-  const [tempTitle, setTempTitle] = useState('');
-  const titleInputRef = useRef(null);
+  const [showStorePopup, setShowStorePopup] = useState(false); // 매장 찾기 팝업 상태
 
-
-  const handleAddMemo = () => { const newId = (memos.length > 0 ? Math.max(...memos.map(m => m.id)) : 0) + 1; setMemos([...memos, { id: newId, title: `메모 ${newId}`, content: '', status: null }]); setActiveMemoId(newId); };
-  const handleMemoChange = (e) => setMemos(memos.map(m => m.id === activeMemoId ? { ...m, content: e.target.value } : m));
-  const handleStartEditing = (m) => { setEditingTabId(m.id); setTempTitle(m.title); };
-  const handleTitleChange = (e) => { if (e.target.value.length <= 8) setTempTitle(e.target.value); };
-  const handleSaveTitle = (id) => { if(tempTitle.trim()) setMemos(memos.map(m => m.id === id ? { ...m, title: tempTitle } : m)); setEditingTabId(null); };
-  const handleKeyDown = (e, id) => { if (e.key === 'Enter') handleSaveTitle(id); else if (e.key === 'Escape') setEditingTabId(null); };
-  const handleDeleteMemo = (id) => { if(memos.length <= 1) { alert("마지막 메모 탭은 삭제할 수 테없습니다."); return; } const n = memos.filter(m => m.id !== id); setMemos(n); if(activeMemoId === id) setActiveMemoId(n[0].id); };
-  const handleStatusChange = (s) => setMemos(memos.map(m => m.id === activeMemoId ? { ...m, status: m.status === s ? null : s } : m));
-  const handleSaveMemosToFile = () => { if (!memos.some(m => m.content.trim() || m.status)) return alert('저장할 내용이 없습니다.'); const c = memos.map(m => `[${m.title}]\n${m.content}${m.status ? `\n\n상담 현황: ${m.status}` : ''}`).join('\n\n' + '='.repeat(20) + '\n\n'); const b = new Blob([c], { type: 'text/plain;charset=utf-8' }); const a = document.createElement('a'); a.href = URL.createObjectURL(b); a.download = '메모.txt'; a.click(); };
   const handleTrackingSearch = () => { if (!trackingNumber || !/^\d+$/.test(trackingNumber)) return alert('숫자로 된 송장번호를 입력해주세요.'); window.open(`https://trace.cjlogistics.com/next/tracking.html?wblNo=${trackingNumber}`, 'cjTrackingPopup', 'width=1600,height=900,scrollbars=yes,resizable=yes'); setTrackingNumber(''); };
 
   const plans = useMemo(()=> operator==='KT'?PLAN_LIST_KT:PLAN_LIST_U, [operator]);
@@ -1805,7 +1801,8 @@ function App() {
         
         <div className="flex items-center ml-2 gap-2 shrink-0">
           <button onClick={() => setShowMaintenancePopup(true)} className="bg-indigo-600 text-white px-3 py-2 rounded hover:bg-indigo-700 text-sm font-medium shadow whitespace-nowrap">유지 비용</button>
-          <button onClick={handleSaveMemosToFile} className="bg-emerald-600 text-white px-3 py-2 rounded hover:bg-emerald-700 text-sm whitespace-nowrap">메모 저장</button>
+          {/* 메모 저장 버튼 삭제 및 매장 찾기 버튼으로 대체 */}
+          <button onClick={() => setShowStorePopup(true)} className="bg-emerald-600 text-white px-3 py-2 rounded hover:bg-emerald-700 text-sm whitespace-nowrap">매장 찾기</button>
           <button onClick={() => setShowPopup(true)} className="bg-gray-600 text-white px-3 py-2 rounded hover:bg-gray-700 text-sm whitespace-nowrap">고객센터</button>
         </div>
         
@@ -1816,7 +1813,7 @@ function App() {
       </div>
 
       <Calculator 
-        plans={plans} features={features} operator={operator} memos={memos} activeMemoId={activeMemoId} setActiveMemoId={setActiveMemoId} editingTabId={editingTabId} setEditingTabId={setEditingTabId} tempTitle={tempTitle} setTempTitle={setTempTitle} titleInputRef={titleInputRef} handleMemoChange={handleMemoChange} handleStartEditing={handleStartEditing} handleTitleChange={handleTitleChange} handleSaveTitle={handleSaveTitle} handleKeyDown={handleKeyDown} handleDeleteMemo={handleDeleteMemo} handleAddMemo={handleAddMemo} handleStatusChange={handleStatusChange} 
+        plans={plans} features={features} operator={operator} 
         setShowRequestFormPopup={setShowRequestFormPopup} setShowDeviceColorPopup={setShowDeviceColorPopup} setShowPlanSummaryPopup={setShowPlanSummaryPopup} 
         showMaintenancePopup={showMaintenancePopup} setShowMaintenancePopup={setShowMaintenancePopup} 
       />
@@ -1825,6 +1822,7 @@ function App() {
       {showDeviceColorPopup && <DeviceColorPopup onClose={() => setShowDeviceColorPopup(false)} />}
       {showPlanSummaryPopup && <PlanSummaryPopup operator={operator} onClose={() => setShowPlanSummaryPopup(false)} />}
       {showNoticePopup && <NoticePopup onClose={() => setShowNoticePopup(false)} />}
+      {showStorePopup && <StoreMapPopup onClose={() => setShowStorePopup(false)} />}
     </div>
   );
 }
