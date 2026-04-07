@@ -282,6 +282,118 @@ const POLICY = {
 };
 // =====================================================================
 
+// =====================================================================
+// 💡 [색상 복사 텍스트 설정] 단말기별 색상과 복사될 텍스트를 추가/수정하세요 💡
+// =====================================================================
+const DEVICE_COLORS_MAP = {
+  // 예시: S26 울트라 512기가 색상 설정
+  'S26 울트라｜512기가': [
+    { name: '코발트 바이올렛', copyText: 'SM-S948NZVWKOD' },
+    { name: '화이트', copyText: 'SM-S948NZWWKOD' },
+    { name: '스카이 블루', copyText: 'SM-S948NLBWKOD' },
+    { name: '블랙', copyText: 'SM-S948NZKWKOD' },
+  ],
+
+  'S26 울트라｜256기가': [
+    { name: '코발트 바이올렛', copyText: 'SM-S948NZVBKOD' },
+    { name: '화이트', copyText: 'SM-S948NZWBKOD' },
+    { name: '스카이 블루', copyText: 'SM-S948NLBBKOD' },
+    { name: '블랙', copyText: 'SM-S948NZKBKOD' },
+  ],
+  
+  'S26 플러스｜512기가': [
+    { name: '코발트 바이올렛', copyText: 'SM-S947NZVEKOD' },
+    { name: '화이트', copyText: 'SM-S947NZWEKOD' },
+    { name: '스카이 블루', copyText: 'SM-S947NLBEKOD' },
+    { name: '블랙', copyText: 'SM-S947NZKEKOD' },
+  ],
+
+  'S26 플러스｜256기가': [
+    { name: '코발트 바이올렛', copyText: 'SM-S947NZVAKOD' },
+    { name: '화이트', copyText: 'SM-S947NZWAKOD' },
+    { name: '스카이 블루', copyText: 'SM-S947NLBAKOD' },
+    { name: '블랙', copyText: 'SM-S947NZKAKOD' },
+  ],
+
+  'S26｜512기가': [
+    { name: '코발트 바이올렛', copyText: 'SM-S942NZKFKOD' },
+    { name: '화이트', copyText: 'SM-S942NZWFKOD' },
+    { name: '스카이 블루', copyText: 'SM-S942NLBFKOD' },
+    { name: '블랙', copyText: 'SM-S942NZKFKOD' },
+  ],
+
+  'S26｜256기가': [
+    { name: '코발트 바이올렛', copyText: 'SM-S942NZVEKOD' },
+    { name: '화이트', copyText: 'SM-S942NZWEKOD' },
+    { name: '스카이 블루', copyText: 'SM-S942NLBEKOD' },
+    { name: '블랙', copyText: 'SM-S942NZKEKOD' },
+  ],
+
+  'S25 엣지｜256기가': [
+    { name: '티타늄 실버', copyText: 'SM-S937NZSBKOD' },
+    { name: '티타늄 아이스블루', copyText: 'SM-S937NLBBKOD' },
+    { name: '티타늄 제트블랙', copyText: 'SM-S937NZKBKOD' },
+  ],
+
+  'S25 울트라｜256기가': [
+    { name: '티타늄 블랙', copyText: 'SM-S938NZKAKOD' },
+    { name: '티타늄 그레이', copyText: 'SM-S938NZTAKOD' },
+    { name: '티타늄 실버블루', copyText: 'SM-S938NZBAKOD' },
+    { name: '티타늄 화이트실버', copyText: 'SM-S938NZSAKOD' },
+  ],
+
+  'S25 플러스｜256기가': [
+    { name: '아이스블루', copyText: 'SM-S936NLBAKOD' },
+    { name: '민트', copyText: 'SM-S936NLGAKOD' },
+    { name: '네이비', copyText: 'SM-S936NDBAKOD' },
+    { name: '실버 쉐도우', copyText: 'SM-S936NZSAKOD' },
+  ],
+
+  'S25｜256기가': [
+    { name: '아이스블루', copyText: 'SM-S931NLBEKOD' },
+    { name: '민트', copyText: 'SM-S931NLGEKOD' },
+    { name: '네이비', copyText: 'SM-S931NDBEKOD' },
+    { name: '실버 쉐도우', copyText: 'SM-S931NZSEKOD' },
+  ],
+
+  'S25 FE｜256기가': [
+    { name: '네이비', copyText: 'SM-S731NDBWKOD' },
+    { name: '아이스블루', copyText: 'SM-S731NLBWKOD' },
+    { name: '제트블랙', copyText: 'SM-S731NZKWKOD' },
+    { name: '화이트', copyText: 'SM-S731NZWWKOD' },
+  ],
+
+  '폴드7｜256기가': [
+    { name: '블루 쉐도우', copyText: 'SM-F966NDBAKOD' },
+    { name: '제트블랙', copyText: 'SM-F966NZKAKOD' },
+    { name: '실버 쉐도우', copyText: 'SM-F966NZSAKOD' },
+  ],
+
+  '플립7｜256기가': [
+    { name: '블루 쉐도우', copyText: 'SM-F766NDBAKOD' },
+    { name: '코랄레드', copyText: 'SM-F766NZRAKOD' },
+    { name: '제트블랙', copyText: 'SM-F766NZKAKOD' },
+  ],
+
+  '플립7 FE｜256기가': [
+    { name: '블랙', copyText: 'SM-F761NZKVKOD' },
+    { name: '화이트', copyText: 'SM-F761NZWVKOD' },
+  ],
+
+  'A36 5G｜128기가': [
+    { name: '어썸 라벤더', copyText: 'SM-A366NLVAKOD' },
+    { name: '어썸 화이트', copyText: 'SM-A366NZAAKOD' },
+    { name: '어썸 블랙', copyText: 'SM-A366NZKAKOD' },
+  ],
+
+  'A17 LTE｜128기가': [
+    { name: '블랙', copyText: 'SM-A175NZKAKOD' },
+    { name: '그레이', copyText: 'SM-A175NZAAKOD' },
+    { name: '라이트 블루', copyText: 'SM-A175NLBAKOD' },
+  ],
+};
+// =====================================================================
+
 // 월 할부 계산 함수
 function pmt(rate, nper, pv) {
   if(rate===0) return pv/nper;
@@ -449,14 +561,12 @@ const DEVICE_LIST = CATEGORIZED_DEVICE_LIST.flatMap(group => group.devices);
 function StoreMapPopup({ onClose }) {
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      {/* 팝업의 가로 너비를 대폭 넓혀서(max-w-[1400px]) PC 버전 화면(가로 배치)이 나오도록 유도합니다 */}
       <div className="bg-white p-4 rounded-lg shadow-xl relative w-[95vw] max-w-[1400px] h-[85vh] flex flex-col">
         <div className="flex justify-between items-center mb-2 px-2 shrink-0">
           <h2 className="text-xl font-bold text-gray-800">매장 찾기</h2>
           <button onClick={onClose} className="text-gray-500 hover:text-gray-800 text-3xl leading-none font-bold">&times;</button>
         </div>
         <div className="relative flex-1 w-full bg-gray-50 rounded border overflow-hidden">
-          {/* 삼성스토어 사이트의 상단 헤더를 가리고 지도 부분만 보이기 위해 음수 마진 적용 */}
           <iframe 
             src="https://www.samsungstore.com/shop/selectFindShopMain.sesc?menu=w401" 
             className="w-full"
@@ -471,7 +581,6 @@ function StoreMapPopup({ onClose }) {
 
 // ------------------ 독립형 유지 비용 팝업 컴포넌트 ------------------
 function MaintenanceCostPopup({ onClose, operator, plans, features, initialData }) {
-  // 개통 요금제 State
   const [selectedDevice, setSelectedDevice] = useState(initialData?.selectedDevice || CATEGORIZED_DEVICE_LIST[0].devices[0].name);
   const [selectedPlan, setSelectedPlan] = useState(initialData?.selectedPlan || plans[0]?.name || '');
   const [installMonths, setInstallMonths] = useState(initialData?.installMonths ?? 24);
@@ -490,7 +599,6 @@ function MaintenanceCostPopup({ onClose, operator, plans, features, initialData 
   const [isPlanDropdownOpen, setIsPlanDropdownOpen] = useState(false);
   const planDropdownRef = useRef(null);
 
-  // 6개월 후 변경 요금제 State
   const [selectedPlan2, setSelectedPlan2] = useState(initialData?.selectedPlan || plans[0]?.name || '');
   const [planSearchTerm2, setPlanSearchTerm2] = useState('');
   const [isPlanDropdownOpen2, setIsPlanDropdownOpen2] = useState(false);
@@ -498,7 +606,6 @@ function MaintenanceCostPopup({ onClose, operator, plans, features, initialData 
   
   const isFirstRender = useRef(true);
 
-  // ------------------ 개통 요금제 검색 드롭다운 설정 ------------------
   useEffect(() => { 
     if (!plans.some(p => p.name === selectedPlan)) setSelectedPlan(plans[0]?.name || ''); 
     if (!plans.some(p => p.name === selectedPlan2)) setSelectedPlan2(plans[0]?.name || ''); 
@@ -534,7 +641,6 @@ function MaintenanceCostPopup({ onClose, operator, plans, features, initialData 
     );
   }, [plans, planSearchTerm, selectedPlan]);
 
-  // ------------------ 6개월 후 요금제 검색 드롭다운 설정 ------------------
   useEffect(() => {
     const plan = plans.find(p => p.name === selectedPlan2);
     setPlanSearchTerm2(plan ? `${plan.name} (${plan.price.toLocaleString()}원)` : selectedPlan2);
@@ -566,7 +672,6 @@ function MaintenanceCostPopup({ onClose, operator, plans, features, initialData 
   }, [plans, planSearchTerm2, selectedPlan2]);
 
 
-  // ------------------ 지원금 자동계산 ------------------
   const isFirstRenderGalcams = useRef(true);
   useEffect(() => {
     if (isFirstRenderGalcams.current) {
@@ -673,10 +778,8 @@ function MaintenanceCostPopup({ onClose, operator, plans, features, initialData 
   }, [selectedDevice, selectedPlan, operator, isGalcams, joinType, plans]);
 
 
-  // ------------------ 금액 계산 로직 ------------------
   const devicePrice = useMemo(()=> DEVICE_LIST.find(d=>d.name===selectedDevice)?.price || 0, [selectedDevice]);
 
-  // 1. 개통 요금제 유지 시 계산 결과
   const originalPlanPrice = useMemo(() => plans.find(p => p.name === selectedPlan)?.price || 0, [selectedPlan, plans]);
   const monthlyPlanDiscount = useMemo(() => Math.round(originalPlanPrice * 0.25), [originalPlanPrice]);
 
@@ -695,7 +798,6 @@ function MaintenanceCostPopup({ onClose, operator, plans, features, initialData 
   const monthlyInterest_Public = installMonths === 0 ? 0 : Math.max(0, monthlyDevice_Public - Math.round(principal_Public / installMonths));
   const monthlyInterest_Selective = installMonths === 0 ? 0 : Math.max(0, monthlyDevice_Selective - Math.round(principal_Selective / installMonths));
 
-  // 1. 개통 요금제 유지 차액 계산
   const totalCost1_Public = totalMonthly_Public * 24;
   const totalCost1_Selective = totalMonthly_Selective * 24;
   const diff1 = Math.abs(totalCost1_Public - totalCost1_Selective);
@@ -704,7 +806,6 @@ function MaintenanceCostPopup({ onClose, operator, plans, features, initialData 
   const highlightClassPublic = totalMonthly_Public < totalMonthly_Selective ? 'bg-green-50 ring-2 ring-green-500 z-10' : 'bg-white';
   const highlightClassSelective = totalMonthly_Selective < totalMonthly_Public ? 'bg-green-50 ring-2 ring-green-500 z-10' : 'bg-white';
   
-  // 2. 6개월 후 요금제 변경 시 계산 결과 (할부원금, 할부금, 이자는 1번의 값 그대로 사용!)
   const originalPlanPrice2 = useMemo(() => plans.find(p => p.name === selectedPlan2)?.price || 0, [selectedPlan2, plans]);
   const monthlyPlanDiscount2 = useMemo(() => Math.round(originalPlanPrice2 * 0.25), [originalPlanPrice2]);
   
@@ -712,7 +813,6 @@ function MaintenanceCostPopup({ onClose, operator, plans, features, initialData 
   const planPrice_Selective2 = Math.round(originalPlanPrice2 * 0.75);
   const totalMonthly_Selective2 = monthlyDevice_Selective + planPrice_Selective2;
 
-  // 2. 6개월 후 요금제 변경 차액 계산 (총 유지비용 비교)
   const totalCost2_Public = (totalMonthly_Public * 6) + (totalMonthly_Public2 * 18);
   const totalCost2_Selective = (totalMonthly_Selective * 6) + (totalMonthly_Selective2 * 18);
   const diff2 = Math.abs(totalCost2_Public - totalCost2_Selective);
@@ -732,9 +832,9 @@ function MaintenanceCostPopup({ onClose, operator, plans, features, initialData 
         <button onClick={onClose} className="absolute top-3 right-3 text-gray-400 hover:text-gray-800 text-3xl leading-none">&times;</button>
         <h2 className="text-2xl font-bold mb-3 text-center text-indigo-700">유지 비용 시뮬레이터</h2>
         
-        {/* 상단 컨트롤러 (유지 비용 팝업용: 개통 요금제 표시) */}
-        <div className="mb-3 flex flex-wrap gap-3 items-end">
-          <select value={selectedDevice} onChange={e=>setSelectedDevice(e.target.value)} className="border p-2 rounded w-[calc(40%+2rem)] outline-none focus:ring-2 focus:ring-blue-500 h-[38px]">
+        {/* 상단 컨트롤러 (유지 비용 팝업창은 원본 코드 유지: w-[calc(40%+2rem)]) */}
+        <div className="mb-3 flex flex-nowrap gap-2 items-end w-full">
+          <select value={selectedDevice} onChange={e=>setSelectedDevice(e.target.value)} className="border p-2 rounded w-[45%] md:w-[calc(40%+2rem)] shrink-0 outline-none focus:ring-2 focus:ring-blue-500 h-[38px]">
             {CATEGORIZED_DEVICE_LIST.map(group => (
               <optgroup key={group.category} label={group.category}>
                 {group.devices.map(d => (
@@ -745,7 +845,7 @@ function MaintenanceCostPopup({ onClose, operator, plans, features, initialData 
           </select>
           
           <div className="flex flex-col flex-1 min-w-0">
-            <div className="text-red-500 font-bold text-sm mb-1 text-center w-full">개통 요금제</div>
+            <div className="text-red-500 font-bold text-[13px] mb-1 text-center w-full whitespace-nowrap">개통 요금제</div>
             <div className="relative w-full" ref={planDropdownRef}>
               <input type="text" value={planSearchTerm} onChange={(e) => { setPlanSearchTerm(e.target.value); setIsPlanDropdownOpen(true); }} onClick={(e) => { setIsPlanDropdownOpen(true); e.target.select(); }} placeholder="요금제 검색..." className="border p-2 rounded w-full outline-none focus:ring-2 focus:ring-blue-500 h-[38px]" />
               {isPlanDropdownOpen && (
@@ -762,7 +862,7 @@ function MaintenanceCostPopup({ onClose, operator, plans, features, initialData 
             </div>
           </div>
 
-          <select value={installMonths} onChange={e=>setInstallMonths(Number(e.target.value))} className="border p-2 rounded w-24 text-center outline-none focus:ring-2 focus:ring-blue-500 h-[38px]">
+          <select value={installMonths} onChange={e=>setInstallMonths(Number(e.target.value))} className="border p-2 rounded w-[72px] md:w-24 text-center outline-none focus:ring-2 focus:ring-blue-500 h-[38px] shrink-0">
             {[0,6,12,18,24,30,36,48].map(m=><option key={m} value={m}>{m===0?'일시불':m+'개월'}</option>)}
           </select>
         </div>
@@ -1327,9 +1427,33 @@ function Calculator({
   const [isPlanDropdownOpen, setIsPlanDropdownOpen] = useState(false);
   const planDropdownRef = useRef(null);
 
+  // 색상 드롭다운 State
+  const [isColorDropdownOpen, setIsColorDropdownOpen] = useState(false);
+  const colorDropdownRef = useRef(null);
+
   useEffect(() => { 
     setSelectedPlan(plans[0]?.name || ''); 
   }, [plans]);
+
+  // 색상 드롭다운 외부 클릭 감지
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (colorDropdownRef.current && !colorDropdownRef.current.contains(event.target)) {
+        setIsColorDropdownOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  const handleColorCopy = (copyText) => {
+    navigator.clipboard.writeText(copyText).then(() => {
+      alert("모델명이 복사되었습니다.");
+      setIsColorDropdownOpen(false);
+    });
+  };
+
+  const currentColors = DEVICE_COLORS_MAP[selectedDevice] || [];
 
   useEffect(() => {
     const plan = plans.find(p => p.name === selectedPlan);
@@ -1490,33 +1614,65 @@ function Calculator({
 
   return (
     <div className="p-4 max-w-4xl mx-auto">
-      <div className="mb-3 flex flex-wrap gap-3">
+      <div className="mb-3 flex flex-nowrap gap-1.5 md:gap-2 items-center w-full">
         
-        <select value={selectedDevice} onChange={e=>setSelectedDevice(e.target.value)} className="border p-2 rounded w-[calc(40%+2rem)] outline-none focus:ring-2 focus:ring-blue-500">
-          {CATEGORIZED_DEVICE_LIST.map(group => (
-            <optgroup key={group.category} label={group.category}>
-              {group.devices.map(d => (
-<option 
-  key={d.name} 
-  value={d.name} 
-  className={d.isHighlight ? "font-bold text-red-600" : d.isGreen ? "font-bold text-emerald-600" : ""} 
-  style={d.isHighlight ? { fontWeight: 'bold', color: '#dc2626' } : d.isGreen ? { fontWeight: 'bold', color: '#059669' } : {}}
->
-  {d.name} ({d.price.toLocaleString()}원)
-</option>
-              ))}
-            </optgroup>
-          ))}
-        </select>
+        {/* 단말기 래퍼: 전체의 50%를 넉넉하게 차지하도록 변경 */}
+        <div className="flex gap-1 shrink-0 relative w-[50%] md:w-[45%]" ref={colorDropdownRef}>
+          {/* select 안쪽 공간이 빈 공간을 꽉 채우도록 flex-1 부여 */}
+          <select value={selectedDevice} onChange={e=>setSelectedDevice(e.target.value)} className="border p-2 rounded flex-1 min-w-0 outline-none focus:ring-2 focus:ring-blue-500 h-[38px]">
+            {CATEGORIZED_DEVICE_LIST.map(group => (
+              <optgroup key={group.category} label={group.category}>
+                {group.devices.map(d => (
+                  <option 
+                    key={d.name} 
+                    value={d.name} 
+                    className={d.isHighlight ? "font-bold text-red-600" : d.isGreen ? "font-bold text-emerald-600" : ""} 
+                    style={d.isHighlight ? { fontWeight: 'bold', color: '#dc2626' } : d.isGreen ? { fontWeight: 'bold', color: '#059669' } : {}}
+                  >
+                    {d.name} ({d.price.toLocaleString()}원)
+                  </option>
+                ))}
+              </optgroup>
+            ))}
+          </select>
+          <button type="button" onClick={() => setIsColorDropdownOpen(!isColorDropdownOpen)} className="bg-gray-500 text-white px-2.5 md:px-3 rounded hover:bg-gray-600 text-[13px] font-medium whitespace-nowrap shrink-0 h-[38px]">
+            모델명
+          </button>
+          
+          {/* 색상 드롭다운 */}
+          {isColorDropdownOpen && (
+            <div className="absolute top-[40px] left-0 mt-1 z-[60] w-max min-w-[150px] bg-white border border-gray-300 rounded shadow-lg overflow-hidden max-h-60 overflow-y-auto">
+              {currentColors.length > 0 ? (
+                currentColors.map((c, idx) => (
+                  <div
+                    key={idx}
+                    onClick={() => handleColorCopy(c.copyText)}
+                    className="px-3 py-2 cursor-pointer hover:bg-blue-50 text-sm border-b last:border-b-0 text-gray-800"
+                  >
+                    {c.name}
+                  </div>
+                ))
+              ) : (
+                <div
+                  onClick={() => handleColorCopy(selectedDevice)}
+                  className="px-3 py-2 cursor-pointer hover:bg-gray-100 text-sm text-gray-500"
+                >
+                  색상 설정 없음<br/><span className="text-xs text-gray-400">(모델명만 복사)</span>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
         
-        <div className="relative flex-1 min-w-0" ref={planDropdownRef}>
+        {/* 요금제 칸: 남은 오른쪽 공간을 전부 차지하도록 flex-1 및 최소 너비 보장 */}
+        <div className="relative flex-1 min-w-[100px]" ref={planDropdownRef}>
           <input 
             type="text" 
             value={planSearchTerm} 
             onChange={(e) => { setPlanSearchTerm(e.target.value); setIsPlanDropdownOpen(true); }}
             onClick={(e) => { setIsPlanDropdownOpen(true); e.target.select(); }}
-            placeholder="요금제 이름 또는 가격 검색..."
-            className="border p-2 rounded w-full outline-none focus:ring-2 focus:ring-blue-500"
+            placeholder="요금제 검색..."
+            className="border p-2 rounded w-full outline-none focus:ring-2 focus:ring-blue-500 h-[38px]"
           />
           {isPlanDropdownOpen && (
             <div className="absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded shadow-lg max-h-60 overflow-y-auto">
@@ -1524,7 +1680,7 @@ function Calculator({
                 filteredPlans.map(p => (
                   <div 
                     key={p.name} 
-onClick={() => { setSelectedPlan(p.name); setPlanSearchTerm(`${p.name} (${p.price.toLocaleString()}원)`); setIsPlanDropdownOpen(false); }}
+                    onClick={() => { setSelectedPlan(p.name); setPlanSearchTerm(`${p.name} (${p.price.toLocaleString()}원)`); setIsPlanDropdownOpen(false); }}
                     className={`px-3 py-2 cursor-pointer hover:bg-blue-50 text-sm border-b last:border-b-0 ${selectedPlan === p.name ? 'bg-blue-100 font-bold' : ''}`}
                   >
                     <span className="text-gray-500 text-xs mr-1">[{p.category}]</span> 
@@ -1538,7 +1694,7 @@ onClick={() => { setSelectedPlan(p.name); setPlanSearchTerm(`${p.name} (${p.pric
           )}
         </div>
 
-        <select value={installMonths} onChange={e=>setInstallMonths(Number(e.target.value))} className="border p-2 rounded w-24 text-center outline-none focus:ring-2 focus:ring-blue-500">
+        <select value={installMonths} onChange={e=>setInstallMonths(Number(e.target.value))} className="border p-2 rounded w-[70px] md:w-24 text-center outline-none focus:ring-2 focus:ring-blue-500 shrink-0 h-[38px]">
           {[0,6,12,18,24,30,36,48].map(m=><option key={m} value={m}>{m===0?'일시불':m+'개월'}</option>)}
         </select>
       </div>
@@ -1801,7 +1957,6 @@ function App() {
         
         <div className="flex items-center ml-2 gap-2 shrink-0">
           <button onClick={() => setShowMaintenancePopup(true)} className="bg-indigo-600 text-white px-3 py-2 rounded hover:bg-indigo-700 text-sm font-medium shadow whitespace-nowrap">유지 비용</button>
-          {/* 메모 저장 버튼 삭제 및 매장 찾기 버튼으로 대체 */}
           <button onClick={() => setShowStorePopup(true)} className="bg-emerald-600 text-white px-3 py-2 rounded hover:bg-emerald-700 text-sm whitespace-nowrap">매장 찾기</button>
           <button onClick={() => setShowPopup(true)} className="bg-gray-600 text-white px-3 py-2 rounded hover:bg-gray-700 text-sm whitespace-nowrap">고객센터</button>
         </div>
