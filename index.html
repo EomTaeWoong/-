@@ -1375,8 +1375,8 @@ function DeviceColorPopup({ onClose }) {
 
 // ------------------ 고객센터 팝업 ------------------
 function CustomerServicePopup({ onClose }) {
-  const mainContacts = [ { name: '삼성닷컴 대표번호(자급제 문의)', number: '1588-6084' }, { name: '삼성닷컴 서비스/멤버십/가전 설치&수리', number: '1588-3366' }, { name: 'SGI 서울보증보험', number: '1670-7000' }, { name: '삼성케어플러스', number: '1566-4590' }, { name: '워치/케이스/액세서리 쿠폰', number: '1811-6043' }, { name: '간편 보상문의', number: '1599-5161' }, { name: '민팃', number: '1877-5446' } ];
-  const arsContacts = [ { name: { name: 'SKT 유선팀', number: '031-384-2635' }, 'SKT', number: '1566-1509' }, { name: 'SKT MVNO', number: '1599-0133' }, { name: 'KT & KT MVNO', number: '1588-2935' }, { name: 'LGU+ & LGU+ MVNO', number: '1544-3553' } ];
+  const mainContacts = [ { name: '삼성닷컴 대표번호(자급제 문의)', number: '1588-6084' }, { name: '삼성닷컴 서비스/멤버십/가전 설치&수리', number: '1588-3366' }, { name: 'SGI 서울보증보험', number: '1670-7000' }, { name: '삼성케어플러스', number: '1566-4590' }, { name: '워치/케이스/액세서리 쿠폰', number: '1811-6043' }, { name: '간편 보상문의', number: '1599-5161' }, { name: '민팃', number: '1877-5446' }, { name: 'SKT 유선팀', number: 031-384-2635' } ];
+  const arsContacts = [ { name: { name: 'SKT', number: '1566-1509' }, { name: 'SKT MVNO', number: '1599-0133' }, { name: 'KT & KT MVNO', number: '1588-2935' }, { name: 'LGU+ & LGU+ MVNO', number: '1544-3553' } ];
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
       <div className="bg-white p-6 rounded-lg shadow-xl relative w-auto min-w-[500px] max-w-lg">
