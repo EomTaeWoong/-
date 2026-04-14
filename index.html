@@ -1312,7 +1312,7 @@ function MaintenanceCostPopup({ onClose, operator, plans, features, initialData 
 
 // ------------------ 요금제 정리 팝업 ------------------
 function PlanSummaryPopup({ operator, onClose }) {
-  const ktImage = "https://img1.daumcdn.net/thumb/R1280x0/?scode=mtistory2&fname=https%3A%2F%2Fblog.kakaocdn.net%2Fdna%2FevZYiJ%2FdJMb99Z9Az9%2FAAAAAAAAAAAAAAAAAAAAAPRMkixSiLJO6XMGYYlBSVDVSF8TXxjo5giBzWtkwLxq%2Fimg.png%3Fcredential%3DyqXZFxpELC7KVnFOS48ylbz2pIh7yKj8%26expires%3D1774969199%26allow_ip%3D%26allow_referer%3D%26signature%3Dnww2JGjldVW8Jn1g%252FR9kdDjehvM%253D";
+  const ktImage = "https://img1.daumcdn.net/thumb/R1280x0/?scode=mtistory2&fname=https%3A%2F%2Fblog.kakaocdn.net%2Fdna%2FDBnyi%2FdJMcab4UjJY%2FAAAAAAAAAAAAAAAAAAAAAGSodMpmodYsjbiVj7rsvMOYs3fabguQUf3B-69Mh-Ct%2Fimg.png%3Fcredential%3DyqXZFxpELC7KVnFOS48ylbz2pIh7yKj8%26expires%3D1777561199%26allow_ip%3D%26allow_referer%3D%26signature%3D3ipKZmY%252Bcs2qcj%252F7U3cWlJPc9Fk%253D";
   const uImage = "https://img1.daumcdn.net/thumb/R1280x0/?scode=mtistory2&fname=https%3A%2F%2Fblog.kakaocdn.net%2Fdna%2F6r5wU%2FdJMcahw9xVh%2FAAAAAAAAAAAAAAAAAAAAABYw_gUIzFwVLH71P1sS9k4GsIcOW3XJ4hE98FU32dZq%2Fimg.png%3Fcredential%3DyqXZFxpELC7KVnFOS48ylbz2pIh7yKj8%26expires%3D1777561199%26allow_ip%3D%26allow_referer%3D%26signature%3Dj5pcWdDxVrZY5dq%252F6hzhsu6xesc%253D";
   const imageSrc = operator === 'KT' ? ktImage : uImage;
 
@@ -1329,7 +1329,6 @@ function PlanSummaryPopup({ operator, onClose }) {
 // ------------------ 요청 양식 팝업 컴포넌트 ------------------
 function RequestFormPopup({ onClose }) {
   const sections = [
-    { title: '[4월 월요일&화요일 접수 이벤트]', content: `신세계 상품권 교환권 5만원\n빈슨메시프 티클라 원터치 텐트\n5월 26일 이후 순차 발송\n상품권-명의자 전화번호\n텐트-수령 여부 확인 후 주소지 취합\n※라이브 방송 시간내에 접수시 신세계 상품권 교환권 10만원 (위 혜택과 따로 발송됨)` },
     { title: '[반품접수 양식]', content: `최초 개통일 :\n닷컴 주문번호 :\n고객명 :\n핸드폰 번호 :\n단말기 모델명 :\n일련번호 :\nCJ 송장번호 :` },
     { title: '[상담메모 양식]', content: `#단말기 :\n#요금제 :\n#약정 :\n#할부 :\n#유심 :\n#기타 : ` },
     { title: '[취소 사유]', content: `@할부회선\n@신용불량\n@유지기간\n@잔여약정\n@자급제 오신청\n@단순변심\n@서류 오작성\n@가격불만\n@사은품불만\n@조건불만\n@재고부족\n@중복접수\n@신청유형변경\n@부재` },
