@@ -26,6 +26,12 @@
 const { useState, useMemo, useEffect, useRef } = React;
 
 // =====================================================================
+// 💡 [사전예약 혜택 세팅] 사전예약 단말기 더블 스토리지 할인 금액 💡
+// =====================================================================
+const PREORDER_DOUBLE_STORAGE_DISCOUNT = 253000; // 추후 이곳에 할인 금액을 입력하세요 (예: 150000)
+// =====================================================================
+
+// =====================================================================
 // 💡 [정책 컨트롤 패널] 단말기/요금제별 공통지원금 및 닷컴/갤캠스 추가지원금 💡
 // =====================================================================
 const POLICY = {
@@ -38,6 +44,53 @@ const POLICY = {
   },
 
   DEVICES: {
+    // 💡 [사전예약 단말기 세팅] 이곳에 요금제별 공통/추가지원금을 직접 입력하세요 💡
+    '폴드8｜512기가': {
+      KT_COMMON: { 19800: 115000, 24000: 133000, 33000: 183000, 37000: 210000, 41000: 228000, 42000: 233000, 44000: 237000, 45000: 255000, 47000: 260000, 49000: 269000, 50000: 273000, 55000: 300000, 58000: 319000, 61000: 332000, 63000: 346000, 65000: 355000, 67000: 364000, 69000: 377000, 77000: 413000, 80000: 450000, 89000: 500000, 90000: 500000, 100000: 500000, 110000: 500000, 130000: 500000 },
+      U_COMMON: { 33000: 198000, 37000: 222000, 39000: 233000, 43000: 257000, 45000: 268000, 47000: 280000, 55000: 326000, 59000: 350000, 61000: 361000, 63000: 373000, 66000: 390000, 68000: 402000, 70000: 414000, 69000: 407000, 75000: 442000, 85000: 500000, 95000: 500000, 105000: 500000, 115000: 500000, 130000: 500000 },
+      EXTRA: {
+        KT_CHANGE_DOTCOM: { OVER_90K: { common: 500000, selective: 500000 } },
+        KT_CHANGE_GALCAMS: { OVER_90K: { common: 500000, selective: 500000 } },
+        KT_MNP_DOTCOM: { OVER_90K: { common: 500000, selective: 500000 } },
+        KT_MNP_GALCAMS: { OVER_90K: { common: 500000, selective: 500000 } },
+        U_CHANGE_DOTCOM: { OVER_95K: { common: 500000, selective: 500000 }, OVER_61K: { common: 30000, selective: 30000 } },
+        U_CHANGE_GALCAMS: { OVER_95K: { common: 550000, selective: 550000 }, OVER_61K: { common: 50000, selective: 50000 } },
+        U_MNP_DOTCOM: { OVER_95K: { common: 500000, selective: 500000 }, OVER_61K: { common: 30000, selective: 30000 } },
+        U_MNP_GALCAMS: { OVER_95K: { common: 550000, selective: 550000 }, OVER_61K: { common: 50000, selective: 50000 } },
+        U_TIER_1_DOTCOM: 30000,  U_TIER_1_GALCAMS: 50000, U_TIER_2_DOTCOM: 400000, U_TIER_2_GALCAMS: 450000, KT_TIER_1_DOTCOM: 350000, KT_TIER_1_GALCAMS: 400000
+      }
+    },
+    '폴드8 와이드｜512기가': {
+      KT_COMMON: { 19800: 115000, 24000: 133000, 33000: 183000, 37000: 210000, 41000: 228000, 42000: 233000, 44000: 237000, 45000: 255000, 47000: 260000, 49000: 269000, 50000: 273000, 55000: 300000, 58000: 319000, 61000: 332000, 63000: 346000, 65000: 355000, 67000: 364000, 69000: 377000, 77000: 413000, 80000: 450000, 89000: 500000, 90000: 500000, 100000: 500000, 110000: 500000, 130000: 500000 },
+      U_COMMON: { 33000: 198000, 37000: 222000, 39000: 233000, 43000: 257000, 45000: 268000, 47000: 280000, 55000: 326000, 59000: 350000, 61000: 361000, 63000: 373000, 66000: 390000, 68000: 402000, 70000: 414000, 69000: 407000, 75000: 442000, 85000: 500000, 95000: 500000, 105000: 500000, 115000: 500000, 130000: 500000 },
+      EXTRA: {
+        KT_CHANGE_DOTCOM: { OVER_90K: { common: 500000, selective: 500000 } },
+        KT_CHANGE_GALCAMS: { OVER_90K: { common: 500000, selective: 500000 } },
+        KT_MNP_DOTCOM: { OVER_90K: { common: 500000, selective: 500000 } },
+        KT_MNP_GALCAMS: { OVER_90K: { common: 500000, selective: 500000 } },
+        U_CHANGE_DOTCOM: { OVER_95K: { common: 500000, selective: 500000 }, OVER_61K: { common: 30000, selective: 30000 } },
+        U_CHANGE_GALCAMS: { OVER_95K: { common: 550000, selective: 550000 }, OVER_61K: { common: 50000, selective: 50000 } },
+        U_MNP_DOTCOM: { OVER_95K: { common: 500000, selective: 500000 }, OVER_61K: { common: 30000, selective: 30000 } },
+        U_MNP_GALCAMS: { OVER_95K: { common: 550000, selective: 550000 }, OVER_61K: { common: 50000, selective: 50000 } },
+        U_TIER_1_DOTCOM: 30000,  U_TIER_1_GALCAMS: 50000, U_TIER_2_DOTCOM: 400000, U_TIER_2_GALCAMS: 450000, KT_TIER_1_DOTCOM: 350000, KT_TIER_1_GALCAMS: 400000
+      }
+    },
+    '플립8｜512기가': {
+      KT_COMMON: { 19800: 115000, 24000: 133000, 33000: 183000, 37000: 210000, 41000: 228000, 42000: 233000, 44000: 237000, 45000: 255000, 47000: 260000, 49000: 269000, 50000: 273000, 55000: 300000, 58000: 319000, 61000: 332000, 63000: 346000, 65000: 355000, 67000: 364000, 69000: 377000, 77000: 413000, 80000: 450000, 89000: 500000, 90000: 500000, 100000: 500000, 110000: 500000, 130000: 500000 },
+      U_COMMON: { 33000: 198000, 37000: 222000, 39000: 233000, 43000: 257000, 45000: 268000, 47000: 280000, 55000: 326000, 59000: 350000, 61000: 361000, 63000: 373000, 66000: 390000, 68000: 402000, 70000: 414000, 69000: 407000, 75000: 442000, 85000: 500000, 95000: 500000, 105000: 500000, 115000: 500000, 130000: 500000 },
+      EXTRA: {
+        KT_CHANGE_DOTCOM: { OVER_90K: { common: 500000, selective: 500000 } },
+        KT_CHANGE_GALCAMS: { OVER_90K: { common: 500000, selective: 500000 } },
+        KT_MNP_DOTCOM: { OVER_90K: { common: 500000, selective: 500000 } },
+        KT_MNP_GALCAMS: { OVER_90K: { common: 500000, selective: 500000 } },
+        U_CHANGE_DOTCOM: { OVER_95K: { common: 500000, selective: 500000 }, OVER_61K: { common: 30000, selective: 30000 } },
+        U_CHANGE_GALCAMS: { OVER_95K: { common: 550000, selective: 550000 }, OVER_61K: { common: 50000, selective: 50000 } },
+        U_MNP_DOTCOM: { OVER_95K: { common: 500000, selective: 500000 }, OVER_61K: { common: 30000, selective: 30000 } },
+        U_MNP_GALCAMS: { OVER_95K: { common: 550000, selective: 550000 }, OVER_61K: { common: 50000, selective: 50000 } },
+        U_TIER_1_DOTCOM: 30000,  U_TIER_1_GALCAMS: 50000, U_TIER_2_DOTCOM: 400000, U_TIER_2_GALCAMS: 450000, KT_TIER_1_DOTCOM: 350000, KT_TIER_1_GALCAMS: 400000
+      }
+    },
+
     'S26 울트라｜512기가': {
       KT_COMMON: { 19800: 115000, 24000: 133000, 33000: 183000, 37000: 210000, 41000: 228000, 42000: 233000, 44000: 237000, 45000: 255000, 47000: 260000, 49000: 269000, 50000: 273000, 55000: 300000, 58000: 319000, 61000: 332000, 63000: 346000, 65000: 355000, 67000: 364000, 69000: 377000, 77000: 413000, 80000: 450000, 89000: 500000, 90000: 500000, 100000: 500000, 110000: 500000, 130000: 500000 },
       U_COMMON: { 33000: 198000, 37000: 222000, 39000: 233000, 43000: 257000, 45000: 268000, 47000: 280000, 55000: 326000, 59000: 350000, 61000: 361000, 63000: 373000, 66000: 390000, 68000: 402000, 70000: 414000, 69000: 407000, 75000: 442000, 85000: 500000, 95000: 500000, 105000: 500000, 115000: 500000, 130000: 500000 },
@@ -287,7 +340,21 @@ const POLICY = {
 // =====================================================================
 const DEVICE_COLORS_MAP = {
   // 예시: S26 울트라 512기가 색상 설정
-  'S26 울트라｜512기가': [
+  '폴드8｜512기가': [
+    { name: '코발트 바이올렛', copyText: 'SM-S948NZVWKOD' },
+    { name: '화이트', copyText: 'SM-S948NZWWKOD' },
+    { name: '스카이 블루', copyText: 'SM-S948NLBWKOD' },
+    { name: '블랙', copyText: 'SM-S948NZKWKOD' },
+  ],
+
+  '폴드8 와이드｜512기가': [
+    { name: '코발트 바이올렛', copyText: 'SM-S948NZVWKOD' },
+    { name: '화이트', copyText: 'SM-S948NZWWKOD' },
+    { name: '스카이 블루', copyText: 'SM-S948NLBWKOD' },
+    { name: '블랙', copyText: 'SM-S948NZKWKOD' },
+  ],
+
+  '플립8｜512기가': [
     { name: '코발트 바이올렛', copyText: 'SM-S948NZVWKOD' },
     { name: '화이트', copyText: 'SM-S948NZWWKOD' },
     { name: '스카이 블루', copyText: 'SM-S948NLBWKOD' },
@@ -402,6 +469,15 @@ function pmt(rate, nper, pv) {
 
 // ------------------ 단말기 ------------------
 const CATEGORIZED_DEVICE_LIST = [
+  {
+    category: '사전예약',
+    devices: [
+      // 💡 [단말기 세팅] 추후 이곳에 사전예약 단말기 이름과 가격을 입력하세요 💡
+      { name: '폴드8｜512기가', price: 5000000, isHighlight: true },
+      { name: '폴드8 와이드｜512기가', price: 4500000, isHighlight: true },
+      { name: '플립8｜512기가', price: 4000000, isHighlight: true }
+    ]
+  },
   {
     category: 'S26 시리즈',
     devices: [
@@ -606,6 +682,15 @@ function MaintenanceCostPopup({ onClose, operator, plans, features, initialData 
   
   const isFirstRender = useRef(true);
 
+  // 사전예약 단말기 여부 확인
+  const isPreorderDevice = useMemo(() => {
+    const preorderCategory = CATEGORIZED_DEVICE_LIST.find(c => c.category === '사전예약');
+    return preorderCategory ? preorderCategory.devices.some(d => d.name === selectedDevice) : false;
+  }, [selectedDevice]);
+
+  // 사전예약 단말기일 경우에만 더블 스토리지 할인 적용
+  const doubleStorageDiscount = isPreorderDevice ? PREORDER_DOUBLE_STORAGE_DISCOUNT : 0;
+
   useEffect(() => { 
     if (!plans.some(p => p.name === selectedPlan)) setSelectedPlan(plans[0]?.name || ''); 
     if (!plans.some(p => p.name === selectedPlan2)) setSelectedPlan2(plans[0]?.name || ''); 
@@ -784,12 +869,12 @@ function MaintenanceCostPopup({ onClose, operator, plans, features, initialData 
   const monthlyPlanDiscount = useMemo(() => Math.round(originalPlanPrice * 0.25), [originalPlanPrice]);
 
   const totalDiscount_Public = commonSupport + additionalSupport;
-  const principal_Public = Math.max(0, devicePrice - totalDiscount_Public);
+  const principal_Public = Math.max(0, devicePrice - totalDiscount_Public - doubleStorageDiscount);
   const monthlyDevice_Public = installMonths === 0 ? 0 : Math.round(pmt(interestRate/12, installMonths, principal_Public));
   const totalMonthly_Public = monthlyDevice_Public + originalPlanPrice;
   const totalInterest_Public = installMonths === 0 ? 0 : Math.max(0, (monthlyDevice_Public * installMonths) - principal_Public);
 
-  const principal_Selective = Math.max(0, devicePrice - selectiveAdditionalSupport);
+  const principal_Selective = Math.max(0, devicePrice - selectiveAdditionalSupport - doubleStorageDiscount);
   const monthlyDevice_Selective = installMonths === 0 ? 0 : Math.round(pmt(interestRate/12, installMonths, principal_Selective));
   const planPrice_Selective = Math.round(originalPlanPrice * 0.75);
   const totalMonthly_Selective = monthlyDevice_Selective + planPrice_Selective;
@@ -950,6 +1035,12 @@ function MaintenanceCostPopup({ onClose, operator, plans, features, initialData 
                   <span>출고가</span>
                   <span>{devicePrice.toLocaleString()} 원</span>
                 </div>
+                {isPreorderDevice && (
+                  <div className="flex justify-between text-[#ec008c] font-bold text-[15px] mb-1">
+                    <span>더블 스토리지 할인</span>
+                    <span>- {doubleStorageDiscount.toLocaleString()} 원</span>
+                  </div>
+                )}
                 {commonSupport > 0 && (
                   <div className="flex justify-between text-[#ec008c] font-bold text-[15px] mb-1">
                     <span>공통 지원금</span>
@@ -1038,6 +1129,12 @@ function MaintenanceCostPopup({ onClose, operator, plans, features, initialData 
                   <span>출고가</span>
                   <span>{devicePrice.toLocaleString()} 원</span>
                 </div>
+                {isPreorderDevice && (
+                  <div className="flex justify-between text-[#ec008c] font-bold text-[15px] mb-1">
+                    <span>더블 스토리지 할인</span>
+                    <span>- {doubleStorageDiscount.toLocaleString()} 원</span>
+                  </div>
+                )}
                 {selectiveAdditionalSupport > 0 && (
                   <div className="flex justify-between text-[#ec008c] font-bold text-[15px] mb-2">
                     <span>삼성닷컴 추가지원금</span>
@@ -1155,6 +1252,12 @@ function MaintenanceCostPopup({ onClose, operator, plans, features, initialData 
                   <span>출고가</span>
                   <span>{devicePrice.toLocaleString()} 원</span>
                 </div>
+                {isPreorderDevice && (
+                  <div className="flex justify-between text-[#ec008c] font-bold text-[15px] mb-1">
+                    <span>더블 스토리지 할인</span>
+                    <span>- {doubleStorageDiscount.toLocaleString()} 원</span>
+                  </div>
+                )}
                 {commonSupport > 0 && (
                   <div className="flex justify-between text-[#ec008c] font-bold text-[15px] mb-1">
                     <span>공통 지원금</span>
@@ -1247,6 +1350,12 @@ function MaintenanceCostPopup({ onClose, operator, plans, features, initialData 
                   <span>출고가</span>
                   <span>{devicePrice.toLocaleString()} 원</span>
                 </div>
+                {isPreorderDevice && (
+                  <div className="flex justify-between text-[#ec008c] font-bold text-[15px] mb-1">
+                    <span>더블 스토리지 할인</span>
+                    <span>- {doubleStorageDiscount.toLocaleString()} 원</span>
+                  </div>
+                )}
                 {selectiveAdditionalSupport > 0 && (
                   <div className="flex justify-between text-[#ec008c] font-bold text-[15px] mb-2">
                     <span>삼성닷컴 추가지원금</span>
@@ -1431,6 +1540,15 @@ function Calculator({
   const [isColorDropdownOpen, setIsColorDropdownOpen] = useState(false);
   const colorDropdownRef = useRef(null);
 
+  // 사전예약 단말기 여부 확인
+  const isPreorderDevice = useMemo(() => {
+    const preorderCategory = CATEGORIZED_DEVICE_LIST.find(c => c.category === '사전예약');
+    return preorderCategory ? preorderCategory.devices.some(d => d.name === selectedDevice) : false;
+  }, [selectedDevice]);
+
+  // 사전예약 단말기일 경우에만 더블 스토리지 할인 적용
+  const doubleStorageDiscount = isPreorderDevice ? PREORDER_DOUBLE_STORAGE_DISCOUNT : 0;
+
   useEffect(() => { 
     setSelectedPlan(plans[0]?.name || ''); 
   }, [plans]);
@@ -1592,13 +1710,15 @@ function Calculator({
   const featureText = useMemo(()=> features[normalizePlanKey(selectedPlan)] || '', [selectedPlan, features]);
 
   const totalDiscount_Public = commonSupport + additionalSupport;
-  const principal_Public = Math.max(0, devicePrice - totalDiscount_Public);
+  // 더블 스토리지 할인 적용 (할부원금에서 차감)
+  const principal_Public = Math.max(0, devicePrice - totalDiscount_Public - doubleStorageDiscount);
   const monthlyDevice_Public = installMonths === 0 ? 0 : Math.round(pmt(interestRate/12, installMonths, principal_Public));
   const totalMonthly_Public = monthlyDevice_Public + originalPlanPrice;
   const totalInterest_Public = installMonths === 0 ? 0 : Math.max(0, (monthlyDevice_Public * installMonths) - principal_Public);
 
   const totalDiscount_Selective = selectiveAdditionalSupport + totalPlanDiscount;
-  const principal_Selective = Math.max(0, devicePrice - selectiveAdditionalSupport);
+  // 더블 스토리지 할인 적용 (선택약정 할부원금에서도 차감)
+  const principal_Selective = Math.max(0, devicePrice - selectiveAdditionalSupport - doubleStorageDiscount);
   const monthlyDevice_Selective = installMonths === 0 ? 0 : Math.round(pmt(interestRate/12, installMonths, principal_Selective));
   const planPrice_Selective = Math.round(originalPlanPrice * 0.75);
   const totalMonthly_Selective = monthlyDevice_Selective + planPrice_Selective;
@@ -1790,6 +1910,13 @@ function Calculator({
                 <span>출고가</span>
                 <span>{devicePrice.toLocaleString()} 원</span>
               </div>
+              {/* 더블 스토리지 할인 항목 */}
+              {isPreorderDevice && (
+                <div className="flex justify-between text-[#ec008c] font-bold text-[15px] mb-1">
+                  <span>더블 스토리지 할인</span>
+                  <span>- {doubleStorageDiscount.toLocaleString()} 원</span>
+                </div>
+              )}
               {commonSupport > 0 && (
                 <div className="flex justify-between text-[#ec008c] font-bold text-[15px] mb-1">
                   <span>공통 지원금</span>
@@ -1870,6 +1997,13 @@ function Calculator({
                 <span>출고가</span>
                 <span>{devicePrice.toLocaleString()} 원</span>
               </div>
+              {/* 더블 스토리지 할인 항목 */}
+              {isPreorderDevice && (
+                <div className="flex justify-between text-[#ec008c] font-bold text-[15px] mb-1">
+                  <span>더블 스토리지 할인</span>
+                  <span>- {doubleStorageDiscount.toLocaleString()} 원</span>
+                </div>
+              )}
               {selectiveAdditionalSupport > 0 && (
                 <div className="flex justify-between text-[#ec008c] font-bold text-[15px] mb-2">
                   <span>삼성닷컴 추가지원금</span>
