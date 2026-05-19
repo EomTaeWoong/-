@@ -640,23 +640,205 @@ function normalizePlanKey(name) {
 
 const DEVICE_LIST = CATEGORIZED_DEVICE_LIST.flatMap(group => group.devices);
 
-// ------------------ 매장 찾기 팝업 컴포넌트 ------------------
+// ------------------ MVNO 팝업 컴포넌트 ------------------
 function StoreMapPopup({ onClose }) {
+  const [searchTerm, setSearchTerm] = useState('');
+
+  // 사진의 전체 데이터
+  const mvnoList = {
+    SK망: [
+      { brand: '아이즈 모바일', company: '아이즈비전 SK' },
+      { brand: '모빙', company: '유니컴즈' },
+      { brand: '이야기 모바일', company: '큰사람' },
+      { brand: '스마텔', company: '스마텔' },
+      { brand: 'sk7모바일', company: 'sk텔링크' },
+      { brand: '이마트', company: '이마트 SK' },
+      { brand: 'KCT / 티플러스', company: 'KCT' },
+      { brand: '안심 모바일', company: '에스원 SK' },
+      { brand: '프리티', company: '프리텔레콤 SK' },
+      { brand: '헬로 모바일', company: 'LG헬로비전 SK' },
+      { brand: '에이 모바일', company: '에넥스텔레콤 SK' },
+      { brand: '조이텔', company: '조이텔 SK' },
+      { brand: '토스 모바일', company: '토스모바일 SK' },
+      { brand: '리브엠', company: 'KB국민은행 SK' },
+      { brand: '핀다이렉트', company: '스테이지파이브 SK' },
+      { brand: '세종 / 온세 (ONS)', company: '세종텔레콤 SK' },
+    ],
+    KT망: [
+      { brand: '씨엔컴 / 더블유', company: '씨엔커뮤니케이션' },
+      { brand: '에이 모바일 KT', company: '에넥스텔레콤 KT' },
+      { brand: '프리티', company: '프리텔레콤 KT' },
+      { brand: '이지 모바일 KT', company: '코드모바일' },
+      { brand: '더블비', company: 'KT 파워텔' },
+      { brand: '에스로밍', company: '에스로밍' },
+      { brand: 'Well', company: '위너스텔' },
+      { brand: 'LG헬로비전 KT', company: 'CJ헬로비전KT' },
+      { brand: '스노우맨 / 온세 (ONS)', company: '온세텔레콤' },
+      { brand: '플래시 모바일', company: '에이씨엔코리아 KT' },
+      { brand: '앤텔레콤', company: '앤알커뮤니케이션' },
+      { brand: '착한통신', company: '착한통신' },
+      { brand: '안심모바일 KT', company: '에스원 KT' },
+      { brand: '장성모바일', company: '장성모바일한국' },
+      { brand: '아이즈 모바일', company: '아이즈비전 KT' },
+      { brand: '토스모바일', company: '토스모바일 KT' },
+      { brand: '제이씨티', company: '제이씨티' },
+      { brand: 'KT M모바일', company: '케이엠모바일' },
+      { brand: '모빙 KT', company: '유니컴즈 KT' },
+      { brand: '쉐이크모바일', company: '미니게이트' },
+      { brand: '아이플러스유', company: '더원플랫폼' },
+      { brand: '핀다이렉트 KT', company: '스테이지파이브 KT' },
+      { brand: '파인디지털', company: '파인디지털' },
+      { brand: '드림모바일', company: '드림라인' },
+      { brand: 'KCT / 티플러스', company: 'KCT' },
+      { brand: '이비카드', company: '이비카드 KT' },
+      { brand: '여유 모바일', company: '와이엘랜드' },
+      { brand: '이야기 모바일 KT', company: '큰사람 KT' },
+      { brand: '니즈 모바일', company: '니즈텔레콤 KT' },
+      { brand: 'KT 스카이라이프', company: '케이티스카이라이프 KT' },
+      { brand: '아시아 모바일', company: '에이프러스 KT' },
+      { brand: '밸류컴', company: '한국피엠오 KT' },
+      { brand: '스마텔', company: '스마텔 KT' },
+      { brand: '리브엠', company: 'KB국민은행 KT' },
+      { brand: '인스모바일', company: '인스모바일 KT' },
+      { brand: '고고모바일', company: '고고팩토리 KT' },
+      { brand: '퍼스트 모바일', company: '더피엔엘 KT' },
+      { brand: '에르엘', company: '에르엘 KT' },
+      { brand: '핀샷', company: '핀샷 KT' },
+      { brand: '오파스모바일', company: '오파스넷 KT' },
+      { brand: '친구아이앤', company: '친구아이앤씨 KT' },
+      { brand: '한패스 모바일', company: '한패스인터내셔널 KT' },
+    ],
+    "U+망": [
+      { brand: '프리티', company: '스페이스네트' },
+      { brand: '토스모바일', company: '토스모바일' },
+      { brand: '몬티스타텔레콤', company: 'MTT텔레콤' },
+      { brand: '대성홀딩스', company: '대성홀딩스' },
+      { brand: 'U+ 알뜰모바일', company: '미디어로그' },
+      { brand: '이마트', company: '이마트 LG' },
+      { brand: '서경모바일', company: '서경방송' },
+      { brand: '울산방송', company: '울산방송' },
+      { brand: '푸른방송', company: '푸른방송' },
+      { brand: '남인천방송', company: '남인천방송' },
+      { brand: '금강방송', company: '금강방송' },
+      { brand: '제주방송', company: '제주방송' },
+      { brand: '여유텔레콤', company: '여유텔레콤' },
+      { brand: '플래시 모바일', company: '에이씨엔코리아 LG' },
+      { brand: '이지모바일', company: '이지모바일 LG' },
+      { brand: '모빙', company: '유니컴즈 LG' },
+      { brand: '이야기 모바일', company: '큰사람 LG' },
+      { brand: '스마텔', company: '스마텔 LG' },
+      { brand: '에이모바일', company: '에넥스텔레콤 LG' },
+      { brand: '온국민폰', company: '레그원' },
+      { brand: 'KDDI', company: '케이디디아이코리아 LG' },
+      { brand: '시월모바일', company: '시월텔레콤 LG' },
+      { brand: '조이텔', company: '조이텔 LG' },
+      { brand: '아이즈 모바일', company: '아이즈 비전 LG' },
+      { brand: '핀다이렉트', company: '스테이지파이브 LG' },
+      { brand: '안심 모바일', company: '에스원 LG' },
+      { brand: '원텔레콤', company: '원텔레콤 LG' },
+      { brand: '리브엠', company: 'KB국민은행 LG' },
+      { brand: '헬로모바일', company: 'LG 헬로비전 LG' },
+      { brand: '코인샷모바일', company: '(주)핀샷 LG' },
+      { brand: '화인통신', company: '화인통신 LG' },
+      { brand: '밸류컴', company: 'KPMO LG' },
+      { brand: '엔티온', company: '엔티온텔레콤 LG' },
+      { brand: '인스모바일', company: '인스모바일 LG' },
+      { brand: '도시락 모바일', company: '도시락모바일 LG' },
+      { brand: '니즈텔레콤', company: '엔페이넷 LG' },
+      { brand: '스노우맨 / ONS', company: '세종텔레콤 LG' },
+      { brand: '앤텔레콤', company: '앤텔레콤 LG' },
+      { brand: '아시아 모바일', company: '아시아모바일 LG' },
+      { brand: '모나', company: '코나아이 LG' },
+      { brand: '슈가모바일', company: 'CK커뮤니스트리 LG' },
+      { brand: 'KCT / 티플러스', company: 'KCT LG' },
+      { brand: '에르엘', company: '에르엘 LG' },
+      { brand: 'Well', company: '위너스텔 LG' },
+      { brand: '한패스모바일', company: '한패스모바일 LG' },
+      { brand: '사람과연결', company: '사람과연결 LG' },
+      { brand: '마블링', company: '마블프로듀스 LG' },
+      { brand: 'KG모바일', company: 'KG모빌리언스 LG' },
+      { brand: '글로벌 머니 익스프레스', company: 'GME LG' },
+      { brand: '친구아이앤', company: '친구아이앤씨 LG' },
+      { brand: '찬스모바일', company: '찬스모바일 LG' },
+      { brand: '우리 WON 모바일 (예정)', company: '우리은행 LG' }
+    ]
+  };
+
+  // 띄어쓰기 무시 검색 로직
+  const removeSpaces = (str) => str.replace(/\s+/g, '').toLowerCase();
+  const searchNormalized = removeSpaces(searchTerm);
+
+  const filterList = (list) => {
+    if (!searchTerm) return list;
+    return list.filter(item => 
+      removeSpaces(item.brand).includes(searchNormalized) || 
+      removeSpaces(item.company).includes(searchNormalized)
+    );
+  };
+
+  const renderTable = (networkName, list) => {
+    const filteredList = filterList(list);
+    
+    return (
+      <div className="flex-1 min-w-[300px]">
+        <h3 className="text-center font-bold text-lg mb-2 text-blue-700">{networkName}</h3>
+        <div className="border rounded-lg overflow-hidden shadow-sm">
+          <table className="w-full text-[15px] text-center">
+            <thead className="bg-slate-100 border-b">
+              <tr>
+                <th className="py-2 px-2 border-r font-semibold">브랜드명</th>
+                <th className="py-2 px-2 font-semibold">사업자명 (회사명)</th>
+              </tr>
+            </thead>
+            <tbody>
+              {filteredList.length > 0 ? (
+                filteredList.map((item, idx) => (
+                  <tr key={idx} className="border-b last:border-b-0 hover:bg-slate-50">
+                    <td className="py-1.5 px-2 border-r text-gray-800">{item.brand}</td>
+                    <td className="py-1.5 px-2 text-gray-600">{item.company}</td>
+                  </tr>
+                ))
+              ) : (
+                <tr>
+                  <td colSpan="2" className="py-4 text-gray-400">검색 결과가 없습니다.</td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    );
+  };
+
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white p-4 rounded-lg shadow-xl relative w-[95vw] max-w-[1400px] h-[85vh] flex flex-col">
-        <div className="flex justify-between items-center mb-2 px-2 shrink-0">
-          <h2 className="text-xl font-bold text-gray-800">매장 찾기</h2>
+      <div className="bg-white p-5 rounded-lg shadow-xl relative w-[95vw] max-w-[1200px] h-[85vh] flex flex-col">
+        
+        <div className="flex justify-between items-center mb-4 shrink-0">
+          <h2 className="text-2xl font-bold text-gray-800">MVNO 사업자 확인</h2>
           <button onClick={onClose} className="text-gray-500 hover:text-gray-800 text-3xl leading-none font-bold">&times;</button>
         </div>
-        <div className="relative flex-1 w-full bg-gray-50 rounded border overflow-hidden">
-          <iframe 
-            src="https://www.samsungstore.com/shop/selectFindShopMain.sesc?menu=w401" 
-            className="w-full"
-            style={{ height: 'calc(100% + 220px)', marginTop: '-220px', border: 'none' }}
-            title="매장 찾기 지도"
+
+        {/* 검색창 영역 */}
+        <div className="mb-4 shrink-0">
+          <input 
+            type="text" 
+            placeholder="브랜드명 또는 사업자명을 검색하세요 (띄어쓰기 무시)" 
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="w-full border-2 border-blue-200 focus:border-blue-500 rounded-lg p-3 outline-none text-[15px]"
           />
         </div>
+        
+        {/* 데이터 영역 */}
+        <div className="flex-1 w-full overflow-y-auto pr-2 pb-2 custom-scrollbar">
+          <div className="flex flex-col md:flex-row gap-4">
+            {renderTable('SK망', mvnoList.SK망)}
+            {renderTable('KT망', mvnoList.KT망)}
+            {renderTable('U+망', mvnoList["U+망"])}
+          </div>
+        </div>
+        
       </div>
     </div>
   );
@@ -2098,7 +2280,7 @@ function App() {
         
         <div className="flex items-center ml-2 gap-2 shrink-0">
           <button onClick={() => setShowMaintenancePopup(true)} className="bg-indigo-600 text-white px-3 py-2 rounded hover:bg-indigo-700 text-sm font-medium shadow whitespace-nowrap">유지 비용</button>
-          <button onClick={() => setShowStorePopup(true)} className="bg-emerald-600 text-white px-3 py-2 rounded hover:bg-emerald-700 text-sm whitespace-nowrap">매장 찾기</button>
+          <button onClick={() => setShowStorePopup(true)} className="bg-emerald-600 text-white px-3 py-2 rounded hover:bg-emerald-700 text-sm whitespace-nowrap">MVNO</button>
           <button onClick={() => setShowPopup(true)} className="bg-gray-600 text-white px-3 py-2 rounded hover:bg-gray-700 text-sm whitespace-nowrap">전화번호</button>
         </div>
         
