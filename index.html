@@ -2078,7 +2078,7 @@ function App() {
   const [showMaintenancePopup, setShowMaintenancePopup] = useState(false);
   const [showStorePopup, setShowStorePopup] = useState(false); // 매장 찾기 팝업 상태
 
-  const handleTrackingSearch = () => { if (!trackingNumber || !/^\d+$/.test(trackingNumber)) return alert('숫자로 된 송장번호를 입력해주세요.'); window.open(`https://trace.cjlogistics.com/next/tracking.html?wblNo=${trackingNumber}`, 'cjTrackingPopup', 'width=1600,height=900,scrollbars=yes,resizable=yes'); setTrackingNumber(''); };
+  const handleTrackingSearch = () => { if (!trackingNumber || !/^\d+$/.test(trackingNumber)) return alert('송장번호를 입력해주세요.'); window.open(`https://trace.cjlogistics.com/next/tracking.html?wblNo=${trackingNumber}`, 'cjTrackingPopup', 'width=1600,height=900,scrollbars=yes,resizable=yes'); setTrackingNumber(''); };
 
   const plans = useMemo(()=> operator==='KT'?PLAN_LIST_KT:PLAN_LIST_U, [operator]);
   const features = useMemo(()=> operator==='KT'?PLAN_FEATURES_KT:PLAN_FEATURES_U, [operator]);
