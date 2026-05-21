@@ -638,6 +638,16 @@ function normalizePlanKey(name) {
   return n;
 }
 
+// 👇👇 이 부분을 복사해서 추가해 주세요 👇👇
+function formatPlanName(name) {
+  if (!name) return '';
+  if (name.includes('(가입 중단)')) {
+    const parts = name.split('(가입 중단)');
+    return <>{parts[0]}<span className="text-red-500 font-bold">(가입 중단)</span>{parts[1]}</>;
+  }
+  return name;
+}
+
 const DEVICE_LIST = CATEGORIZED_DEVICE_LIST.flatMap(group => group.devices);
 
 // ------------------ MVNO 팝업 컴포넌트 ------------------
@@ -1126,7 +1136,7 @@ function MaintenanceCostPopup({ onClose, operator, plans, features, initialData 
                   {filteredPlans.length > 0 ? (
                     filteredPlans.map(p => (
                       <div key={p.name} onClick={() => { setSelectedPlan(p.name); setPlanSearchTerm(`${p.name} (${p.price.toLocaleString()}원)`); setIsPlanDropdownOpen(false); }} className={`px-3 py-2 cursor-pointer hover:bg-blue-50 text-sm border-b last:border-b-0 ${selectedPlan === p.name ? 'bg-blue-100 font-bold' : ''}`}>
-                        <span className="text-gray-500 text-xs mr-1">[{p.category}]</span> {p.name} <span className="text-gray-700 ml-1">({p.price.toLocaleString()}원)</span>
+                        <span className="text-gray-500 text-xs mr-1">[{p.category}]</span> {formatPlanName(p.name)} <span className="text-gray-700 ml-1">({p.price.toLocaleString()}원)</span>
                       </div>
                     ))
                   ) : ( <div className="px-3 py-2 text-sm text-gray-500 text-center">검색 결과가 없습니다.</div> )}
@@ -1389,7 +1399,7 @@ function MaintenanceCostPopup({ onClose, operator, plans, features, initialData 
                     {filteredPlans2.length > 0 ? (
                       filteredPlans2.map(p => (
                         <div key={p.name} onClick={() => { setSelectedPlan2(p.name); setPlanSearchTerm2(`${p.name} (${p.price.toLocaleString()}원)`); setIsPlanDropdownOpen2(false); }} className={`px-3 py-2 cursor-pointer hover:bg-blue-50 text-sm border-b last:border-b-0 ${selectedPlan2 === p.name ? 'bg-blue-100 font-bold' : ''}`}>
-                          <span className="text-gray-500 text-xs mr-1">[{p.category}]</span> {p.name} <span className="text-gray-700 ml-1">({p.price.toLocaleString()}원)</span>
+                          <span className="text-gray-500 text-xs mr-1">[{p.category}]</span> {formatPlanName(p.name)} <span className="text-gray-700 ml-1">({p.price.toLocaleString()}원)</span>
                         </div>
                       ))
                     ) : ( <div className="px-3 py-2 text-sm text-gray-500 text-center">검색 결과가 없습니다.</div> )}
@@ -1420,9 +1430,9 @@ function MaintenanceCostPopup({ onClose, operator, plans, features, initialData 
                   <span className="font-bold text-lg">{originalPlanPrice2.toLocaleString()} 원</span>
                 </div>
                 <div className="flex justify-between text-gray-500 text-[15px]">
-                  <span>{selectedPlan2}</span>
-                  <span>{originalPlanPrice2.toLocaleString()} 원</span>
-                </div>
+  <span>{formatPlanName(selectedPlan2)}</span>
+  <span>{originalPlanPrice2.toLocaleString()} 원</span>
+</div>
               </div>
 
               <hr className="border-black mb-2" />
@@ -1992,7 +2002,7 @@ style={d.isHighlight ? { fontWeight: 'bold', color: '#1D4ED8' } : d.isGreen ? { 
                     className={`px-3 py-2 cursor-pointer hover:bg-blue-50 text-sm border-b last:border-b-0 ${selectedPlan === p.name ? 'bg-blue-100 font-bold' : ''}`}
                   >
                     <span className="text-gray-500 text-xs mr-1">[{p.category}]</span> 
-                    {p.name} <span className="text-gray-700 ml-1">({p.price.toLocaleString()}원)</span>
+                    {formatPlanName(p.name)} <span className="text-gray-700 ml-1">({p.price.toLocaleString()}원)</span>
                   </div>
                 ))
               ) : (
@@ -2078,9 +2088,9 @@ style={d.isHighlight ? { fontWeight: 'bold', color: '#1D4ED8' } : d.isGreen ? { 
                 <span className="font-bold text-lg">{originalPlanPrice.toLocaleString()} 원</span>
               </div>
               <div className="flex justify-between text-gray-500 text-[15px]">
-                <span>{selectedPlan}</span>
-                <span>{originalPlanPrice.toLocaleString()} 원</span>
-              </div>
+  <span>{formatPlanName(selectedPlan)}</span>
+  <span>{originalPlanPrice.toLocaleString()} 원</span>
+</div>
             </div>
 
             <hr className="border-black mb-2" />
