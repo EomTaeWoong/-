@@ -638,7 +638,6 @@ function normalizePlanKey(name) {
   return n;
 }
 
-// 👇👇 이 부분을 복사해서 추가해 주세요 👇👇
 function formatPlanName(name) {
   if (!name) return '';
   if (name.includes('(가입 중단)')) {
@@ -773,7 +772,6 @@ function StoreMapPopup({ onClose }) {
     ]
   };
 
-  // 띄어쓰기 무시 검색 로직
   const removeSpaces = (str) => str.replace(/\s+/g, '').toLowerCase();
   const searchNormalized = removeSpaces(searchTerm);
 
@@ -828,7 +826,6 @@ function StoreMapPopup({ onClose }) {
           <button onClick={onClose} className="text-gray-500 hover:text-gray-800 text-3xl leading-none font-bold">&times;</button>
         </div>
 
-        {/* 검색창 영역 */}
         <div className="mb-4 shrink-0">
           <input 
             type="text" 
@@ -839,7 +836,6 @@ function StoreMapPopup({ onClose }) {
           />
         </div>
         
-        {/* 데이터 영역 */}
         <div className="flex-1 w-full overflow-y-auto pr-2 pb-2 custom-scrollbar">
           <div className="flex flex-col md:flex-row gap-4">
             {renderTable('SK망', mvnoList.SK망)}
@@ -1064,30 +1060,16 @@ function MaintenanceCostPopup({ onClose, operator, plans, features, initialData 
   const devicePrice = useMemo(()=> DEVICE_LIST.find(d=>d.name===selectedDevice)?.price || 0, [selectedDevice]);
 
   const originalPlanPrice = useMemo(() => plans.find(p => p.name === selectedPlan)?.price || 0, [selectedPlan, plans]);
-  const monthlyPlanDiscount = useMemo(() => Math.round(originalPlanPrice * 0.25), [originalPlanPrice]);
 
   const totalDiscount_Public = commonSupport + additionalSupport;
   const principal_Public = Math.max(0, devicePrice - totalDiscount_Public - doubleStorageDiscount);
   const monthlyDevice_Public = installMonths === 0 ? 0 : Math.round(pmt(interestRate/12, installMonths, principal_Public));
   const totalMonthly_Public = monthlyDevice_Public + originalPlanPrice;
-  const totalInterest_Public = installMonths === 0 ? 0 : Math.max(0, (monthlyDevice_Public * installMonths) - principal_Public);
 
   const principal_Selective = Math.max(0, devicePrice - selectiveAdditionalSupport - doubleStorageDiscount);
   const monthlyDevice_Selective = installMonths === 0 ? 0 : Math.round(pmt(interestRate/12, installMonths, principal_Selective));
   const planPrice_Selective = Math.round(originalPlanPrice * 0.75);
   const totalMonthly_Selective = monthlyDevice_Selective + planPrice_Selective;
-  const totalInterest_Selective = installMonths === 0 ? 0 : Math.max(0, (monthlyDevice_Selective * installMonths) - principal_Selective);
-
-  const monthlyInterest_Public = installMonths === 0 ? 0 : Math.max(0, monthlyDevice_Public - Math.round(principal_Public / installMonths));
-  const monthlyInterest_Selective = installMonths === 0 ? 0 : Math.max(0, monthlyDevice_Selective - Math.round(principal_Selective / installMonths));
-
-  const totalCost1_Public = totalMonthly_Public * 24;
-  const totalCost1_Selective = totalMonthly_Selective * 24;
-  const diff1 = Math.abs(totalCost1_Public - totalCost1_Selective);
-  const winner1 = totalCost1_Public < totalCost1_Selective ? '공통지원' : (totalCost1_Selective < totalCost1_Public ? '선택약정' : '동일');
-
-  const highlightClassPublic = totalMonthly_Public < totalMonthly_Selective ? 'bg-green-50 ring-2 ring-green-500 z-10' : 'bg-white';
-  const highlightClassSelective = totalMonthly_Selective < totalMonthly_Public ? 'bg-green-50 ring-2 ring-green-500 z-10' : 'bg-white';
   
   const originalPlanPrice2 = useMemo(() => plans.find(p => p.name === selectedPlan2)?.price || 0, [selectedPlan2, plans]);
   const monthlyPlanDiscount2 = useMemo(() => Math.round(originalPlanPrice2 * 0.25), [originalPlanPrice2]);
@@ -1104,30 +1086,17 @@ function MaintenanceCostPopup({ onClose, operator, plans, features, initialData 
   const highlightClassPublic2 = totalCost2_Public < totalCost2_Selective ? 'bg-green-50 ring-2 ring-green-500 z-10' : 'bg-white';
   const highlightClassSelective2 = totalCost2_Selective < totalCost2_Public ? 'bg-green-50 ring-2 ring-green-500 z-10' : 'bg-white';
 
-  const featureText = useMemo(()=> features[normalizePlanKey(selectedPlan)] || '', [selectedPlan, features]);
-  const featureText2 = useMemo(()=> features[normalizePlanKey(selectedPlan2)] || '', [selectedPlan2, features]);
-
   const handleContractTypeChange = (newType) => setContractType(newType);
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-    <div className="bg-white p-4 md:p-5 rounded-lg shadow-xl relative w-max max-w-[98vw] max-h-[95vh] overflow-auto border-4 border-indigo-200">
+      <div className="bg-white p-4 md:p-5 rounded-lg shadow-xl relative w-[880px] max-w-[95vw] max-h-[95vh] overflow-y-auto border-4 border-indigo-200">
 
         <button onClick={onClose} className="absolute top-3 right-3 text-gray-400 hover:text-gray-800 text-3xl leading-none">&times;</button>
-        <h2 className="text-2xl font-bold mb-3 text-center text-indigo-700">유지 비용 시뮬레이터</h2>
+        <h2 className="text-2xl font-bold mb-3 text-center text-indigo-700">6개월 유지 시뮬레이터</h2>
         
-        {/* 상단 컨트롤러 (유지 비용 팝업창은 원본 코드 유지: w-[calc(40%+2rem)]) */}
-        <div className="mb-3 flex flex-nowrap gap-2 items-end w-full">
-          <select value={selectedDevice} onChange={e=>setSelectedDevice(e.target.value)} className="border p-2 rounded w-[45%] md:w-max shrink-0 outline-none focus:ring-2 focus:ring-blue-500 h-[38px]">
-            {CATEGORIZED_DEVICE_LIST.map(group => (
-              <optgroup key={group.category} label={group.category}>
-                {group.devices.map(d => (
-                  <option key={d.name} value={d.name} style={d.isHighlight ? { fontWeight: 'bold', color: '#1D4ED8' } : d.isGreen ? { fontWeight: 'bold', color: '#059669' } : d.isPurple ? { fontWeight: 'bold', color: '#9333EA' } : {}}>{d.name} ({d.price.toLocaleString()}원)</option>
-                ))}
-              </optgroup>
-            ))}
-          </select>
-          
+        {/* 상단 컨트롤러 */}
+        <div className="mb-3 flex flex-nowrap gap-2 items-end w-full">          
           <div className="flex flex-col w-[350px] shrink-0">
             <div className="text-red-500 font-bold text-[13px] mb-1 text-center w-full whitespace-nowrap">개통 요금제</div>
             <div className="relative w-full" ref={planDropdownRef}>
@@ -1188,206 +1157,9 @@ function MaintenanceCostPopup({ onClose, operator, plans, features, initialData 
           </div>
         </div>
         
-{/* 계산 결과 1: 개통 요금제 유지 */}
-<div className="flex flex-nowrap gap-6 mt-4 w-max">
-  <div className="w-[820px] shrink-0">
-
-          <h3 className="text-xl font-bold text-red-600 mb-1">개통 요금제 24개월 사용하는 경우</h3>
-
-<div className="relative grid grid-cols-1 md:grid-cols-2 gap-3 mb-3 w-[820px]">
-
-            {/* 공통지원 */}
-            <div className={`p-4 rounded-xl shadow-md border border-gray-200 transition-all flex flex-col relative ${highlightClassPublic}`}>
-              <h3 className="text-[17px] font-bold text-center text-blue-700 mb-3">공통지원</h3>
-
-              {/* A 월 통신요금 */}
-              <div className="mb-2">
-                <div className="flex justify-between items-end mb-2">
-                  <div className="flex items-center gap-1.5">
-                    <span className="bg-[#ec008c] text-white text-sm font-bold px-1.5 py-0 rounded">A</span>
-                    <span className="font-bold text-[17px]">월 통신요금</span>
-                  </div>
-                  <span className="font-bold text-lg">{originalPlanPrice.toLocaleString()} 원</span>
-                </div>
-                <div className="flex justify-between text-gray-500 text-[15px]">
-                  <span>{selectedPlan}</span>
-                  <span>{originalPlanPrice.toLocaleString()} 원</span>
-                </div>
-              </div>
-
-              <hr className="border-black mb-2" />
-
-              {/* B 월 할부금 */}
-              <div className="mb-2">
-                <div className="flex justify-between items-end mb-2">
-                  <div className="flex items-center gap-1.5">
-                    <span className="bg-[#ec008c] text-white text-sm font-bold px-1.5 py-0 rounded">B</span>
-                    <span className="font-bold text-[17px]">월 할부금({installMonths === 0 ? '일시불' : installMonths + '개월'})</span>
-                  </div>
-                  <span className="font-bold text-lg">{monthlyDevice_Public.toLocaleString()} 원</span>
-                </div>
-                <div className="flex justify-between text-gray-500 text-[15px] mb-1">
-                  <span>출고가</span>
-                  <span>{devicePrice.toLocaleString()} 원</span>
-                </div>
-                {isPreorderDevice && (
-                  <div className="flex justify-between text-[#ec008c] font-bold text-[15px] mb-1">
-                    <span>더블 스토리지 할인</span>
-                    <span>- {doubleStorageDiscount.toLocaleString()} 원</span>
-                  </div>
-                )}
-                {commonSupport > 0 && (
-                  <div className="flex justify-between text-[#ec008c] font-bold text-[15px] mb-1">
-                    <span>공통 지원금</span>
-                    <span>- {commonSupport.toLocaleString()} 원</span>
-                  </div>
-                )}
-                {additionalSupport > 0 && (
-                  <div className="flex justify-between text-[#ec008c] font-bold text-[15px] mb-2">
-                    <span>삼성닷컴 추가지원금</span>
-                    <span>- {additionalSupport.toLocaleString()} 원</span>
-                  </div>
-                )}
-
-                <hr className="border-dashed border-gray-300 my-2" />
-
-                <div className="flex justify-between text-blue-600 font-bold text-[15px] mb-1">
-                  <span>할부원금</span>
-                  <span className="flex items-center"><span className="text-red-600 font-black text-lg mr-1 leading-none">➔</span> {principal_Public.toLocaleString()} 원</span>
-                </div>
-                {installMonths > 0 && (
-                  <div className="flex justify-between text-gray-500 text-[15px]">
-                    <span>할부이자 <span className="text-[13px] ml-1 tracking-tight">(총 {totalInterest_Public.toLocaleString()}원)</span></span>
-                    <span>{monthlyInterest_Public.toLocaleString()} 원</span>
-                  </div>
-                )}
-              </div>
-
-              <hr className="border-black border-t-[2px] mb-2" />
-
-              {/* A + B 월납부금 */}
-              <div className="mt-1">
-                <div className="flex items-center gap-1.5 mb-2">
-                  <span className="bg-[#ec008c] text-white text-sm font-bold px-1.5 py-0 rounded">A + B</span>
-                  <span className="font-bold text-[17px]">월납부금</span>
-                </div>
-                <div className="text-right mt-2">
-                  <span className="font-extrabold text-3xl tracking-tight">{totalMonthly_Public.toLocaleString()}</span>
-                  <span className="font-bold text-xl ml-1">원</span>
-                </div>
-              </div>
-
-              {/* 총 유지비용 (Popup Only) */}
-              <div className="mt-auto pt-3">
-                <div className="pt-3 border-t-2 border-dashed border-red-200 flex justify-between items-center text-red-600">
-                  <span className="font-bold text-[17px]">총 유지비용(24개월)</span>
-                  <span className="font-extrabold text-xl">{totalCost1_Public.toLocaleString()}원</span>
-                </div>
-              </div>
-            </div>
-
-            {/* 선택약정 */}
-            <div className={`p-4 rounded-xl shadow-md border border-gray-200 transition-all flex flex-col relative ${highlightClassSelective}`}>
-              <h3 className="text-[17px] font-bold text-center text-blue-700 mb-3">선택약정 (25% 요금할인)</h3>
-
-              {/* A 월 통신요금 */}
-              <div className="mb-2">
-                <div className="flex justify-between items-end mb-2">
-                  <div className="flex items-center gap-1.5">
-                    <span className="bg-[#ec008c] text-white text-sm font-bold px-1.5 py-0 rounded">A</span>
-                    <span className="font-bold text-[17px]">월 통신요금</span>
-                  </div>
-                  <span className="font-bold text-lg">{planPrice_Selective.toLocaleString()} 원</span>
-                </div>
-                <div className="flex justify-between text-gray-500 text-[15px] mb-1">
-                  <span>{selectedPlan}</span>
-                  <span>{originalPlanPrice.toLocaleString()} 원</span>
-                </div>
-                <div className="flex justify-between text-[#ec008c] font-bold text-[15px]">
-                  <span>선택약정 할인</span>
-                  <span>- {monthlyPlanDiscount.toLocaleString()} 원</span>
-                </div>
-              </div>
-
-              <hr className="border-black mb-2" />
-
-              {/* B 월 할부금 */}
-              <div className="mb-2">
-                <div className="flex justify-between items-end mb-2">
-                  <div className="flex items-center gap-1.5">
-                    <span className="bg-[#ec008c] text-white text-sm font-bold px-1.5 py-0 rounded">B</span>
-                    <span className="font-bold text-[17px]">월 할부금({installMonths === 0 ? '일시불' : installMonths + '개월'})</span>
-                  </div>
-                  <span className="font-bold text-lg">{monthlyDevice_Selective.toLocaleString()} 원</span>
-                </div>
-                <div className="flex justify-between text-gray-500 text-[15px] mb-1">
-                  <span>출고가</span>
-                  <span>{devicePrice.toLocaleString()} 원</span>
-                </div>
-                {isPreorderDevice && (
-                  <div className="flex justify-between text-[#ec008c] font-bold text-[15px] mb-1">
-                    <span>더블 스토리지 할인</span>
-                    <span>- {doubleStorageDiscount.toLocaleString()} 원</span>
-                  </div>
-                )}
-                {selectiveAdditionalSupport > 0 && (
-                  <div className="flex justify-between text-[#ec008c] font-bold text-[15px] mb-2">
-                    <span>삼성닷컴 추가지원금</span>
-                    <span>- {selectiveAdditionalSupport.toLocaleString()} 원</span>
-                  </div>
-                )}
-
-                <hr className="border-dashed border-gray-300 my-2" />
-
-                <div className="flex justify-between text-blue-600 font-bold text-[15px] mb-1">
-                  <span>할부원금</span>
-                  <span className="flex items-center"><span className="text-red-600 font-black text-lg mr-1 leading-none">➔</span> {principal_Selective.toLocaleString()} 원</span>
-                </div>
-                {installMonths > 0 && (
-                  <div className="flex justify-between text-gray-500 text-[15px]">
-                    <span>할부이자 <span className="text-[13px] ml-1 tracking-tight">(총 {totalInterest_Selective.toLocaleString()}원)</span></span>
-                    <span>{monthlyInterest_Selective.toLocaleString()} 원</span>
-                  </div>
-                )}
-              </div>
-
-              <hr className="border-black border-t-[2px] mb-2" />
-
-              {/* A + B 월납부금 */}
-              <div className="mt-1">
-                <div className="flex items-center gap-1.5 mb-2">
-                  <span className="bg-[#ec008c] text-white text-sm font-bold px-1.5 py-0 rounded">A + B</span>
-                  <span className="font-bold text-[17px]">월납부금</span>
-                </div>
-                <div className="text-right mt-2">
-                  <span className="font-extrabold text-3xl tracking-tight">{totalMonthly_Selective.toLocaleString()}</span>
-                  <span className="font-bold text-xl ml-1">원</span>
-                </div>
-              </div>
-
-              {/* 총 유지비용 (Popup Only) */}
-              <div className="mt-auto pt-3">
-                <div className="pt-3 border-t-2 border-dashed border-red-200 flex justify-between items-center text-red-600">
-                  <span className="font-bold text-[17px]">총 유지비용(24개월)</span>
-                  <span className="font-extrabold text-xl">{totalCost1_Selective.toLocaleString()}원</span>
-                </div>
-              </div>
-            </div>
-            
-            {/* 가운데 차액 표시 뱃지 */}
-            {diff1 > 0 && (
-              <div className="hidden md:flex absolute -bottom-5 left-1/2 -translate-x-1/2 bg-white border-2 border-blue-500 text-blue-600 font-extrabold text-[15px] px-5 py-1 rounded-full shadow-[0_4px_12px_rgba(0,0,0,0.15)] z-20 items-center justify-center whitespace-nowrap">
-                {winner1} {diff1.toLocaleString()}원 더 유리함
-              </div>
-            )}
-          </div>
-        </div>
-        
-{/* 계산 결과 2: 6개월 후 요금제 변경할 경우 */}
-<div className="border-l-2 border-dashed-border-l-2 border-dashed border-black pt-4 md:pt-0 md:pl-6 flex-1 min-w-0">
-
- <div className="relative grid grid-cols-1 md:grid-cols-2 gap-3 mb-3 w-[820px]">
-
+        {/* 6개월 유지 시뮬레이터 결과 */}
+        <div className="mt-4 w-full">
+          <div className="flex items-end gap-4 mb-3 w-full">
             <h3 className="text-xl font-bold text-red-600 pb-2 shrink-0">6개월 후 요금제 변경할 경우</h3>
             <div className="flex flex-col w-[420px] max-w-full">
               <div className="text-red-500 font-bold text-sm mb-1 text-center w-full">변경할 요금제</div>
@@ -1408,8 +1180,7 @@ function MaintenanceCostPopup({ onClose, operator, plans, features, initialData 
             </div>
           </div>
 
-          
-          <div className="relative grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+          <div className="relative grid grid-cols-1 md:grid-cols-2 gap-3 mb-3 w-full mt-auto">
             <div className={`p-4 rounded-xl shadow-md border border-gray-200 transition-all flex flex-col relative ${highlightClassPublic2}`}>
               <h3 className="text-[17px] font-bold text-center text-blue-700 mb-3">공통지원</h3>
 
@@ -1423,9 +1194,9 @@ function MaintenanceCostPopup({ onClose, operator, plans, features, initialData 
                   <span className="font-bold text-lg">{originalPlanPrice2.toLocaleString()} 원</span>
                 </div>
                 <div className="flex justify-between text-gray-500 text-[15px]">
-  <span>{formatPlanName(selectedPlan2)}</span>
-  <span>{originalPlanPrice2.toLocaleString()} 원</span>
-</div>
+                  <span>{formatPlanName(selectedPlan2)}</span>
+                  <span>{originalPlanPrice2.toLocaleString()} 원</span>
+                </div>
               </div>
 
               <hr className="border-black mb-2" />
@@ -1466,14 +1237,8 @@ function MaintenanceCostPopup({ onClose, operator, plans, features, initialData 
 
                 <div className="flex justify-between text-blue-600 font-bold text-[15px] mb-1">
                   <span>할부원금</span>
-                  <span className="flex items-center"><span className="text-red-600 font-black text-lg mr-1 leading-none">➔</span> {principal_Public.toLocaleString()} 원</span>
+                  <span className="flex items-center"><span className="text-blue-600 font-black text-lg mr-1 leading-none">➔</span> {principal_Public.toLocaleString()} 원</span>
                 </div>
-                {installMonths > 0 && (
-                  <div className="flex justify-between text-gray-500 text-[15px]">
-                    <span>할부이자 <span className="text-[13px] ml-1 tracking-tight">(총 {totalInterest_Public.toLocaleString()}원)</span></span>
-                    <span>{monthlyInterest_Public.toLocaleString()} 원</span>
-                  </div>
-                )}
               </div>
 
               <hr className="border-black border-t-[2px] mb-2" />
@@ -1558,14 +1323,8 @@ function MaintenanceCostPopup({ onClose, operator, plans, features, initialData 
 
                 <div className="flex justify-between text-blue-600 font-bold text-[15px] mb-1">
                   <span>할부원금</span>
-                  <span className="flex items-center"><span className="text-red-600 font-black text-lg mr-1 leading-none">➔</span> {principal_Selective.toLocaleString()} 원</span>
+                  <span className="flex items-center"><span className="text-blue-600 font-black text-lg mr-1 leading-none">➔</span> {principal_Selective.toLocaleString()} 원</span>
                 </div>
-                {installMonths > 0 && (
-                  <div className="flex justify-between text-gray-500 text-[15px]">
-                    <span>할부이자 <span className="text-[13px] ml-1 tracking-tight">(총 {totalInterest_Selective.toLocaleString()}원)</span></span>
-                    <span>{monthlyInterest_Selective.toLocaleString()} 원</span>
-                  </div>
-                )}
               </div>
 
               <hr className="border-black border-t-[2px] mb-2" />
@@ -1604,10 +1363,8 @@ function MaintenanceCostPopup({ onClose, operator, plans, features, initialData 
             )}
           </div>
         </div>
-
       </div>
     </div>
-  </div>
   );
 }
 
@@ -1919,8 +1676,14 @@ function Calculator({
   const monthlyInterest_Public = installMonths === 0 ? 0 : Math.max(0, monthlyDevice_Public - Math.round(principal_Public / installMonths));
   const monthlyInterest_Selective = installMonths === 0 ? 0 : Math.max(0, monthlyDevice_Selective - Math.round(principal_Selective / installMonths));
 
-  const highlightClassPublic = totalMonthly_Public < totalMonthly_Selective ? 'bg-green-50 ring-2 ring-green-500 z-10' : 'bg-white';
+const highlightClassPublic = totalMonthly_Public < totalMonthly_Selective ? 'bg-green-50 ring-2 ring-green-500 z-10' : 'bg-white';
   const highlightClassSelective = totalMonthly_Selective < totalMonthly_Public ? 'bg-green-50 ring-2 ring-green-500 z-10' : 'bg-white';
+
+  // ⭐️ 24개월 기준 총비용 비교 로직 ⭐️
+  const total24_Public = principal_Public + totalInterest_Public + (originalPlanPrice * 24);
+  const total24_Selective = principal_Selective + totalInterest_Selective + (planPrice_Selective * 24);
+  const diffMain = Math.abs(total24_Public - total24_Selective);
+  const winnerMain = total24_Public < total24_Selective ? '공통지원' : (total24_Selective < total24_Public ? '선택약정' : '동일');
 
   const handleContractTypeChange = (newType) => setContractType(newType);
 
@@ -2150,9 +1913,19 @@ style={d.isHighlight ? { fontWeight: 'bold', color: '#1D4ED8' } : d.isGreen ? { 
                 <span className="bg-[#ec008c] text-white text-sm font-bold px-1.5 py-0 rounded">A + B</span>
                 <span className="font-bold text-[17px]">월납부금</span>
               </div>
-              <div className="text-right mt-2">
+<div className="text-right mt-2">
                 <span className="font-extrabold text-3xl tracking-tight">{totalMonthly_Public.toLocaleString()}</span>
                 <span className="font-bold text-xl ml-1">원</span>
+              </div>
+            </div>
+
+{/* ⭐️ 총 유지비용 (메인화면 - 공통지원) ⭐️ */}
+            <div className="mt-auto pt-3">
+              <div className="pt-3 border-t-2 border-dashed border-red-200">
+                <div className="flex justify-between items-center text-red-600">
+                  <span className="font-bold text-[17px]">총 유지비용</span>
+                  <span className="font-extrabold text-xl">{total24_Public.toLocaleString()}원</span>
+                </div>
               </div>
             </div>
           </div>
@@ -2231,14 +2004,34 @@ style={d.isHighlight ? { fontWeight: 'bold', color: '#1D4ED8' } : d.isGreen ? { 
                 <span className="bg-[#ec008c] text-white text-sm font-bold px-1.5 py-0 rounded">A + B</span>
                 <span className="font-bold text-[17px]">월납부금</span>
               </div>
-              <div className="text-right mt-2">
+<div className="text-right mt-2">
                 <span className="font-extrabold text-3xl tracking-tight">{totalMonthly_Selective.toLocaleString()}</span>
                 <span className="font-bold text-xl ml-1">원</span>
               </div>
             </div>
+
+{/* ⭐️ 총 유지비용 (메인화면 - 선택약정) ⭐️ */}
+            <div className="mt-auto pt-3">
+              <div className="pt-3 border-t-2 border-dashed border-red-200">
+                <div className="flex justify-between items-center text-red-600">
+                  <span className="font-bold text-[17px]">총 유지비용</span>
+                  <span className="font-extrabold text-xl">{total24_Selective.toLocaleString()}원</span>
+                </div>
+              </div>
+            </div>
           </div>
+
+          {/* ⭐️ 메인 화면 유리한 약정 뱃지 ⭐️ */}
+          {diffMain > 0 && (
+            <div className="hidden md:flex absolute -bottom-5 left-1/2 -translate-x-1/2 bg-white border-2 border-blue-500 text-blue-600 font-extrabold text-[15px] px-5 py-1 rounded-full shadow-[0_4px_12px_rgba(0,0,0,0.15)] z-20 items-center justify-center whitespace-nowrap">
+              요금제 24개월 유지 시 총 비용 : {winnerMain} {diffMain.toLocaleString()}원 더 유리함
+            </div>
+          )}
+
         </div>
       </div>
+      
+      {/* 완전히 독립적으로 작동하는 유지 비용 팝업 (초기값으로 메인 화면의 데이터를 넘겨줌) */}
       
       {/* 완전히 독립적으로 작동하는 유지 비용 팝업 (초기값으로 메인 화면의 데이터를 넘겨줌) */}
       {showMaintenancePopup && (
@@ -2288,7 +2081,7 @@ function App() {
         </div>
         
         <div className="flex items-center ml-2 gap-2 shrink-0">
-          <button onClick={() => setShowMaintenancePopup(true)} className="bg-indigo-600 text-white px-3 py-2 rounded hover:bg-indigo-700 text-sm font-medium shadow whitespace-nowrap">유지 비용</button>
+          <button onClick={() => setShowMaintenancePopup(true)} className="bg-indigo-600 text-white w-[84px] h-[36px] flex items-center justify-center rounded hover:bg-indigo-700 text-sm font-medium shadow whitespace-nowrap">6개월 유지</button>
           <button onClick={() => setShowStorePopup(true)} className="bg-emerald-600 text-white px-3 py-2 rounded hover:bg-emerald-700 text-sm whitespace-nowrap">MVNO</button>
           <button onClick={() => setShowPopup(true)} className="bg-gray-600 text-white px-3 py-2 rounded hover:bg-gray-700 text-sm whitespace-nowrap">전화번호</button>
         </div>
@@ -2318,3 +2111,5 @@ ReactDOM.createRoot(document.getElementById('root')).render(<App/>);
 </script>
 </body>
 </html>
+
+```
