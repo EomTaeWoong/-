@@ -2053,12 +2053,18 @@ style={d.isHighlight ? { fontWeight: 'bold', color: '#1D4ED8' } : d.isGreen ? { 
 
       <div className="mt-3">
         {featureText && (
-          <div className="p-2.5 rounded-lg shadow-sm border border-blue-200 bg-blue-50 mb-3 text-center">
-            <span className="font-bold text-blue-800 mr-2">요금제 혜택:</span>
-            <span className="text-blue-700 text-[15px]">{featureText}</span>
+          <div className="p-2.5 rounded-lg shadow-sm border border-blue-200 bg-blue-50 mb-3 text-center leading-relaxed">
+            <span className="font-bold text-blue-800 mr-2 inline-block">요금제 혜택:</span>
+            <span className="text-blue-700 text-[15px]">
+              {featureText.split('/').map((item, index, array) => (
+                <span key={index} className="inline-block break-keep">
+                  {item}{index < array.length - 1 ? ' / ' : ''}
+                </span>
+              ))}
+            </span>
           </div>
         )}
-
+        
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3 relative mb-3">
           {/* 공통지원 */}
           <div className={`p-4 rounded-xl shadow-md border border-gray-200 transition-all flex flex-col relative ${highlightClassPublic}`}>
