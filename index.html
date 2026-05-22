@@ -1111,14 +1111,14 @@ function MaintenanceCostPopup({ onClose, operator, plans, features, initialData 
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-    <div className="bg-white p-4 md:p-5 rounded-lg shadow-xl relative w-[1750px] max-w-[98vw] max-h-[95vh] overflow-y-auto border-4 border-indigo-200">
+    <div className="bg-white p-4 md:p-5 rounded-lg shadow-xl relative w-max max-w-[98vw] max-h-[95vh] overflow-auto border-4 border-indigo-200">
 
         <button onClick={onClose} className="absolute top-3 right-3 text-gray-400 hover:text-gray-800 text-3xl leading-none">&times;</button>
         <h2 className="text-2xl font-bold mb-3 text-center text-indigo-700">유지 비용 시뮬레이터</h2>
         
         {/* 상단 컨트롤러 (유지 비용 팝업창은 원본 코드 유지: w-[calc(40%+2rem)]) */}
         <div className="mb-3 flex flex-nowrap gap-2 items-end w-full">
-          <select value={selectedDevice} onChange={e=>setSelectedDevice(e.target.value)} className="border p-2 rounded w-[45%] md:w-[calc(40%+2rem)] shrink-0 outline-none focus:ring-2 focus:ring-blue-500 h-[38px]">
+          <select value={selectedDevice} onChange={e=>setSelectedDevice(e.target.value)} className="border p-2 rounded w-[45%] md:w-max shrink-0 outline-none focus:ring-2 focus:ring-blue-500 h-[38px]">
             {CATEGORIZED_DEVICE_LIST.map(group => (
               <optgroup key={group.category} label={group.category}>
                 {group.devices.map(d => (
@@ -1128,15 +1128,15 @@ function MaintenanceCostPopup({ onClose, operator, plans, features, initialData 
             ))}
           </select>
           
-          <div className="flex flex-col flex-1 min-w-0">
+          <div className="flex flex-col w-[350px] shrink-0">
             <div className="text-red-500 font-bold text-[13px] mb-1 text-center w-full whitespace-nowrap">개통 요금제</div>
             <div className="relative w-full" ref={planDropdownRef}>
               <input type="text" value={planSearchTerm} onChange={(e) => { setPlanSearchTerm(e.target.value); setIsPlanDropdownOpen(true); }} onClick={(e) => { setIsPlanDropdownOpen(true); e.target.select(); }} placeholder="요금제 검색..." className="border p-2 rounded w-full outline-none focus:ring-2 focus:ring-blue-500 h-[38px]" />
               {isPlanDropdownOpen && (
-                <div className="absolute z-[60] w-full mt-1 bg-white border border-gray-300 rounded shadow-lg max-h-60 overflow-y-auto">
+                <div className="absolute z-[60] w-max min-w-full mt-1 bg-white border border-gray-300 rounded shadow-lg max-h-60 overflow-y-auto">
                   {filteredPlans.length > 0 ? (
                     filteredPlans.map(p => (
-                      <div key={p.name} onClick={() => { setSelectedPlan(p.name); setPlanSearchTerm(`${p.name} (${p.price.toLocaleString()}원)`); setIsPlanDropdownOpen(false); }} className={`px-3 py-2 cursor-pointer hover:bg-blue-50 text-sm border-b last:border-b-0 ${selectedPlan === p.name ? 'bg-blue-100 font-bold' : ''}`}>
+                      <div key={p.name} onClick={() => { setSelectedPlan(p.name); setPlanSearchTerm(`${p.name} (${p.price.toLocaleString()}원)`); setIsPlanDropdownOpen(false); }} className={`px-3 py-2 cursor-pointer hover:bg-blue-50 text-sm border-b last:border-b-0 whitespace-nowrap ${selectedPlan === p.name ? 'bg-blue-100 font-bold' : ''}`}>
                         <span className="text-gray-500 text-xs mr-1">[{p.category}]</span> {formatPlanName(p.name)} <span className="text-gray-700 ml-1">({p.price.toLocaleString()}원)</span>
                       </div>
                     ))
@@ -1189,8 +1189,8 @@ function MaintenanceCostPopup({ onClose, operator, plans, features, initialData 
         </div>
         
 {/* 계산 결과 1: 개통 요금제 유지 */}
-<div className="flex flex-col md:flex-row gap-6 mt-4">
-  <div className="flex-1 min-w-0">
+<div className="flex flex-nowrap gap-6 mt-4 w-max">
+  <div className="w-[820px] shrink-0">
 
           <h3 className="text-xl font-bold text-red-600 mb-1">개통 요금제 24개월 사용하는 경우</h3>
 
@@ -1384,7 +1384,7 @@ function MaintenanceCostPopup({ onClose, operator, plans, features, initialData 
         </div>
         
 {/* 계산 결과 2: 6개월 후 요금제 변경할 경우 */}
-<div className="border-t-2 md:border-t-0 md:border-l-2 border-dashed border-black pt-4 md:pt-0 md:pl-6 flex-1 min-w-0">
+<div className="border-l-2 border-dashed-border-l-2 border-dashed border-black pt-4 md:pt-0 md:pl-6 flex-1 min-w-0">
 
  <div className="relative grid grid-cols-1 md:grid-cols-2 gap-3 mb-3 w-[820px]">
 
