@@ -1090,13 +1090,13 @@ function MaintenanceCostPopup({ onClose, operator, plans, features, initialData 
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white p-4 md:p-5 rounded-lg shadow-xl relative w-[880px] max-w-[95vw] max-h-[95vh] overflow-y-auto border-4 border-indigo-200">
+      <div className="bg-white py-2 px-5 rounded-lg shadow-xl relative w-[880px] max-w-[95vw] max-h-[95vh] overflow-y-auto border-4 border-indigo-200">
 
         <button onClick={onClose} className="absolute top-3 right-3 text-gray-400 hover:text-gray-800 text-3xl leading-none">&times;</button>
-        <h2 className="text-2xl font-bold mb-3 text-center text-indigo-700">6개월 유지 시뮬레이터</h2>
+        <h2 className="text-xl font-bold mb-2 text-center text-indigo-700">6개월 후 요금제 변경 시 유지비용</h2>
         
         {/* 상단 컨트롤러 */}
-        <div className="mb-3 flex flex-nowrap gap-2 items-end w-full">          
+        <div className="mb-2 flex flex-nowrap gap-2 items-end w-full">          
           <div className="flex flex-col w-[350px] shrink-0">
             <div className="text-red-500 font-bold text-[13px] mb-1 text-center w-full whitespace-nowrap">개통 요금제</div>
             <div className="relative w-full" ref={planDropdownRef}>
@@ -1121,7 +1121,7 @@ function MaintenanceCostPopup({ onClose, operator, plans, features, initialData 
         </div>
 
         {/* 하단 컨트롤러 */}
-        <div className="mb-3 flex flex-nowrap items-end gap-1.5 w-full">
+        <div className="mb-2 flex flex-nowrap items-end gap-1.5 w-full">
           <div className="flex flex-col shrink-0">
             <label className="text-sm text-center">공통지원금</label>
             <input type="text" value={commonSupport.toLocaleString()} disabled={contractType === '선택약정'} onChange={e => { setCommonSupport(Number(e.target.value.replace(/\D/g, '')) || 0); setAdditionalEdited(false); }} className={`border p-1 rounded w-24 text-center ${contractType === '선택약정' ? 'bg-gray-200 text-gray-400' : 'bg-white'}`} onFocus={e=>e.target.select()} />
@@ -1181,7 +1181,7 @@ function MaintenanceCostPopup({ onClose, operator, plans, features, initialData 
           </div>
 
           <div className="relative grid grid-cols-1 md:grid-cols-2 gap-3 mb-3 w-full mt-auto">
-            <div className={`p-4 rounded-xl shadow-md border border-gray-200 transition-all flex flex-col relative ${highlightClassPublic2}`}>
+            <div className={`p-3 rounded-xl shadow-md border border-gray-200 transition-all flex flex-col relative ${highlightClassPublic2}`}>
               <h3 className="text-[17px] font-bold text-center text-blue-700 mb-3">공통지원</h3>
 
               {/* A 월 통신요금 */}
@@ -1269,7 +1269,7 @@ function MaintenanceCostPopup({ onClose, operator, plans, features, initialData 
               </div>
             </div>
 
-            <div className={`p-4 rounded-xl shadow-md border border-gray-200 transition-all flex flex-col relative ${highlightClassSelective2}`}>
+            <div className={`p-3 rounded-xl shadow-md border border-gray-200 transition-all flex flex-col relative ${highlightClassSelective2}`}>
               <h3 className="text-[17px] font-bold text-center text-blue-700 mb-3">선택약정 (25% 요금할인)</h3>
 
               {/* A 월 통신요금 */}
@@ -1688,7 +1688,7 @@ const highlightClassPublic = totalMonthly_Public < totalMonthly_Selective ? 'bg-
   const handleContractTypeChange = (newType) => setContractType(newType);
 
   return (
-    <div className="p-4 max-w-4xl mx-auto">
+    <div className="pt-2 pb-6 px-4 max-w-4xl mx-auto">
       <div className="mb-3 flex flex-nowrap gap-1.5 md:gap-2 items-center w-full">
         
         {/* 단말기 래퍼: 전체의 50%를 넉넉하게 차지하도록 변경 */}
@@ -1838,7 +1838,7 @@ style={d.isHighlight ? { fontWeight: 'bold', color: '#1D4ED8' } : d.isGreen ? { 
         
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3 relative mb-3">
           {/* 공통지원 */}
-          <div className={`p-4 rounded-xl shadow-md border border-gray-200 transition-all flex flex-col relative ${highlightClassPublic}`}>
+          <div className={`p-3 rounded-xl shadow-md border border-gray-200 transition-all flex flex-col relative ${highlightClassPublic}`}>
             <h3 className="text-[17px] font-bold text-center text-blue-700 mb-3">공통지원</h3>
 
             {/* A 월 통신요금 */}
@@ -1931,7 +1931,7 @@ style={d.isHighlight ? { fontWeight: 'bold', color: '#1D4ED8' } : d.isGreen ? { 
           </div>
 
           {/* 선택약정 */}
-          <div className={`p-4 rounded-xl shadow-md border border-gray-200 transition-all flex flex-col relative ${highlightClassSelective}`}>
+          <div className={`p-3 rounded-xl shadow-md border border-gray-200 transition-all flex flex-col relative ${highlightClassSelective}`}>
             <h3 className="text-[17px] font-bold text-center text-blue-700 mb-3">선택약정 (25% 요금할인)</h3>
 
             {/* A 월 통신요금 */}
@@ -2069,7 +2069,7 @@ function App() {
 
   return (
     <div>
-      <div className="p-3 mb-1 max-w-4xl mx-auto flex flex-wrap gap-2 items-center border-b border-gray-100">
+      <div className="py-1.5 px-3 mb-1 max-w-4xl mx-auto flex flex-wrap gap-2 items-center border-b border-gray-100">
         <button className={`px-4 py-2 rounded text-sm font-bold shrink-0 ${operator === 'KT' ? 'bg-blue-600 text-white shadow' : 'bg-white border'}`} onClick={() => setOperator('KT')}>KT</button>
         <button className={`px-4 py-2 rounded text-sm font-bold shrink-0 ${operator === 'U' ? 'bg-green-600 text-white shadow' : 'bg-white border'}`} onClick={() => setOperator('U')}>U+</button>
         
