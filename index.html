@@ -1090,7 +1090,7 @@ function MaintenanceCostPopup({ onClose, operator, plans, features, initialData 
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white py-2 px-5 rounded-lg shadow-xl relative w-[880px] max-w-[95vw] max-h-[95vh] overflow-y-auto border-4 border-indigo-200">
+      <div className="bg-white py-2 px-5 rounded-lg shadow-xl relative w-[880px] max-w-[95vw] overflow-hidden border-4 border-indigo-200">
 
         <button onClick={onClose} className="absolute top-3 right-3 text-gray-400 hover:text-gray-800 text-3xl leading-none">&times;</button>
         <h2 className="text-xl font-bold mb-2 text-center text-indigo-700">6개월 후 요금제 변경 시 유지비용</h2>
@@ -1688,7 +1688,7 @@ const highlightClassPublic = totalMonthly_Public < totalMonthly_Selective ? 'bg-
   const handleContractTypeChange = (newType) => setContractType(newType);
 
   return (
-    <div className="pt-2 pb-6 px-4 max-w-4xl mx-auto">
+    <div className="pt-2 pb-6 px-4 max-w-4xl mx-auto overflow-hidden">
       <div className="mb-3 flex flex-nowrap gap-1.5 md:gap-2 items-center w-full">
         
         {/* 단말기 래퍼: 전체의 50%를 넉넉하게 차지하도록 변경 */}
