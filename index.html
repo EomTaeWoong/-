@@ -1180,7 +1180,7 @@ function MaintenanceCostPopup({ onClose, operator, plans, features, initialData 
             </div>
           </div>
 
-          <div className="relative grid grid-cols-1 md:grid-cols-2 gap-3 mb-3 w-full mt-auto">
+          <div className="relative grid grid-cols-1 md:grid-cols-2 gap-3 mb-7 w-full mt-auto">
             <div className={`p-3 rounded-xl shadow-md border border-gray-200 transition-all flex flex-col relative ${highlightClassPublic2}`}>
               <h3 className="text-[17px] font-bold text-center text-blue-700 mb-3">공통지원</h3>
 
@@ -1244,16 +1244,16 @@ function MaintenanceCostPopup({ onClose, operator, plans, features, initialData 
               <hr className="border-black border-t-[2px] mb-2" />
 
               {/* A + B 월납부금 */}
-              <div className="mt-1">
-                <div className="flex items-center gap-1.5 mb-2">
-                  <span className="bg-[#ec008c] text-white text-sm font-bold px-1.5 py-0 rounded">A + B</span>
-                  <span className="font-bold text-[17px]">월납부금</span>
-                </div>
-                <div className="text-right mt-2">
-                  <span className="font-extrabold text-3xl tracking-tight">{totalMonthly_Public2.toLocaleString()}</span>
-                  <span className="font-bold text-xl ml-1">원</span>
-                </div>
+<div className="mt-1 flex justify-between items-end mb-2">  {/* 👈 1. 한 줄로 만들고 양끝으로 벌림 */}
+              <div className="flex items-center gap-1.5">  {/* 👈 2. mb-2 삭제 */}
+                <span className="bg-[#ec008c] text-white text-sm font-bold px-1.5 py-0 rounded">A + B</span>
+                <span className="font-bold text-[17px]">월 납부금</span>
               </div>
+              <div className="text-right">  {/* 👈 3. mt-2 삭제 */}
+                <span className="font-extrabold text-3xl tracking-tight">{totalMonthly_Public2.toLocaleString()}</span>
+                <span className="font-bold text-xl ml-1">원</span>
+              </div>
+            </div>
 
               {/* 총 유지비용 (Popup Only) */}
               <div className="mt-auto pt-3">
@@ -1330,16 +1330,16 @@ function MaintenanceCostPopup({ onClose, operator, plans, features, initialData 
               <hr className="border-black border-t-[2px] mb-2" />
 
               {/* A + B 월납부금 */}
-              <div className="mt-1">
-                <div className="flex items-center gap-1.5 mb-2">
-                  <span className="bg-[#ec008c] text-white text-sm font-bold px-1.5 py-0 rounded">A + B</span>
-                  <span className="font-bold text-[17px]">월납부금</span>
-                </div>
-                <div className="text-right mt-2">
-                  <span className="font-extrabold text-3xl tracking-tight">{totalMonthly_Selective2.toLocaleString()}</span>
-                  <span className="font-bold text-xl ml-1">원</span>
-                </div>
+<div className="mt-1 flex justify-between items-end mb-2">  {/* 👈 1. 한 줄로 만들고 양끝으로 벌림 */}
+              <div className="flex items-center gap-1.5">  {/* 👈 2. mb-2 삭제 */}
+                <span className="bg-[#ec008c] text-white text-sm font-bold px-1.5 py-0 rounded">A + B</span>
+                <span className="font-bold text-[17px]">월 납부금</span>
               </div>
+              <div className="text-right">  {/* 👈 3. mt-2 삭제 */}
+                <span className="font-extrabold text-3xl tracking-tight">{totalMonthly_Selective2.toLocaleString()}</span>
+                <span className="font-bold text-xl ml-1">원</span>
+              </div>
+            </div>
 
               {/* 총 유지비용 (Popup Only) */}
               <div className="mt-auto pt-3">
@@ -1357,7 +1357,7 @@ function MaintenanceCostPopup({ onClose, operator, plans, features, initialData 
             
             {/* 가운데 차액 표시 뱃지 */}
             {diff2 > 0 && (
-              <div className="hidden md:flex absolute -bottom-5 left-1/2 -translate-x-1/2 bg-white border-2 border-blue-500 text-blue-600 font-extrabold text-[15px] px-5 py-1 rounded-full shadow-[0_4px_12px_rgba(0,0,0,0.15)] z-20 items-center justify-center whitespace-nowrap">
+              <div className="hidden md:flex absolute -bottom-8 left-1/2 -translate-x-1/2 bg-white border-2 border-blue-500 text-blue-600 font-extrabold text-[15px] px-5 py-1 rounded-full shadow-[0_4px_12px_rgba(0,0,0,0.15)] z-20 items-center justify-center whitespace-nowrap">
                 {winner2} {diff2.toLocaleString()}원 더 유리함
               </div>
             )}
@@ -1455,7 +1455,7 @@ function NoticePopup({ onClose }) {
       <div className="bg-white p-6 rounded-lg shadow-xl relative w-max max-w-[90vw] text-center mb-[20vh]">
         <button onClick={onClose} className="absolute top-2 right-2 text-gray-400 hover:text-gray-800 text-2xl leading-none">&times;</button>
         <h2 className="text-lg font-bold mb-4 text-blue-600">📢 안내</h2>
-        <p className="text-gray-800 font-medium whitespace-nowrap">KT 5월 18일 / U+ 5월 20일에 변경된 정책 기준으로 적용중입니다. <br />요금제 선택시 공통지원금이 0원이면 직접 계산해주세요.</p>
+        <p className="text-gray-800 font-medium whitespace-nowrap">KT 5월 26일 / U+ 5월 20일에 변경된 정책 기준으로 적용중입니다. <br />요금제 선택시 공통지원금이 0원이면 직접 계산해주세요.</p>
         <button onClick={onClose} className="mt-6 bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 w-full font-bold text-sm">확인</button>
       </div>
     </div>
@@ -1836,7 +1836,7 @@ style={d.isHighlight ? { fontWeight: 'bold', color: '#1D4ED8' } : d.isGreen ? { 
           </div>
         )}
         
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 relative mb-3">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 relative mb-7">
           {/* 공통지원 */}
           <div className={`p-3 rounded-xl shadow-md border border-gray-200 transition-all flex flex-col relative ${highlightClassPublic}`}>
             <h3 className="text-[17px] font-bold text-center text-blue-700 mb-3">공통지원</h3>
@@ -1908,12 +1908,12 @@ style={d.isHighlight ? { fontWeight: 'bold', color: '#1D4ED8' } : d.isGreen ? { 
             <hr className="border-black border-t-[2px] mb-2" />
 
             {/* A + B 월납부금 */}
-            <div className="mt-1">
-              <div className="flex items-center gap-1.5 mb-2">
+<div className="mt-1 flex justify-between items-end mb-2">  {/* 👈 1. 한 줄로 만들고 양끝으로 벌림 */}
+              <div className="flex items-center gap-1.5">  {/* 👈 2. mb-2 삭제 */}
                 <span className="bg-[#ec008c] text-white text-sm font-bold px-1.5 py-0 rounded">A + B</span>
-                <span className="font-bold text-[17px]">월납부금</span>
+                <span className="font-bold text-[17px]">월 납부금</span>
               </div>
-<div className="text-right mt-2">
+              <div className="text-right">  {/* 👈 3. mt-2 삭제 */}
                 <span className="font-extrabold text-3xl tracking-tight">{totalMonthly_Public.toLocaleString()}</span>
                 <span className="font-bold text-xl ml-1">원</span>
               </div>
@@ -1999,12 +1999,12 @@ style={d.isHighlight ? { fontWeight: 'bold', color: '#1D4ED8' } : d.isGreen ? { 
             <hr className="border-black border-t-[2px] mb-2" />
 
             {/* A + B 월납부금 */}
-            <div className="mt-1">
-              <div className="flex items-center gap-1.5 mb-2">
+<div className="mt-1 flex justify-between items-end mb-2">  {/* 👈 1. 한 줄로 만들고 양끝으로 벌림 */}
+              <div className="flex items-center gap-1.5">  {/* 👈 2. mb-2 삭제 */}
                 <span className="bg-[#ec008c] text-white text-sm font-bold px-1.5 py-0 rounded">A + B</span>
-                <span className="font-bold text-[17px]">월납부금</span>
+                <span className="font-bold text-[17px]">월 납부금</span>
               </div>
-<div className="text-right mt-2">
+              <div className="text-right">  {/* 👈 3. mt-2 삭제 */}
                 <span className="font-extrabold text-3xl tracking-tight">{totalMonthly_Selective.toLocaleString()}</span>
                 <span className="font-bold text-xl ml-1">원</span>
               </div>
@@ -2023,7 +2023,7 @@ style={d.isHighlight ? { fontWeight: 'bold', color: '#1D4ED8' } : d.isGreen ? { 
 
           {/* ⭐️ 메인 화면 유리한 약정 뱃지 ⭐️ */}
           {diffMain > 0 && (
-            <div className="hidden md:flex absolute -bottom-5 left-1/2 -translate-x-1/2 bg-white border-2 border-blue-500 text-blue-600 font-extrabold text-[15px] px-5 py-1 rounded-full shadow-[0_4px_12px_rgba(0,0,0,0.15)] z-20 items-center justify-center whitespace-nowrap">
+            <div className="hidden md:flex absolute -bottom-8 left-1/2 -translate-x-1/2 bg-white border-2 border-blue-500 text-blue-600 font-extrabold text-[15px] px-5 py-1 rounded-full shadow-[0_4px_12px_rgba(0,0,0,0.15)] z-20 items-center justify-center whitespace-nowrap">
               요금제 24개월 유지 시 총 비용 : {winnerMain} {diffMain.toLocaleString()}원 더 유리함
             </div>
           )}
