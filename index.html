@@ -1160,9 +1160,8 @@ function MaintenanceCostPopup({ onClose, operator, plans, features, initialData 
         {/* 6개월 유지 시뮬레이터 결과 */}
         <div className="mt-4 w-full">
           <div className="flex items-end gap-4 mb-3 w-full">
-            <h3 className="text-xl font-bold text-red-600 pb-2 shrink-0">6개월 후 요금제 변경할 경우</h3>
+            <h3 className="text-xl font-bold text-red-600 pb-2 shrink-0">6개월 후 변경할 요금제 ▶</h3>
             <div className="flex flex-col w-[420px] max-w-full">
-              <div className="text-red-500 font-bold text-sm mb-1 text-center w-full">변경할 요금제</div>
               <div className="relative w-full" ref={planDropdownRef2}>
                 <input type="text" value={planSearchTerm2} onChange={(e) => { setPlanSearchTerm2(e.target.value); setIsPlanDropdownOpen2(true); }} onClick={(e) => { setIsPlanDropdownOpen2(true); e.target.select(); }} placeholder="요금제 검색..." className="border p-2 rounded w-full outline-none focus:ring-2 focus:ring-blue-500 h-[38px]" />
                 {isPlanDropdownOpen2 && (
@@ -1236,7 +1235,7 @@ function MaintenanceCostPopup({ onClose, operator, plans, features, initialData 
                 <hr className="border-dashed border-gray-300 my-2" />
 
                 <div className="flex justify-between text-blue-600 font-bold text-[15px] mb-1">
-                  <span>할부원금</span>
+                  <span>기기값(할부원금)</span>
                   <span className="flex items-center"><span className="text-blue-600 font-black text-lg mr-1 leading-none">➔</span> {principal_Public.toLocaleString()} 원</span>
                 </div>
               </div>
@@ -1247,7 +1246,7 @@ function MaintenanceCostPopup({ onClose, operator, plans, features, initialData 
 <div className="mt-1 flex justify-between items-end mb-2">  {/* 👈 1. 한 줄로 만들고 양끝으로 벌림 */}
               <div className="flex items-center gap-1.5">  {/* 👈 2. mb-2 삭제 */}
                 <span className="bg-[#ec008c] text-white text-sm font-bold px-1.5 py-0 rounded">A + B</span>
-                <span className="font-bold text-[17px]">월 납부금</span>
+                <span className="font-bold text-[17px]">월 납부 예상금액</span>
               </div>
               <div className="text-right">  {/* 👈 3. mt-2 삭제 */}
                 <span className="font-extrabold text-3xl tracking-tight">{totalMonthly_Public2.toLocaleString()}</span>
@@ -1322,7 +1321,7 @@ function MaintenanceCostPopup({ onClose, operator, plans, features, initialData 
                 <hr className="border-dashed border-gray-300 my-2" />
 
                 <div className="flex justify-between text-blue-600 font-bold text-[15px] mb-1">
-                  <span>할부원금</span>
+                  <span>기기값(할부원금)</span>
                   <span className="flex items-center"><span className="text-blue-600 font-black text-lg mr-1 leading-none">➔</span> {principal_Selective.toLocaleString()} 원</span>
                 </div>
               </div>
@@ -1333,7 +1332,7 @@ function MaintenanceCostPopup({ onClose, operator, plans, features, initialData 
 <div className="mt-1 flex justify-between items-end mb-2">  {/* 👈 1. 한 줄로 만들고 양끝으로 벌림 */}
               <div className="flex items-center gap-1.5">  {/* 👈 2. mb-2 삭제 */}
                 <span className="bg-[#ec008c] text-white text-sm font-bold px-1.5 py-0 rounded">A + B</span>
-                <span className="font-bold text-[17px]">월 납부금</span>
+                <span className="font-bold text-[17px]">월 납부 예상금액</span>
               </div>
               <div className="text-right">  {/* 👈 3. mt-2 삭제 */}
                 <span className="font-extrabold text-3xl tracking-tight">{totalMonthly_Selective2.toLocaleString()}</span>
@@ -1894,12 +1893,12 @@ style={d.isHighlight ? { fontWeight: 'bold', color: '#1D4ED8' } : d.isGreen ? { 
               <hr className="border-dashed border-gray-300 my-2" />
 
               <div className="flex justify-between text-blue-600 font-bold text-[15px] mb-1">
-                <span>할부원금</span>
+                <span>기기값(할부원금)</span>
                 <span className="flex items-center"><span className="text-red-600 font-black text-lg mr-1 leading-none">➔</span> {principal_Public.toLocaleString()} 원</span>
               </div>
               {installMonths > 0 && (
                 <div className="flex justify-between text-gray-500 text-[15px]">
-                  <span>할부이자 <span className="text-[13px] ml-1 tracking-tight">(총 {totalInterest_Public.toLocaleString()}원)</span></span>
+                  <span>할부이자 (연 5.9%) <span className="text-[13px] ml-1 tracking-tight">(총 {totalInterest_Public.toLocaleString()}원)</span></span>
                   <span>{monthlyInterest_Public.toLocaleString()} 원</span>
                 </div>
               )}
@@ -1911,7 +1910,7 @@ style={d.isHighlight ? { fontWeight: 'bold', color: '#1D4ED8' } : d.isGreen ? { 
 <div className="mt-1 flex justify-between items-end mb-2">  {/* 👈 1. 한 줄로 만들고 양끝으로 벌림 */}
               <div className="flex items-center gap-1.5">  {/* 👈 2. mb-2 삭제 */}
                 <span className="bg-[#ec008c] text-white text-sm font-bold px-1.5 py-0 rounded">A + B</span>
-                <span className="font-bold text-[17px]">월 납부금</span>
+                <span className="font-bold text-[17px]">월 납부 예상금액</span>
               </div>
               <div className="text-right">  {/* 👈 3. mt-2 삭제 */}
                 <span className="font-extrabold text-3xl tracking-tight">{totalMonthly_Public.toLocaleString()}</span>
@@ -1985,12 +1984,12 @@ style={d.isHighlight ? { fontWeight: 'bold', color: '#1D4ED8' } : d.isGreen ? { 
               <hr className="border-dashed border-gray-300 my-2" />
 
               <div className="flex justify-between text-blue-600 font-bold text-[15px] mb-1">
-                <span>할부원금</span>
+                <span>기기값(할부원금)</span>
                 <span className="flex items-center"><span className="text-red-600 font-black text-lg mr-1 leading-none">➔</span> {principal_Selective.toLocaleString()} 원</span>
               </div>
               {installMonths > 0 && (
                 <div className="flex justify-between text-gray-500 text-[15px]">
-                  <span>할부이자 <span className="text-[13px] ml-1 tracking-tight">(총 {totalInterest_Selective.toLocaleString()}원)</span></span>
+                  <span>할부이자 (연 5.9%) <span className="text-[13px] ml-1 tracking-tight">(총 {totalInterest_Selective.toLocaleString()}원)</span></span>
                   <span>{monthlyInterest_Selective.toLocaleString()} 원</span>
                 </div>
               )}
@@ -2002,7 +2001,7 @@ style={d.isHighlight ? { fontWeight: 'bold', color: '#1D4ED8' } : d.isGreen ? { 
 <div className="mt-1 flex justify-between items-end mb-2">  {/* 👈 1. 한 줄로 만들고 양끝으로 벌림 */}
               <div className="flex items-center gap-1.5">  {/* 👈 2. mb-2 삭제 */}
                 <span className="bg-[#ec008c] text-white text-sm font-bold px-1.5 py-0 rounded">A + B</span>
-                <span className="font-bold text-[17px]">월 납부금</span>
+                <span className="font-bold text-[17px]">월 납부 예상금액</span>
               </div>
               <div className="text-right">  {/* 👈 3. mt-2 삭제 */}
                 <span className="font-extrabold text-3xl tracking-tight">{totalMonthly_Selective.toLocaleString()}</span>
