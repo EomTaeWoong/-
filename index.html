@@ -2131,29 +2131,51 @@ function App() {
 // ==============================================================================
 // 🌟🌟 [여기서부터 끼워 넣으세요!] 추가지원금 시트 연동 시작 🌟🌟
 // ==============================================================================
-if (wb.Sheets['추가지원금']) {
+        if (wb.Sheets['추가지원금']) {
           const extraData = XLSX.utils.sheet_to_json(wb.Sheets['추가지원금']);
           extraData.forEach(row => {
             const modelName = row['모델명'];
             if (updatedPolicy.DEVICES[modelName]) {
-              // EXTRA 객체가 없으면 새로 생성
               if (!updatedPolicy.DEVICES[modelName].EXTRA) updatedPolicy.DEVICES[modelName].EXTRA = {};
               const extra = updatedPolicy.DEVICES[modelName].EXTRA;
+              
+              // 💡 단말기 이름을 보고 코드가 알아서 요금제 기준을 똑똑하게 변경
+              let ktTier = 'OVER_90K';    
+              let uHighTier = 'OVER_95K'; 
+              let uLowTier = 'OVER_61K';  
 
-              // 💡 핵심: 시트의 모든 열을 자동으로 돌면서 EXTRA에 등록합니다.
-              Object.keys(row).forEach(key => {
-                if (key !== '모델명') {
-                  const val = row[key] || 0;
-                  
-                  // A36, A17 같은 특수 모델 판별 로직만 남깁니다.
-                  let tier = 'OVER_90K'; 
-                  if (modelName.includes('A36')) tier = 'OVER_61K';
-                  else if (modelName.includes('A17')) tier = 'OVER_33K';
-                  
-                  // 모든 열을 자동으로 매핑
-                  extra[key] = { [tier]: { common: val, selective: val } };
+              if (modelName.includes('A36')) {
+                ktTier = 'OVER_61K';
+                uHighTier = 'OVER_61K'; 
+                uLowTier = 'OVER_61K';
+              } else if (modelName.includes('A17')) {
+                ktTier = 'OVER_33K';
+                uHighTier = 'OVER_33K'; 
+                uLowTier = 'OVER_33K';
+              }
+              
+              // 💡 영어 이름표(Key)와 한글 이름표 매칭
+              if(row['KT_기변_닷컴'] !== undefined) extra.KT_CHANGE_DOTCOM = { [ktTier]: { common: row['KT_기변_닷컴'], selective: row['KT_기변_닷컴'] } };
+              if(row['KT_기변_갤캠스'] !== undefined) extra.KT_CHANGE_GALCAMS = { [ktTier]: { common: row['KT_기변_갤캠스'], selective: row['KT_기변_갤캠스'] } };
+              if(row['KT_번이_닷컴'] !== undefined) extra.KT_MNP_DOTCOM = { [ktTier]: { common: row['KT_번이_닷컴'], selective: row['KT_번이_닷컴'] } };
+              if(row['KT_번이_갤캠스'] !== undefined) extra.KT_MNP_GALCAMS = { [ktTier]: { common: row['KT_번이_갤캠스'], selective: row['KT_번이_갤캠스'] } };
+              
+              const applyUPlus = (highVal, lowVal) => {
+                if (uHighTier === uLowTier) {
+                  const val = highVal !== undefined ? highVal : (lowVal !== undefined ? lowVal : 0);
+                  return { [uHighTier]: { common: val, selective: val } };
+                } else {
+                  return { 
+                    [uHighTier]: { common: highVal||0, selective: highVal||0 }, 
+                    [uLowTier]: { common: lowVal||0, selective: lowVal||0 } 
+                  };
                 }
-              });
+              };
+
+              if(row['U_기변_닷컴_고가'] !== undefined || row['U_기변_닷컴_저가'] !== undefined) extra.U_CHANGE_DOTCOM = applyUPlus(row['U_기변_닷컴_고가'], row['U_기변_닷컴_저가']);
+              if(row['U_기변_갤캠스_고가'] !== undefined || row['U_기변_갤캠스_저가'] !== undefined) extra.U_CHANGE_GALCAMS = applyUPlus(row['U_기변_갤캠스_고가'], row['U_기변_갤캠스_저가']);
+              if(row['U_번이_닷컴_고가'] !== undefined || row['U_번이_닷컴_저가'] !== undefined) extra.U_MNP_DOTCOM = applyUPlus(row['U_번이_닷컴_고가'], row['U_번이_닷컴_저가']);
+              if(row['U_번이_갤캠스_고가'] !== undefined || row['U_번이_갤캠스_저가'] !== undefined) extra.U_MNP_GALCAMS = applyUPlus(row['U_번이_갤캠스_고가'], row['U_번이_갤캠스_저가']);
             }
           });
         }
