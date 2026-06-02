@@ -8,6 +8,7 @@
   <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
   <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
   <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
   <style>
     /* 팝업 및 드롭다운 스크롤바 커스텀 */
     ::-webkit-scrollbar { width: 8px; height: 8px; }
@@ -183,7 +184,7 @@ const POLICY = {
     },
     'S25 울트라｜256기가': {
       KT_COMMON: { 19800: 36000, 24000: 42000, 33000: 60000, 37000: 69000, 41000: 75000, 42000: 77000, 44000: 78000, 45000: 85000, 47000: 86000, 49000: 89000, 50000: 91000, 55000: 100000, 58000: 107000, 61000: 111000, 63000: 116000, 65000: 119000, 67000: 122000, 69000: 127000, 77000: 139000, 80000: 147000, 89000: 150000, 90000: 150000, 100000: 183000, 110000: 201000, 130000: 250000 },
-      U_COMMON: { 28000: 0, 29000: 52000, 33000: 59000, 37000: 66000, 39000: 69000, 43000: 76000, 44000: 78000, 45000: 80000, 47000: 84000, 49000: 87000, 55000: 98000, 59000: 105000, 61000: 108000, 63000: 112000, 66000: 117000, 68000: 121000, 69000: 122000, 70000: 124000, 75000: 133000, 78000: 0, 85000: 151000, 95000: 168000, 105000: 186000, 115000: 204000, 130000: 230000 },
+      U_COMMON: { 28000: 0, 29000: 52000, 33000: 59000, 37000: 66000, 39000: 69000, 43000: 76000, 44000: 78000, 45000: 80000, 47000: 84000, 49000: 87000, 55000: 98000, 59000: 105000, 61000: 108000, 63000: 112000, 66000: 117000, 68000: 121000, 69000: 122000, 70000: 124000, 75000: 133000, 85000: 151000, 95000: 168000, 105000: 186000, 115000: 204000, 130000: 230000 },
       EXTRA: {
         KT_CHANGE_DOTCOM: { OVER_90K: { common: 390000, selective: 390000 } },
         KT_CHANGE_GALCAMS: { OVER_90K: { common: 500000, selective: 500000 } },
@@ -228,7 +229,7 @@ const POLICY = {
     },
     'S25 엣지｜256기가': {
       KT_COMMON: { 19800: 157000, 24000: 181000, 33000: 246000, 37000: 281000, 41000: 305000, 42000: 311000, 44000: 317000, 45000: 341000, 47000: 347000, 49000: 358000, 50000: 364000, 55000: 400000, 58000: 423000, 61000: 441000, 63000: 459000, 65000: 471000, 67000: 482000, 69000: 500000, 77000: 547000, 80000: 600000, 89000: 700000, 90000: 700000, 100000: 700000, 110000: 700000, 130000: 700000 },
-      U_COMMON: { 28000: 0, 29000: 239000, 33000: 272000, 37000: 305000, 39000: 322000, 43000: 355000, 44000: 363000, 45000: 371000, 47000: 388000, 49000: 404000, 55000: 454000, 59000: 487000, 61000: 503000, 63000: 519000, 66000: 544000, 68000: 560000, 69000: 569000, 70000: 577000, 75000: 618000, 85000: 700000, 95000: 700000, 105000: 700000, 115000: 700000, 130000: 700000 },
+      U_COMMON: { 28000: 0, 29000: 239000, 33000: 272000, 37000: 305000, 39000: 322000, 43000: 355000, 44000: 363000, 45000: 371000, 47000: 388000, 49000: 404000, 55000: 454000, 59000: 487000, 61000: 503000, 63000: 519000, 66000: 544000, 68000: 560000, 69000: 569000, 69000: 569000, 70000: 577000, 75000: 618000, 85000: 700000, 95000: 700000, 105000: 700000, 115000: 700000, 130000: 700000 },
       EXTRA: {
         KT_CHANGE_DOTCOM: { OVER_90K: { common: 450000, selective: 450000 } },
         KT_CHANGE_GALCAMS: { OVER_90K: { common: 500000, selective: 500000 } },
@@ -303,7 +304,7 @@ const POLICY = {
     },
     'A36 5G｜128기가': {
       KT_COMMON: { 19800: 36000, 24000: 42000, 33000: 60000, 37000: 69000, 41000: 75000, 42000: 77000, 44000: 78000, 45000: 85000, 47000: 86000, 49000: 89000, 50000: 91000, 55000: 100000, 58000: 107000, 61000: 111000, 63000: 116000, 65000: 119000, 67000: 122000, 69000: 127000, 77000: 137000, 80000: 147000, 89000: 150000, 90000: 150000, 100000: 183000, 110000: 201000, 130000: 250000 },
-      U_COMMON: { 28000: 0, 29000: 52000, 33000: 59000, 37000: 66000, 39000: 69000, 43000: 76000, 44000: 78000, 45000: 80000, 47000: 84000, 49000: 87000, 55000: 98000, 59000: 105000, 61000: 108000, 63000: 112000, 66000: 117000, 68000: 121000, 69000: 122000, 70000: 124000, 75000: 133000, 78000: 138000, 85000: 151000, 95000: 168000, 105000: 186000, 115000: 204000, 130000: 230000 },
+      U_COMMON: { 28000: 0, 29000: 52000, 33000: 59000, 37000: 66000, 39000: 69000, 43000: 76000, 44000: 78000, 45000: 80000, 47000: 84000, 49000: 87000, 55000: 98000, 59000: 105000, 61000: 108000, 63000: 112000, 66000: 117000, 68000: 121000, 68000: 121000, 69000: 122000, 70000: 124000, 75000: 133000, 78000: 138000, 85000: 151000, 95000: 168000, 105000: 186000, 115000: 204000, 130000: 230000 },
       EXTRA: {
         KT_CHANGE_DOTCOM: { OVER_61K: { common: 0, selective: 0 } },
         KT_CHANGE_GALCAMS: { OVER_61K: { common: 0, selective: 0 } },
@@ -854,7 +855,7 @@ function StoreMapPopup({ onClose }) {
 }
 
 // ------------------ 독립형 유지 비용 팝업 컴포넌트 ------------------
-function MaintenanceCostPopup({ onClose, operator, plans, features, initialData }) {
+function MaintenanceCostPopup({ onClose, operator, plans, features, initialData, policyData }) {
   const [selectedDevice, setSelectedDevice] = useState(initialData?.selectedDevice || CATEGORIZED_DEVICE_LIST[0].devices[0].name);
   const [selectedPlan, setSelectedPlan] = useState(initialData?.selectedPlan || plans[0]?.name || '');
   const [installMonths, setInstallMonths] = useState(initialData?.installMonths ?? 24);
@@ -969,7 +970,7 @@ function MaintenanceCostPopup({ onClose, operator, plans, features, initialData 
       isFirstRender.current = false;
       return;
     }
-    const devicePolicy = POLICY.DEVICES[selectedDevice];
+    const devicePolicy = policyData.DEVICES[selectedDevice];
     const planInfo = plans.find(p => p.name === selectedPlan);
     const planPrice = planInfo ? planInfo.price : 0;
 
@@ -1010,10 +1011,10 @@ function MaintenanceCostPopup({ onClose, operator, plans, features, initialData 
           }
         } else {
           if (extraConfig.U_TIER_A_DOTCOM !== undefined) {
-            if (planPrice >= POLICY.TIERS.U_TIER_A_MIN) newAddCommon = isGalcams ? (extraConfig.U_TIER_A_GALCAMS || 0) : (extraConfig.U_TIER_A_DOTCOM || 0);
-          } else if (planPrice >= POLICY.TIERS.U_TIER_1_MIN && planPrice < POLICY.TIERS.U_TIER_1_MAX) {
+            if (planPrice >= policyData.TIERS.U_TIER_A_MIN) newAddCommon = isGalcams ? (extraConfig.U_TIER_A_GALCAMS || 0) : (extraConfig.U_TIER_A_DOTCOM || 0);
+          } else if (planPrice >= policyData.TIERS.U_TIER_1_MIN && planPrice < policyData.TIERS.U_TIER_1_MAX) {
             newAddCommon = isGalcams ? (extraConfig.U_TIER_1_GALCAMS || 0) : (extraConfig.U_TIER_1_DOTCOM || 0);
-          } else if (planPrice >= POLICY.TIERS.U_TIER_2_MIN) {
+          } else if (planPrice >= policyData.TIERS.U_TIER_2_MIN) {
             newAddCommon = isGalcams ? (extraConfig.U_TIER_2_GALCAMS || 0) : (extraConfig.U_TIER_2_DOTCOM || 0);
           }
           newAddSelective = newAddCommon;
@@ -1042,7 +1043,7 @@ function MaintenanceCostPopup({ onClose, operator, plans, features, initialData 
             newAddSelective = 0;
           }
         } else {
-          if (planPrice >= POLICY.TIERS.KT_TIER_1_MIN) {
+          if (planPrice >= policyData.TIERS.KT_TIER_1_MIN) {
             newAddCommon = isGalcams ? (extraConfig.KT_TIER_1_GALCAMS || 0) : (extraConfig.KT_TIER_1_DOTCOM || 0);
             newAddSelective = newAddCommon;
           }
@@ -1484,7 +1485,7 @@ function NoticePopup({ onClose }) {
 
 // ------------------ 계산기 컴포넌트 ------------------
 function Calculator({
-  plans, features, operator, 
+  plans, features, operator, policyData,
   setShowRequestFormPopup, setShowDeviceColorPopup, setShowPlanSummaryPopup, showMaintenancePopup, setShowMaintenancePopup
 }) {
   const [selectedDevice, setSelectedDevice] = useState(CATEGORIZED_DEVICE_LIST[0].devices[0].name);
@@ -1581,7 +1582,7 @@ function Calculator({
 
   // [로직 2] 통합된 지원금 자동 매핑 로직
   useEffect(() => {
-    const devicePolicy = POLICY.DEVICES[selectedDevice];
+    const devicePolicy = policyData.DEVICES[selectedDevice];
     const planInfo = plans.find(p => p.name === selectedPlan);
     const planPrice = planInfo ? planInfo.price : 0;
 
@@ -1622,10 +1623,10 @@ function Calculator({
           }
         } else {
           if (extraConfig.U_TIER_A_DOTCOM !== undefined) {
-            if (planPrice >= POLICY.TIERS.U_TIER_A_MIN) newAddCommon = isGalcams ? (extraConfig.U_TIER_A_GALCAMS || 0) : (extraConfig.U_TIER_A_DOTCOM || 0);
-          } else if (planPrice >= POLICY.TIERS.U_TIER_1_MIN && planPrice < POLICY.TIERS.U_TIER_1_MAX) {
+            if (planPrice >= policyData.TIERS.U_TIER_A_MIN) newAddCommon = isGalcams ? (extraConfig.U_TIER_A_GALCAMS || 0) : (extraConfig.U_TIER_A_DOTCOM || 0);
+          } else if (planPrice >= policyData.TIERS.U_TIER_1_MIN && planPrice < policyData.TIERS.U_TIER_1_MAX) {
             newAddCommon = isGalcams ? (extraConfig.U_TIER_1_GALCAMS || 0) : (extraConfig.U_TIER_1_DOTCOM || 0);
-          } else if (planPrice >= POLICY.TIERS.U_TIER_2_MIN) {
+          } else if (planPrice >= policyData.TIERS.U_TIER_2_MIN) {
             newAddCommon = isGalcams ? (extraConfig.U_TIER_2_GALCAMS || 0) : (extraConfig.U_TIER_2_DOTCOM || 0);
           }
           newAddSelective = newAddCommon;
@@ -1654,7 +1655,7 @@ function Calculator({
             newAddSelective = 0;
           }
         } else {
-          if (planPrice >= POLICY.TIERS.KT_TIER_1_MIN) {
+          if (planPrice >= policyData.TIERS.KT_TIER_1_MIN) {
             newAddCommon = isGalcams ? (extraConfig.KT_TIER_1_GALCAMS || 0) : (extraConfig.KT_TIER_1_DOTCOM || 0);
             newAddSelective = newAddCommon;
           }
@@ -2052,14 +2053,13 @@ style={d.isHighlight ? { fontWeight: 'bold', color: '#1D4ED8' } : d.isGreen ? { 
       </div>
       
       {/* 완전히 독립적으로 작동하는 유지 비용 팝업 (초기값으로 메인 화면의 데이터를 넘겨줌) */}
-      
-      {/* 완전히 독립적으로 작동하는 유지 비용 팝업 (초기값으로 메인 화면의 데이터를 넘겨줌) */}
       {showMaintenancePopup && (
         <MaintenanceCostPopup 
           onClose={() => setShowMaintenancePopup(false)} 
           operator={operator}
           plans={plans}
           features={features}
+          policyData={policyData}
           initialData={{
             selectedDevice, selectedPlan, installMonths, commonSupport,
             additionalSupport, selectiveAdditionalSupport, additionalEdited,
@@ -2082,6 +2082,93 @@ function App() {
   const [showMaintenancePopup, setShowMaintenancePopup] = useState(false);
   const [showStorePopup, setShowStorePopup] = useState(false); // 매장 찾기 팝업 상태
 
+// 💡 [여기서부터 복사] 기존 정책 데이터를 가져옵니다.
+  const [policyData, setPolicyData] = useState(POLICY); 
+
+// ==============================================================================
+// 🌟 [추가된 코드] 구글 스프레드시트 실시간 연동 (페이지 열릴 때 자동 실행) 🌟
+// ==============================================================================
+  useEffect(() => {
+    // 1. 복사해둔 구글 스프레드시트 ID를 아래 따옴표 안에 넣으세요!
+    const SPREADSHEET_ID = '1phwbcLbz1ZEwqc-TvKjDt544ERl3GAruxjELFfW5rdE'; 
+    
+    // 2. 구글 시트를 엑셀 형태로 읽어오는 주소
+    const fileUrl = `https://docs.google.com/spreadsheets/d/${SPREADSHEET_ID}/export?format=xlsx`;
+
+    fetch(fileUrl)
+      .then(response => response.arrayBuffer())
+      .then(data => {
+        const wb = XLSX.read(data, { type: 'array' });
+        let updatedPolicy = JSON.parse(JSON.stringify(POLICY)); // 원본 데이터 복사
+
+        // KT 공통지원금 시트 연동
+        if (wb.Sheets['KT_공통지원금']) {
+          const ktData = XLSX.utils.sheet_to_json(wb.Sheets['KT_공통지원금']);
+          ktData.forEach(row => {
+            const modelName = row['모델명'];
+            if (updatedPolicy.DEVICES[modelName]) {
+              updatedPolicy.DEVICES[modelName].KT_COMMON = {};
+              Object.keys(row).forEach(key => {
+                if (key !== '모델명') updatedPolicy.DEVICES[modelName].KT_COMMON[key] = row[key];
+              });
+            }
+          });
+        }
+
+        // U+ 공통지원금 시트 연동
+        if (wb.Sheets['U_공통지원금']) {
+          const uData = XLSX.utils.sheet_to_json(wb.Sheets['U_공통지원금']);
+          uData.forEach(row => {
+            const modelName = row['모델명'];
+            if (updatedPolicy.DEVICES[modelName]) {
+              updatedPolicy.DEVICES[modelName].U_COMMON = {};
+              Object.keys(row).forEach(key => {
+                if (key !== '모델명') updatedPolicy.DEVICES[modelName].U_COMMON[key] = row[key];
+              });
+            }
+          });
+        }
+// ==============================================================================
+// 🌟🌟 [여기서부터 끼워 넣으세요!] 추가지원금 시트 연동 시작 🌟🌟
+// ==============================================================================
+if (wb.Sheets['추가지원금']) {
+          const extraData = XLSX.utils.sheet_to_json(wb.Sheets['추가지원금']);
+          extraData.forEach(row => {
+            const modelName = row['모델명'];
+            if (updatedPolicy.DEVICES[modelName]) {
+              // EXTRA 객체가 없으면 새로 생성
+              if (!updatedPolicy.DEVICES[modelName].EXTRA) updatedPolicy.DEVICES[modelName].EXTRA = {};
+              const extra = updatedPolicy.DEVICES[modelName].EXTRA;
+
+              // 💡 핵심: 시트의 모든 열을 자동으로 돌면서 EXTRA에 등록합니다.
+              Object.keys(row).forEach(key => {
+                if (key !== '모델명') {
+                  const val = row[key] || 0;
+                  
+                  // A36, A17 같은 특수 모델 판별 로직만 남깁니다.
+                  let tier = 'OVER_90K'; 
+                  if (modelName.includes('A36')) tier = 'OVER_61K';
+                  else if (modelName.includes('A17')) tier = 'OVER_33K';
+                  
+                  // 모든 열을 자동으로 매핑
+                  extra[key] = { [tier]: { common: val, selective: val } };
+                }
+              });
+            }
+          });
+        }
+// ==============================================================================
+// 🌟🌟 [여기까지 복사] 🌟🌟
+// ==============================================================================
+        setPolicyData(updatedPolicy);
+        console.log('구글 시트 연동 완료!');
+      })
+      .catch(error => {
+        console.error('구글 시트 데이터를 불러오는데 실패했습니다:', error);
+      });
+  }, []);
+// ==============================================================================
+
   const handleTrackingSearch = () => { if (!trackingNumber || !/^\d+$/.test(trackingNumber)) return alert('송장번호를 입력해주세요.'); window.open(`https://trace.cjlogistics.com/next/tracking.html?wblNo=${trackingNumber}`, 'cjTrackingPopup', 'width=1600,height=900,scrollbars=yes,resizable=yes'); setTrackingNumber(''); };
 
   const plans = useMemo(()=> operator==='KT'?PLAN_LIST_KT:PLAN_LIST_U, [operator]);
@@ -2095,7 +2182,7 @@ function App() {
         
         {operator === 'KT' && <a href="https://shop.kt.com/smart/supportAmtList.do" target="_blank" className="ml-2 bg-blue-500 text-white px-3 py-2 rounded hover:bg-blue-600 text-sm whitespace-nowrap shrink-0">KT 지원금</a>}
         {operator === 'U' && <a href="https://www.lguplus.com/mobile/financing-model" target="_blank" className="ml-2 bg-green-500 text-white px-3 py-2 rounded hover:bg-green-600 text-sm whitespace-nowrap shrink-0">U+ 지원금</a>}
-        
+
         <div className="flex items-center ml-2 shrink-0">
           <a href="https://www.samsung.com/sec/smartphones/all-smartphones/?carrier-phone" target="_blank" className="bg-gray-800 text-white px-3 py-2 rounded hover:bg-gray-900 text-sm whitespace-nowrap">삼성닷컴</a>
         </div>
@@ -2106,14 +2193,14 @@ function App() {
           <button onClick={() => setShowPopup(true)} className="bg-gray-600 text-white px-3 py-2 rounded hover:bg-gray-700 text-sm whitespace-nowrap">전화번호</button>
         </div>
         
-        <div className="flex items-center ml-auto gap-2 shrink-0">
-          <input type="text" value={trackingNumber} onChange={(e) => setTrackingNumber(e.target.value.replace(/\D/g, ''))} onKeyDown={(e) => e.key === 'Enter' && handleTrackingSearch()} placeholder="CJ 대한통운 송장번호" className="border p-2 rounded w-40 h-[36px] text-sm" />
-          <button onClick={handleTrackingSearch} className="bg-amber-500 text-white px-3 py-2 rounded hover:bg-amber-600 h-[36px] text-sm flex items-center whitespace-nowrap">배송조회</button>
+<div className="flex items-center ml-auto gap-2 shrink-0">
+          {/* 💡 배송조회 버튼을 없애고, placeholder에 엔터를 치라고 안내를 추가했습니다 */}
+          <input type="text" value={trackingNumber} onChange={(e) => setTrackingNumber(e.target.value.replace(/\D/g, ''))} onKeyDown={(e) => e.key === 'Enter' && handleTrackingSearch()} placeholder="대한통운 송장번호" className="border p-2 rounded w-36 h-[36px] text-sm text-center" />
         </div>
       </div>
 
       <Calculator 
-        plans={plans} features={features} operator={operator} 
+        plans={plans} features={features} operator={operator} policyData={policyData}
         setShowRequestFormPopup={setShowRequestFormPopup} setShowDeviceColorPopup={setShowDeviceColorPopup} setShowPlanSummaryPopup={setShowPlanSummaryPopup} 
         showMaintenancePopup={showMaintenancePopup} setShowMaintenancePopup={setShowMaintenancePopup} 
       />
