@@ -2083,7 +2083,10 @@ function App() {
   const [showStorePopup, setShowStorePopup] = useState(false); // 매장 찾기 팝업 상태
 
 // 💡 [여기서부터 복사] 기존 정책 데이터를 가져옵니다.
-  const [policyData, setPolicyData] = useState(POLICY); 
+  const [policyData, setPolicyData] = useState(POLICY);
+
+// 🌟🌟 [여기에 1줄 추가!] 로딩 상태를 만듭니다 🌟🌟
+  const [isLoading, setIsLoading] = useState(true);
 
 // ==============================================================================
 // 🌟 [추가된 코드] 구글 스프레드시트 실시간 연동 (페이지 열릴 때 자동 실행) 🌟
@@ -2183,10 +2186,17 @@ function App() {
 // 🌟🌟 [여기까지 복사] 🌟🌟
 // ==============================================================================
         setPolicyData(updatedPolicy);
+
+// 🌟🌟 [여기에 1줄 추가!] 데이터를 다 덮어씌웠으니 로딩을 끝냅니다 🌟🌟
+        setIsLoading(false);
+
         console.log('구글 시트 연동 완료!');
       })
       .catch(error => {
         console.error('구글 시트 데이터를 불러오는데 실패했습니다:', error);
+
+// 🌟🌟 [여기에 1줄 추가!] 에러가 나도 화면은 띄워야 하니 로딩을 끝냅니다 🌟🌟
+        setIsLoading(false); 
       });
   }, []);
 // ==============================================================================
@@ -2195,6 +2205,19 @@ function App() {
 
   const plans = useMemo(()=> operator==='KT'?PLAN_LIST_KT:PLAN_LIST_U, [operator]);
   const features = useMemo(()=> operator==='KT'?PLAN_FEATURES_KT:PLAN_FEATURES_U, [operator]);
+
+// ==============================================================================
+// 🌟🌟 [여기에 통째로 추가!] 로딩 중일 때 보여줄 깔끔한 대기 화면 🌟🌟
+// ==============================================================================
+  if (isLoading) {
+    return (
+      <div className="flex flex-col items-center justify-center h-screen bg-gray-50">
+        <div className="text-2xl font-bold text-indigo-600 mb-4">🔄 최신 정책 데이터를 불러오는 중입니다...</div>
+        <div className="text-gray-500">구글 스프레드시트와 동기화 중이니 잠시만 기다려주세요.</div>
+      </div>
+    );
+  }
+// ==============================================================================
 
   return (
     <div>
