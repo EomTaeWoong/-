@@ -302,6 +302,21 @@ const POLICY = {
         U_TIER_1_DOTCOM: 0,  U_TIER_1_GALCAMS: 0, U_TIER_2_DOTCOM: 0, U_TIER_2_GALCAMS: 0, KT_TIER_1_DOTCOM: 0, KT_TIER_1_GALCAMS: 0
       }
     },
+    'A37 5G｜128기가': {
+      KT_COMMON: { 19800: 0, 24000: 0, 33000: 0, 37000: 0, 41000: 0, 42000: 0, 44000: 0, 45000: 0, 47000: 0, 49000: 0, 50000: 0, 55000: 0, 58000: 0, 61000: 0, 63000: 0, 65000: 0, 67000: 0, 69000: 0, 77000: 0, 80000: 0, 89000: 0, 90000: 0, 100000: 0, 110000: 0, 130000: 0 },
+      U_COMMON: { 28000: 0, 29000: 0, 33000: 0, 37000: 0, 39000: 0, 43000: 0, 44000: 0, 45000: 0, 47000: 0, 49000: 0, 55000: 0, 59000: 0, 61000: 0, 63000: 0, 66000: 0, 68000: 0, 68000: 0, 69000: 0, 70000: 0, 75000: 0, 78000: 0, 85000: 0, 95000: 0, 105000: 0, 115000: 0, 130000: 0 },
+      EXTRA: {
+        KT_CHANGE_DOTCOM: { OVER_61K: { common: 0, selective: 0 } },
+        KT_CHANGE_GALCAMS: { OVER_61K: { common: 0, selective: 0 } },
+        KT_MNP_DOTCOM: { OVER_61K: { common: 0, selective: 0 } },
+        KT_MNP_GALCAMS: { OVER_61K: { common: 0, selective: 0 } },
+        U_CHANGE_DOTCOM: { OVER_61K: { common: 0, selective: 0 } },
+        U_CHANGE_GALCAMS: { OVER_61K: { common: 0, selective: 0 } },
+        U_MNP_DOTCOM: { OVER_61K: { common: 0, selective: 0 } },
+        U_MNP_GALCAMS: { OVER_61K: { common: 0, selective: 0 } },
+        U_TIER_1_DOTCOM: 0,  U_TIER_1_GALCAMS: 0, U_TIER_2_DOTCOM: 0, U_TIER_2_GALCAMS: 0, KT_TIER_1_DOTCOM: 0, KT_TIER_1_GALCAMS: 0
+      }
+    },
     'A36 5G｜128기가': {
       KT_COMMON: { 19800: 36000, 24000: 42000, 33000: 60000, 37000: 69000, 41000: 75000, 42000: 77000, 44000: 78000, 45000: 85000, 47000: 86000, 49000: 89000, 50000: 91000, 55000: 100000, 58000: 107000, 61000: 111000, 63000: 116000, 65000: 119000, 67000: 122000, 69000: 127000, 77000: 137000, 80000: 147000, 89000: 150000, 90000: 150000, 100000: 183000, 110000: 201000, 130000: 250000 },
       U_COMMON: { 28000: 0, 29000: 52000, 33000: 59000, 37000: 66000, 39000: 69000, 43000: 76000, 44000: 78000, 45000: 80000, 47000: 84000, 49000: 87000, 55000: 98000, 59000: 105000, 61000: 108000, 63000: 112000, 66000: 117000, 68000: 121000, 68000: 121000, 69000: 122000, 70000: 124000, 75000: 133000, 78000: 138000, 85000: 151000, 95000: 168000, 105000: 186000, 115000: 204000, 130000: 230000 },
@@ -455,6 +470,12 @@ const DEVICE_COLORS_MAP = {
     { name: '화이트', copyText: 'SM-F761NZWVKOD' },
   ],
 
+  'A37 5G｜128기가': [
+    { name: '어썸 라벤더', copyText: 'SM-A376NLVAKOD' },
+    { name: '어썸 화이트', copyText: 'SM-A376NZAAKOD' },
+    { name: '어썸 블랙', copyText: 'SM-A376NZKAKOD' },
+  ],
+
   'A36 5G｜128기가': [
     { name: '어썸 라벤더', copyText: 'SM-A366NLVAKOD' },
     { name: '어썸 화이트', copyText: 'SM-A366NZAAKOD' },
@@ -518,6 +539,7 @@ const CATEGORIZED_DEVICE_LIST = [
   {
     category: 'A 시리즈',
     devices: [
+      { name: 'A37 5G｜128기가', price: 700000 },
       { name: 'A36 5G｜128기가', price: 499400 },
       { name: 'A17 LTE｜128기가', price: 319000 }
     ]
@@ -2151,6 +2173,10 @@ function App() {
                 ktTier = 'OVER_61K';
                 uHighTier = 'OVER_61K'; 
                 uLowTier = 'OVER_61K';
+              } else if (modelName.includes('A37')) {
+              ktTier = 'OVER_65K';
+              uHighTier = 'OVER_65K'; 
+              uLowTier = 'OVER_65K';
               } else if (modelName.includes('A17')) {
                 ktTier = 'OVER_33K';
                 uHighTier = 'OVER_33K'; 
