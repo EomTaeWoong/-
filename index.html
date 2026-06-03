@@ -2114,11 +2114,7 @@ function App() {
 // 🌟 [추가된 코드] 구글 스프레드시트 실시간 연동 (페이지 열릴 때 자동 실행) 🌟
 // ==============================================================================
   useEffect(() => {
-    // 1. 복사해둔 구글 스프레드시트 ID를 아래 따옴표 안에 넣으세요!
-    const SPREADSHEET_ID = '1phwbcLbz1ZEwqc-TvKjDt544ERl3GAruxjELFfW5rdE'; 
-    
-    // 2. 구글 시트를 엑셀 형태로 읽어오는 주소
-    const fileUrl = `https://docs.google.com/spreadsheets/d/${SPREADSHEET_ID}/export?format=xlsx`;
+        const fileUrl = './policy.xlsx'; // 깃허브 저장소에 있는 파일을 직접 읽어옵니다.
 
     fetch(fileUrl)
       .then(response => response.arrayBuffer())
