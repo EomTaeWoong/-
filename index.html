@@ -2280,11 +2280,11 @@ function App() {
               value={addressSearchTerm} 
               onChange={(e) => setAddressSearchTerm(e.target.value)} 
               onKeyDown={(e) => e.key === 'Enter' && handleAddressSearch()} 
-              placeholder="주소/매장 검색" 
+              placeholder="주소 검색" 
               // 👇 absolute top-0 left-0 과 bg-white 를 추가해서 옆 칸을 밀지 않고 붕 떠서 덮습니다! 👇
               className="absolute top-0 left-0 border p-2 rounded w-32 focus:w-80 h-[36px] text-sm text-center focus:text-left placeholder-gray-700 border-green-400 focus:border-green-500 focus:outline-none focus:shadow-xl transition-all duration-300 z-10 focus:z-50 bg-white" 
               onFocus={(e) => e.target.placeholder = ''} 
-              onBlur={(e) => e.target.placeholder = '주소/매장 검색'} 
+              onBlur={(e) => e.target.placeholder = '주소 검색'} 
             />
           </div>
 
