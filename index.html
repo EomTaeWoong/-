@@ -2285,6 +2285,7 @@ function App() {
           {/* 기존 송장번호 검색 */}
           <input type="text" value={trackingNumber} onChange={(e) => setTrackingNumber(e.target.value.replace(/\D/g, ''))} onKeyDown={(e) => e.key === 'Enter' && handleTrackingSearch()} placeholder="대한통운 송장번호" className="border p-2 rounded w-36 h-[36px] text-sm text-center placeholder-gray-700" onFocus={(e) => e.target.placeholder = ''} onBlur={(e) => e.target.placeholder = '대한통운 송장번호'} />
         </div>
+      </div>
 
 
       <Calculator 
