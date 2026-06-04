@@ -2227,9 +2227,9 @@ function App() {
   const handleTrackingSearch = () => { if (!trackingNumber || !/^\d+$/.test(trackingNumber)) return alert('송장번호를 입력해주세요.'); window.open(`https://trace.cjlogistics.com/next/tracking.html?wblNo=${trackingNumber}`, 'cjTrackingPopup', 'width=1600,height=900,scrollbars=yes,resizable=yes'); setTrackingNumber(''); };
 
   // 🌟🌟 [여기에 추가!] 네이버 플레이스 주소 검색 함수 🌟🌟
-  const handleAddressSearch = () => { 
+    const handleAddressSearch = () => { 
     if (!addressSearchTerm.trim()) return alert('검색할 주소나 매장명을 입력해주세요.'); 
-    // 👇 인터넷 주소가 map.naver.com 에서 search.naver.com 으로 변경되었습니다! 👇
+    // 👇 다시 PC 네이버 주소로 바꾸고, 가로를 1200으로 넓혔습니다! 👇
     window.open(`https://search.naver.com/search.naver?query=${encodeURIComponent(addressSearchTerm)}`, 'naverSearchPopup', 'width=1200,height=800,scrollbars=yes,resizable=yes'); 
     setAddressSearchTerm(''); 
   };
@@ -2274,22 +2274,18 @@ function App() {
           
           {/* 🌟🌟 [여기에 추가!] 네이버 주소/플레이스 검색창 🌟🌟 */}
                     {/* 🌟🌟 [업그레이드!] 클릭 시 아래로 펼쳐지는 주소 검색창 🌟🌟 */}
-          <div className="relative w-32 h-[36px]">
-            <textarea 
-              value={addressSearchTerm} 
-              onChange={(e) => setAddressSearchTerm(e.target.value)} 
-              onKeyDown={(e) => {
-                if (e.key === 'Enter' && !e.shiftKey) {
-                  e.preventDefault(); // 엔터 쳤을 때 줄바꿈 되는 것 방지
-                  handleAddressSearch();
-                }
-              }}
-              placeholder="주소/매장 검색" 
-              className="absolute top-0 left-0 w-full h-[36px] focus:h-[90px] border p-2 rounded text-sm text-center focus:text-left placeholder-gray-700 border-green-400 focus:border-green-500 focus:outline-none focus:shadow-xl z-10 focus:z-50 bg-white resize-none overflow-hidden focus:overflow-y-auto transition-all duration-200" 
-              onFocus={(e) => e.target.placeholder = ''} 
-              onBlur={(e) => e.target.placeholder = '주소 검색'} 
-            />
-          </div>
+          {/* 🌟🌟 [업그레이드!] 클릭 시 가로로 길어지는 주소 검색창 🌟🌟 */}
+          <input 
+            type="text" 
+            value={addressSearchTerm} 
+            onChange={(e) => setAddressSearchTerm(e.target.value)} 
+            onKeyDown={(e) => e.key === 'Enter' && handleAddressSearch()} 
+            placeholder="주소 검색" 
+            // 👇 focus:w-80 을 추가해서 클릭하면 가로 길이가 확 늘어나도록 했습니다! 👇
+            className="border p-2 rounded w-32 focus:w-80 h-[36px] text-sm text-center focus:text-left placeholder-gray-700 border-green-400 focus:border-green-500 focus:outline-none transition-all duration-300" 
+            onFocus={(e) => e.target.placeholder = ''} 
+            onBlur={(e) => e.target.placeholder = '주소 검색'} 
+          />
 
 
           {/* 기존 송장번호 검색 */}
