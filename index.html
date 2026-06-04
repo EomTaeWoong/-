@@ -2273,19 +2273,21 @@ function App() {
         <div className="flex items-center ml-auto gap-2 shrink-0">
           
           {/* 🌟🌟 [여기에 추가!] 네이버 주소/플레이스 검색창 🌟🌟 */}
-                    {/* 🌟🌟 [업그레이드!] 클릭 시 아래로 펼쳐지는 주소 검색창 🌟🌟 */}
-          {/* 🌟🌟 [업그레이드!] 클릭 시 가로로 길어지는 주소 검색창 🌟🌟 */}
-          <input 
-            type="text" 
-            value={addressSearchTerm} 
-            onChange={(e) => setAddressSearchTerm(e.target.value)} 
-            onKeyDown={(e) => e.key === 'Enter' && handleAddressSearch()} 
-            placeholder="주소 검색" 
-            // 👇 focus:w-80 을 추가해서 클릭하면 가로 길이가 확 늘어나도록 했습니다! 👇
-            className="border p-2 rounded w-32 focus:w-80 h-[36px] text-sm text-center focus:text-left placeholder-gray-700 border-green-400 focus:border-green-500 focus:outline-none transition-all duration-300" 
-            onFocus={(e) => e.target.placeholder = ''} 
-            onBlur={(e) => e.target.placeholder = '주소 검색'} 
-          />
+          {/* 🌟🌟 [완벽 해결!] 다른 칸 안 밀리고 위로 덮으며 늘어나는 주소 검색창 🌟🌟 */}
+          <div className="relative w-32 h-[36px]">
+            <input 
+              type="text" 
+              value={addressSearchTerm} 
+              onChange={(e) => setAddressSearchTerm(e.target.value)} 
+              onKeyDown={(e) => e.key === 'Enter' && handleAddressSearch()} 
+              placeholder="주소/매장 검색" 
+              // 👇 absolute top-0 left-0 과 bg-white 를 추가해서 옆 칸을 밀지 않고 붕 떠서 덮습니다! 👇
+              className="absolute top-0 left-0 border p-2 rounded w-32 focus:w-80 h-[36px] text-sm text-center focus:text-left placeholder-gray-700 border-green-400 focus:border-green-500 focus:outline-none focus:shadow-xl transition-all duration-300 z-10 focus:z-50 bg-white" 
+              onFocus={(e) => e.target.placeholder = ''} 
+              onBlur={(e) => e.target.placeholder = '주소/매장 검색'} 
+            />
+          </div>
+
 
 
           {/* 기존 송장번호 검색 */}
