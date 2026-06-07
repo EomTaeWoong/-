@@ -1460,28 +1460,26 @@ function RequestFormPopup({ onClose }) {
   );
 }
 
-// ------------------ 이벤트 팝업 컴포넌트 (iframe 사용) ------------------
+// ------------------ 이벤트 이미지 팝업 컴포넌트 ------------------
 function DeviceColorPopup({ onClose }) {
+  // 💡 아래 큰따옴표("") 안에 띄우고 싶으신 이벤트 이미지 주소(링크)를 넣어주세요!
+  const imageSrc = "https://img1.daumcdn.net/thumb/R1280x0/?scode=mtistory2&fname=https%3A%2F%2Fblog.kakaocdn.net%2Fdna%2F9R7Vr%2FdJMcaaFCcY5%2FAAAAAAAAAAAAAAAAAAAAALvK8O7FIuCLGlNQ_ihmiNNvrhTAxs6DrrgSG_dmmc7A%2Fimg.png%3Fcredential%3DyqXZFxpELC7KVnFOS48ylbz2pIh7yKj8%26expires%3D1782831599%26allow_ip%3D%26allow_referer%3D%26signature%3DAqFaRJ4kbCAdI6n5vCImu2Q4iEg%253D"; 
+
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      {/* max-w-5xl과 w-full로 폭을 넓게 잡고, h-[90vh]로 높이를 화면의 90%까지 채웁니다 */}
-      <div className="bg-white rounded-lg shadow-xl relative w-full max-w-5xl h-[90vh] flex flex-col overflow-hidden">
-        
-        {/* 상단 닫기 버튼 영역 */}
-        <div className="flex justify-between items-center p-2 bg-gray-100 border-b shrink-0">
-          <span className="font-bold text-gray-700 ml-3">이벤트 안내</span>
-          <button onClick={onClose} className="text-gray-500 hover:text-gray-800 text-3xl leading-none font-bold px-2">&times;</button>
+      <div className="bg-white p-2 rounded-lg shadow-xl relative w-full max-w-5xl h-[90vh] flex flex-col">
+        {/* 우측 상단 X 닫기 버튼 */}
+        <div className="flex justify-end p-1 shrink-0">
+          <button onClick={onClose} className="text-gray-500 hover:text-gray-800 text-4xl leading-none font-bold px-2">&times;</button>
         </div>
-        
-        {/* 웹페이지가 뜨는 iframe 영역 */}
-        <div className="flex-1 w-full h-full bg-white">
-          <iframe 
-            src="https://www.samsung.com/sec/event/thankyoufestival-notice/" 
-            className="w-full h-full border-none"
-            title="삼성전자 감사 페스티벌"
-          ></iframe>
+        {/* 이미지 출력 영역 */}
+        <div className="overflow-y-auto flex-1 bg-gray-50 rounded border">
+           {imageSrc ? (
+             <img src={imageSrc} alt="이벤트 안내" className="w-full h-auto object-contain mx-auto" />
+           ) : (
+             <div className="h-full flex items-center justify-center text-gray-500">이미지를 불러올 수 없습니다.</div>
+           )}
         </div>
-        
       </div>
     </div>
   );
@@ -1873,12 +1871,8 @@ style={d.isHighlight ? { fontWeight: 'bold', color: '#1D4ED8' } : d.isGreen ? { 
 
             <button onClick={() => setShowPlanSummaryPopup(true)} className="bg-blue-500 text-white px-2.5 rounded hover:bg-blue-600 h-[34px] flex items-center justify-center text-[13px] font-medium whitespace-nowrap">요금제 정리</button>
             <button onClick={() => setShowRequestFormPopup(true)} className="bg-purple-600 text-white px-2.5 rounded hover:bg-purple-700 h-[34px] flex items-center justify-center text-[13px] font-medium whitespace-nowrap">요청 양식</button>
-            <button 
-  onClick={() => window.open(
-    'https://www.samsung.com/sec/event/thankyoufestival-notice/', 
-    'samsungEventPopup', 
-    'width=1100,height=850,scrollbars=yes,resizable=yes,top=50,left=50'
-  )} 
+<button 
+  onClick={() => setShowDeviceColorPopup(true)} 
   className="bg-pink-600 text-white px-2.5 rounded hover:bg-pink-700 h-[34px] flex items-center justify-center text-[13px] font-medium whitespace-nowrap"
 >
   이벤트
