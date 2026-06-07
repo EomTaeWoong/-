@@ -1460,16 +1460,16 @@ function RequestFormPopup({ onClose }) {
   );
 }
 
-// ------------------ 단말기 색상 팝업 컴포넌트 ------------------
+// ------------------ 이벤트 팝업 컴포넌트 ------------------
 function DeviceColorPopup({ onClose }) {
-  const imageSrc = "https://img1.daumcdn.net/thumb/R1280x0/?scode=mtistory2&fname=https%3A%2F%2Fblog.kakaocdn.net%2Fdna%2FbevdsJ%2FdJMcagSj4SW%2FAAAAAAAAAAAAAAAAAAAAAMj01de6fYcg_ys7_QqkrBCaH_hOZpng5tj8L05Up44w%2Fimg.png%3Fcredential%3DyqXZFxpELC7KVnFOS48ylbz2pIh7yKj8%26expires%3D1777561199%26allow_ip%3D%26allow_referer%3D%26signature%3DhzoQqR3QfGeTlNmv5GDTjIJOs%252Fs%253D"; 
+  const imageSrc = "https://img1.daumcdn.net/thumb/R1280x0/?scode=mtistory2&fname=https%3A%2F%2Fblog.kakaocdn.net%2Fdna%2FBXb2i%2FdJMcafmBC44%2FAAAAAAAAAAAAAAAAAAAAAEHgHP01mB4ANvcOsnE7Fzf7nA-eZhE1htBrfPkww52S%2Fimg.png%3Fcredential%3DyqXZFxpELC7KVnFOS48ylbz2pIh7yKj8%26expires%3D1782831599%26allow_ip%3D%26allow_referer%3D%26signature%3DWtz32eNJ90FM7nztA8Ng6uNvxp4%253D"; 
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
       <div className="bg-white p-2 rounded-lg shadow-xl relative w-full max-w-5xl h-[90vh] flex flex-col">
         <div className="flex justify-end p-1 shrink-0"><button onClick={onClose} className="text-gray-500 hover:text-gray-800 text-4xl leading-none font-bold px-2">&times;</button></div>
         <div className="overflow-y-auto flex-1 bg-gray-50 rounded border">
-           {imageSrc ? <img src={imageSrc} alt="단말기 색상" className="w-full h-auto object-contain" /> : <div className="h-full flex items-center justify-center text-gray-500">이미지를 불러올 수 없습니다.</div>}
+           {imageSrc ? <img src={imageSrc} alt="이벤트" className="w-full h-auto object-contain" /> : <div className="h-full flex items-center justify-center text-gray-500">이미지를 불러올 수 없습니다.</div>}
         </div>
       </div>
     </div>
@@ -1862,7 +1862,7 @@ style={d.isHighlight ? { fontWeight: 'bold', color: '#1D4ED8' } : d.isGreen ? { 
 
             <button onClick={() => setShowPlanSummaryPopup(true)} className="bg-blue-500 text-white px-2.5 rounded hover:bg-blue-600 h-[34px] flex items-center justify-center text-[13px] font-medium whitespace-nowrap">요금제 정리</button>
             <button onClick={() => setShowRequestFormPopup(true)} className="bg-purple-600 text-white px-2.5 rounded hover:bg-purple-700 h-[34px] flex items-center justify-center text-[13px] font-medium whitespace-nowrap">요청 양식</button>
-            <button onClick={() => setShowDeviceColorPopup(true)} className="bg-pink-600 text-white px-2.5 rounded hover:bg-pink-700 h-[34px] flex items-center justify-center text-[13px] font-medium whitespace-nowrap">단말기 색상</button>
+            <button onClick={() => setShowDeviceColorPopup(true)} className="bg-pink-600 text-white px-2.5 rounded hover:bg-pink-700 h-[34px] flex items-center justify-center text-[13px] font-medium whitespace-nowrap">이벤트</button>
            </div>
         </div>
       </div>
