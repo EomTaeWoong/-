@@ -1126,8 +1126,11 @@ function MaintenanceCostPopup({ onClose, operator, plans, features, initialData,
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
       <div className="bg-white py-2 px-5 rounded-lg shadow-xl relative w-[880px] max-w-[95vw] max-h-[95vh] overflow-y-auto border-4 border-indigo-200">
 
-        <button onClick={onClose} className="absolute top-3 right-3 text-gray-400 hover:text-gray-800 text-3xl leading-none">&times;</button>
-        <h2 className="text-xl font-bold mb-2 text-center text-indigo-700">6개월 후 요금제 변경 시 유지비용</h2>
+<button onClick={onClose} className="absolute top-3 right-3 text-gray-400 hover:text-gray-800 text-3xl leading-none">&times;</button>
+
+{/* 상단 컨트롤러 */}
+<div className="mt-4 mb-2 flex flex-nowrap gap-2 items-end w-full">          
+
         
         {/* 상단 컨트롤러 */}
         <div className="mb-2 flex flex-nowrap gap-2 items-end w-full">          
