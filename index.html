@@ -2196,10 +2196,10 @@ function App() {
               }
               
               // 💡 영어 이름표(Key)와 한글 이름표 매칭
-              if(row['KT_기변_닷컴'] !== undefined) extra.KT_CHANGE_DOTCOM = { [ktTier]: { common: row['KT_기변_닷컴'], selective: row['KT_기변_닷컴'] } };
-              if(row['KT_기변_갤캠스'] !== undefined) extra.KT_CHANGE_GALCAMS = { [ktTier]: { common: row['KT_기변_갤캠스'], selective: row['KT_기변_갤캠스'] } };
-              if(row['KT_번이_닷컴'] !== undefined) extra.KT_MNP_DOTCOM = { [ktTier]: { common: row['KT_번이_닷컴'], selective: row['KT_번이_닷컴'] } };
-              if(row['KT_번이_갤캠스'] !== undefined) extra.KT_MNP_GALCAMS = { [ktTier]: { common: row['KT_번이_갤캠스'], selective: row['KT_번이_갤캠스'] } };
+              if(row['KT기변_닷컴'] !== undefined) extra.KT_CHANGE_DOTCOM = { [ktTier]: { common: row['KT기변_닷컴'], selective: row['KT기변_닷컴'] } };
+              if(row['KT기변_갤캠'] !== undefined) extra.KT_CHANGE_GALCAMS = { [ktTier]: { common: row['KT기변_갤캠'], selective: row['KT기변_갤캠'] } };
+              if(row['KT번이_닷컴'] !== undefined) extra.KT_MNP_DOTCOM = { [ktTier]: { common: row['KT번이_닷컴'], selective: row['KT번이_닷컴'] } };
+              if(row['KT번이_갤캠'] !== undefined) extra.KT_MNP_GALCAMS = { [ktTier]: { common: row['KT번이_갤캠'], selective: row['KT번이_갤캠'] } };
               
               const applyUPlus = (highVal, lowVal) => {
                 if (uHighTier === uLowTier) {
@@ -2213,10 +2213,10 @@ function App() {
                 }
               };
 
-              if(row['U_기변_닷컴_고가'] !== undefined || row['U_기변_닷컴_저가'] !== undefined) extra.U_CHANGE_DOTCOM = applyUPlus(row['U_기변_닷컴_고가'], row['U_기변_닷컴_저가']);
-              if(row['U_기변_갤캠스_고가'] !== undefined || row['U_기변_갤캠스_저가'] !== undefined) extra.U_CHANGE_GALCAMS = applyUPlus(row['U_기변_갤캠스_고가'], row['U_기변_갤캠스_저가']);
-              if(row['U_번이_닷컴_고가'] !== undefined || row['U_번이_닷컴_저가'] !== undefined) extra.U_MNP_DOTCOM = applyUPlus(row['U_번이_닷컴_고가'], row['U_번이_닷컴_저가']);
-              if(row['U_번이_갤캠스_고가'] !== undefined || row['U_번이_갤캠스_저가'] !== undefined) extra.U_MNP_GALCAMS = applyUPlus(row['U_번이_갤캠스_고가'], row['U_번이_갤캠스_저가']);
+              if(row['U+기변_닷컴(고)'] !== undefined || row['U+기변_닷컴(저)'] !== undefined) extra.U_CHANGE_DOTCOM = applyUPlus(row['U+기변_닷컴(고)'], row['U+기변_닷컴(저)']);
+              if(row['U+기변_갤캠(고)'] !== undefined || row['U+기변_갤캠(저)'] !== undefined) extra.U_CHANGE_GALCAMS = applyUPlus(row['U+기변_갤캠(고)'], row['U+기변_갤캠(저)']);
+              if(row['U+번이_닷컴(고)'] !== undefined || row['U+번이_닷컴(저)'] !== undefined) extra.U_MNP_DOTCOM = applyUPlus(row['U+번이_닷컴(고)'], row['U+번이_닷컴(저)']);
+              if(row['U+번이_갤캠(고)'] !== undefined || row['U+번이_갤캠(저)'] !== undefined) extra.U_MNP_GALCAMS = applyUPlus(row['U+번이_갤캠(고)'], row['U+번이_갤캠(저)']);
             }
           });
         }
