@@ -2240,12 +2240,32 @@ function App() {
 // ==============================================================================
 
   const handleTrackingSearch = () => { if (!trackingNumber || !/^\d+$/.test(trackingNumber)) return alert('송장번호를 입력해주세요.'); window.open(`https://trace.cjlogistics.com/next/tracking.html?wblNo=${trackingNumber}`, 'cjTrackingPopup', 'width=1600,height=900,scrollbars=yes,resizable=yes'); setTrackingNumber(''); };
+  // 🌟🌟 [새로운 기능] 모델명 역검색 함수 🌟🌟
+  const handleModelSearch = () => { 
+    // 입력한 값에서 공백을 없애고 전부 대문자로 변환 (대소문자 구분 없이 검색되게)
+    const searchTerm = addressSearchTerm.replace(/\s+/g, '').toUpperCase(); 
+    if (!searchTerm) return alert('검색할 모델명을 입력해주세요. (예: SM-S948...)'); 
 
-  // 🌟🌟 [여기에 추가!] 네이버 플레이스 주소 검색 함수 🌟🌟
-    const handleAddressSearch = () => { 
-    if (!addressSearchTerm.trim()) return alert('검색할 주소나 매장명을 입력해주세요.'); 
-    // 👇 다시 PC 네이버 주소로 바꾸고, 가로를 1200으로 넓혔습니다! 👇
-    window.open(`https://search.naver.com/search.naver?query=${encodeURIComponent(addressSearchTerm)}`, 'naverSearchPopup', 'width=1200,height=800,scrollbars=yes,resizable=yes'); 
+    let foundResults = [];
+
+    // DEVICE_COLORS_MAP을 전부 뒤져서 일치하는 모델명 찾기
+    Object.entries(DEVICE_COLORS_MAP).forEach(([deviceName, colors]) => {
+      colors.forEach(colorInfo => {
+        if (colorInfo.copyText.toUpperCase() === searchTerm) {
+          // 용량은 deviceName(예: S26 Ultra 512G) 안에 이미 포함되어 있습니다!
+          foundResults.push(`[${deviceName}] - ${colorInfo.name}`);
+        }
+      });
+    });
+
+    // 검색 결과 알림창 띄우기
+    if (foundResults.length > 0) {
+      alert(`✨ 검색 결과 ✨\n\n${foundResults.join('\n')}`);
+    } else {
+      alert('❌ 일치하는 단말기/색상 정보가 없습니다.');
+    }
+    
+    // 검색 후 입력창 비워주기
     setAddressSearchTerm(''); 
   };
 
@@ -2289,19 +2309,20 @@ function App() {
           
           {/* 🌟🌟 [여기에 추가!] 네이버 주소/플레이스 검색창 🌟🌟 */}
           {/* 🌟🌟 [완벽 해결!] 다른 칸 안 밀리고 위로 덮으며 늘어나는 주소 검색창 🌟🌟 */}
+          {/* 🌟🌟 단말기 모델명 검색창 🌟🌟 */}
           <div className="relative w-32 h-[36px]">
             <input 
               type="text" 
               value={addressSearchTerm} 
               onChange={(e) => setAddressSearchTerm(e.target.value)} 
-              onKeyDown={(e) => e.key === 'Enter' && handleAddressSearch()} 
-              placeholder="네이버 검색" 
-              // 👇 absolute top-0 left-0 과 bg-white 를 추가해서 옆 칸을 밀지 않고 붕 떠서 덮습니다! 👇
+              onKeyDown={(e) => e.key === 'Enter' && handleModelSearch()} // 👈 엔터 치면 새 함수 실행
+              placeholder="모델명 검색" 
               className="absolute top-0 left-0 border p-2 rounded w-32 focus:w-80 h-[36px] text-sm text-center focus:text-left placeholder-gray-700 border-green-400 focus:border-green-500 focus:outline-none focus:shadow-xl transition-all duration-300 z-10 focus:z-50 bg-white" 
               onFocus={(e) => e.target.placeholder = ''} 
-              onBlur={(e) => e.target.placeholder = '네이버 검색'} 
+              onBlur={(e) => e.target.placeholder = '모델명 검색'} 
             />
           </div>
+
 
 
 
