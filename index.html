@@ -29,11 +29,10 @@ const { useState, useMemo, useEffect, useRef } = React;
 // =====================================================================
 // 💡 [사전예약 혜택 세팅] 사전예약 단말기 더블 스토리지 할인 금액 💡
 // =====================================================================
-const PREORDER_DOUBLE_STORAGE_DISCOUNT = 253000; // 추후 이곳에 할인 금액을 입력하세요 (예: 150000)
-// =====================================================================
+const PREORDER_DOUBLE_STORAGE_DISCOUNT = 253000; 
 
 // =====================================================================
-// 💡 [정책 컨트롤 패널] 단말기/요금제별 공통지원금 및 닷컴/갤캠스 추가지원금 💡
+// 💡 [정책 컨트롤 패널] 단말기/요금제별 공통지원금 및 닷컴/갤캠스 추가지원금 구조 💡
 // =====================================================================
 const POLICY = {
   TIERS: {
@@ -43,464 +42,157 @@ const POLICY = {
     KT_TIER_1_MIN: 90000,
     U_TIER_A_MIN: 33000
   },
-
-    // 💡 [사전예약 단말기 세팅] 이곳에 요금제별 공통/추가지원금을 직접 입력하세요 💡
-DEVICES: {
-    'Z Fold8 Ultra 512G': {
-      KT_COMMON: { 19800: 0, 24000: 0, 28900: 0, 33000: 0, 37000: 0, 41000: 0, 42000: 0, 44000: 0, 45000: 0, 47000: 0, 49000: 0, 50000: 0, 55000: 0, 58000: 0, 61000: 0, 63000: 0, 65000: 0, 67000: 0, 69000: 0, 77000: 0, 80000: 0, 89000: 0, 90000: 0, 100000: 0, 110000: 0, 120000: 0, 130000: 0 },
-      U_COMMON: { 33000: 0, 37000: 0, 39000: 0, 43000: 0, 45000: 0, 47000: 0, 55000: 0, 59000: 0, 61000: 0, 63000: 0, 66000: 0, 68000: 0, 70000: 0, 69000: 0, 75000: 0, 85000: 0, 95000: 0, 105000: 0, 115000: 0, 130000: 0 },
-      EXTRA: {
-        KT_CHANGE_DOTCOM: { OVER_90K: { common: 0, selective: 0 } },
-        KT_CHANGE_GALCAMS: { OVER_90K: { common: 0, selective: 0 } },
-        KT_MNP_DOTCOM: { OVER_90K: { common: 0, selective: 0 } },
-        KT_MNP_GALCAMS: { OVER_90K: { common: 0, selective: 0 } },
-        U_CHANGE_DOTCOM: { OVER_95K: { common: 0, selective: 0 }, OVER_61K: { common: 0, selective: 0 } },
-        U_CHANGE_GALCAMS: { OVER_95K: { common: 0, selective: 0 }, OVER_61K: { common: 0, selective: 0 } },
-        U_MNP_DOTCOM: { OVER_95K: { common: 0, selective: 0 }, OVER_61K: { common: 0, selective: 0 } },
-        U_MNP_GALCAMS: { OVER_95K: { common: 0, selective: 0 }, OVER_61K: { common: 0, selective: 0 } },
-        U_TIER_1_DOTCOM: 0,  U_TIER_1_GALCAMS: 0, U_TIER_2_DOTCOM: 0, U_TIER_2_GALCAMS: 0, KT_TIER_1_DOTCOM: 0, KT_TIER_1_GALCAMS: 0
-      }
-    },
-    'Z Fold8 512G': {
-      KT_COMMON: { 19800: 0, 24000: 0, 28900: 0, 33000: 0, 37000: 0, 41000: 0, 42000: 0, 44000: 0, 45000: 0, 47000: 0, 49000: 0, 50000: 0, 55000: 0, 58000: 0, 61000: 0, 63000: 0, 65000: 0, 67000: 0, 69000: 0, 77000: 0, 80000: 0, 89000: 0, 90000: 0, 100000: 0, 110000: 0, 120000: 0, 130000: 0 },
-      U_COMMON: { 33000: 0, 37000: 0, 39000: 0, 43000: 0, 45000: 0, 47000: 0, 55000: 0, 59000: 0, 61000: 0, 63000: 0, 66000: 0, 68000: 0, 70000: 0, 69000: 0, 75000: 0, 85000: 0, 95000: 0, 105000: 0, 115000: 0, 130000: 0 },
-      EXTRA: {
-        KT_CHANGE_DOTCOM: { OVER_90K: { common: 0, selective: 0 } },
-        KT_CHANGE_GALCAMS: { OVER_90K: { common: 0, selective: 0 } },
-        KT_MNP_DOTCOM: { OVER_90K: { common: 0, selective: 0 } },
-        KT_MNP_GALCAMS: { OVER_90K: { common: 0, selective: 0 } },
-        U_CHANGE_DOTCOM: { OVER_95K: { common: 0, selective: 0 }, OVER_61K: { common: 0, selective: 0 } },
-        U_CHANGE_GALCAMS: { OVER_95K: { common: 0, selective: 0 }, OVER_61K: { common: 0, selective: 0 } },
-        U_MNP_DOTCOM: { OVER_95K: { common: 0, selective: 0 }, OVER_61K: { common: 0, selective: 0 } },
-        U_MNP_GALCAMS: { OVER_95K: { common: 0, selective: 0 }, OVER_61K: { common: 0, selective: 0 } },
-        U_TIER_1_DOTCOM: 0,  U_TIER_1_GALCAMS: 0, U_TIER_2_DOTCOM: 0, U_TIER_2_GALCAMS: 0, KT_TIER_1_DOTCOM: 0, KT_TIER_1_GALCAMS: 0
-      }
-    },
-    'Z Flip8 512G': {
-      KT_COMMON: { 19800: 0, 24000: 0, 28900: 0, 33000: 0, 37000: 0, 41000: 0, 42000: 0, 44000: 0, 45000: 0, 47000: 0, 49000: 0, 50000: 0, 55000: 0, 58000: 0, 61000: 0, 63000: 0, 65000: 0, 67000: 0, 69000: 0, 77000: 0, 80000: 0, 89000: 0, 90000: 0, 100000: 0, 110000: 0, 120000: 0, 130000: 0 },
-      U_COMMON: { 33000: 0, 37000: 0, 39000: 0, 43000: 0, 45000: 0, 47000: 0, 55000: 0, 59000: 0, 61000: 0, 63000: 0, 66000: 0, 68000: 0, 70000: 0, 69000: 0, 75000: 0, 85000: 0, 95000: 0, 105000: 0, 115000: 0, 130000: 0 },
-      EXTRA: {
-        KT_CHANGE_DOTCOM: { OVER_90K: { common: 0, selective: 0 } },
-        KT_CHANGE_GALCAMS: { OVER_90K: { common: 0, selective: 0 } },
-        KT_MNP_DOTCOM: { OVER_90K: { common: 0, selective: 0 } },
-        KT_MNP_GALCAMS: { OVER_90K: { common: 0, selective: 0 } },
-        U_CHANGE_DOTCOM: { OVER_95K: { common: 0, selective: 0 }, OVER_61K: { common: 0, selective: 0 } },
-        U_CHANGE_GALCAMS: { OVER_95K: { common: 0, selective: 0 }, OVER_61K: { common: 0, selective: 0 } },
-        U_MNP_DOTCOM: { OVER_95K: { common: 0, selective: 0 }, OVER_61K: { common: 0, selective: 0 } },
-        U_MNP_GALCAMS: { OVER_95K: { common: 0, selective: 0 }, OVER_61K: { common: 0, selective: 0 } },
-        U_TIER_1_DOTCOM: 0,  U_TIER_1_GALCAMS: 0, U_TIER_2_DOTCOM: 0, U_TIER_2_GALCAMS: 0, KT_TIER_1_DOTCOM: 0, KT_TIER_1_GALCAMS: 0
-      }
-    },
-
-    'S26 Ultra 512G': {
-      KT_COMMON: { 19800: 0, 24000: 0, 28900: 0, 33000: 0, 37000: 0, 41000: 0, 42000: 0, 44000: 0, 45000: 0, 47000: 0, 49000: 0, 50000: 0, 55000: 0, 58000: 0, 61000: 0, 63000: 0, 65000: 0, 67000: 0, 69000: 0, 77000: 0, 80000: 0, 89000: 0, 90000: 0, 100000: 0, 110000: 0, 120000: 0, 130000: 0 },
-      U_COMMON: { 28000: 0, 29000: 0, 33000: 0, 37000: 0, 39000: 0, 43000: 0, 44000: 0, 45000: 0, 47000: 0, 49000: 0, 55000: 0, 59000: 0, 61000: 0, 63000: 0, 66000: 0, 68000: 0, 69000: 0, 70000: 0, 75000: 0, 78000: 0, 85000: 0, 95000: 0, 105000: 0, 115000: 0, 130000: 0 },
-      EXTRA: {
-        KT_CHANGE_DOTCOM: { OVER_90K: { common: 0, selective: 0 } },
-        KT_CHANGE_GALCAMS: { OVER_90K: { common: 0, selective: 0 } },
-        KT_MNP_DOTCOM: { OVER_90K: { common: 0, selective: 0 } },
-        KT_MNP_GALCAMS: { OVER_90K: { common: 0, selective: 0 } },
-        U_CHANGE_DOTCOM: { OVER_95K: { common: 0, selective: 0 }, OVER_61K: { common: 0, selective: 0 } },
-        U_CHANGE_GALCAMS: { OVER_95K: { common: 0, selective: 0 }, OVER_61K: { common: 0, selective: 0 } },
-        U_MNP_DOTCOM: { OVER_95K: { common: 0, selective: 0 }, OVER_61K: { common: 0, selective: 0 } },
-        U_MNP_GALCAMS: { OVER_95K: { common: 0, selective: 0 }, OVER_61K: { common: 0, selective: 0 } },
-        U_TIER_1_DOTCOM: 0,  U_TIER_1_GALCAMS: 0, U_TIER_2_DOTCOM: 0, U_TIER_2_GALCAMS: 0, KT_TIER_1_DOTCOM: 0, KT_TIER_1_GALCAMS: 0
-      }
-    },
-    'S26+ 512G': {
-      KT_COMMON: { 19800: 0, 24000: 0, 28900: 0, 33000: 0, 37000: 0, 41000: 0, 42000: 0, 44000: 0, 45000: 0, 47000: 0, 49000: 0, 50000: 0, 55000: 0, 58000: 0, 61000: 0, 63000: 0, 65000: 0, 67000: 0, 69000: 0, 77000: 0, 80000: 0, 89000: 0, 90000: 0, 100000: 0, 110000: 0, 120000: 0, 130000: 0 },
-      U_COMMON: { 28000: 0, 29000: 0, 33000: 0, 37000: 0, 39000: 0, 43000: 0, 44000: 0, 45000: 0, 47000: 0, 49000: 0, 55000: 0, 59000: 0, 61000: 0, 63000: 0, 66000: 0, 68000: 0, 69000: 0, 70000: 0, 75000: 0, 78000: 0, 85000: 0, 95000: 0, 105000: 0, 115000: 0, 130000: 0 },
-      EXTRA: {
-        KT_CHANGE_DOTCOM: { OVER_90K: { common: 0, selective: 0 } },
-        KT_CHANGE_GALCAMS: { OVER_90K: { common: 0, selective: 0 } },
-        KT_MNP_DOTCOM: { OVER_90K: { common: 0, selective: 0 } },
-        KT_MNP_GALCAMS: { OVER_90K: { common: 0, selective: 0 } },
-        U_CHANGE_DOTCOM: { OVER_95K: { common: 0, selective: 0 }, OVER_61K: { common: 0, selective: 0 } },
-        U_CHANGE_GALCAMS: { OVER_95K: { common: 0, selective: 0 }, OVER_61K: { common: 0, selective: 0 } },
-        U_MNP_DOTCOM: { OVER_95K: { common: 0, selective: 0 }, OVER_61K: { common: 0, selective: 0 } },
-        U_MNP_GALCAMS: { OVER_95K: { common: 0, selective: 0 }, OVER_61K: { common: 0, selective: 0 } },
-        U_TIER_1_DOTCOM: 0,  U_TIER_1_GALCAMS: 0, U_TIER_2_DOTCOM: 0, U_TIER_2_GALCAMS: 0, KT_TIER_1_DOTCOM: 0, KT_TIER_1_GALCAMS: 0
-      }
-    },
-    'S26 512G': {
-      KT_COMMON: { 19800: 0, 24000: 0, 28900: 0, 33000: 0, 37000: 0, 41000: 0, 42000: 0, 44000: 0, 45000: 0, 47000: 0, 49000: 0, 50000: 0, 55000: 0, 58000: 0, 61000: 0, 63000: 0, 65000: 0, 67000: 0, 69000: 0, 77000: 0, 80000: 0, 89000: 0, 90000: 0, 100000: 0, 110000: 0, 120000: 0, 130000: 0 },
-      U_COMMON: { 28000: 0, 29000: 0, 33000: 0, 37000: 0, 39000: 0, 43000: 0, 44000: 0, 45000: 0, 47000: 0, 49000: 0, 55000: 0, 59000: 0, 61000: 0, 63000: 0, 66000: 0, 68000: 0, 69000: 0, 70000: 0, 75000: 0, 78000: 0, 85000: 0, 95000: 0, 105000: 0, 115000: 0, 130000: 0 },
-      EXTRA: {
-        KT_CHANGE_DOTCOM: { OVER_90K: { common: 0, selective: 0 } },
-        KT_CHANGE_GALCAMS: { OVER_90K: { common: 0, selective: 0 } },
-        KT_MNP_DOTCOM: { OVER_90K: { common: 0, selective: 0 } },
-        KT_MNP_GALCAMS: { OVER_90K: { common: 0, selective: 0 } },
-        U_CHANGE_DOTCOM: { OVER_95K: { common: 0, selective: 0 }, OVER_61K: { common: 0, selective: 0 } },
-        U_CHANGE_GALCAMS: { OVER_95K: { common: 0, selective: 0 }, OVER_61K: { common: 0, selective: 0 } },
-        U_MNP_DOTCOM: { OVER_95K: { common: 0, selective: 0 }, OVER_61K: { common: 0, selective: 0 } },
-        U_MNP_GALCAMS: { OVER_95K: { common: 0, selective: 0 }, OVER_61K: { common: 0, selective: 0 } },
-        U_TIER_1_DOTCOM: 0,  U_TIER_1_GALCAMS: 0, U_TIER_2_DOTCOM: 0, U_TIER_2_GALCAMS: 0, KT_TIER_1_DOTCOM: 0, KT_TIER_1_GALCAMS: 0
-      }
-    },
-    'S26 Ultra 256G': {
-      KT_COMMON: { 19800: 0, 24000: 0, 28900: 0, 33000: 0, 37000: 0, 41000: 0, 42000: 0, 44000: 0, 45000: 0, 47000: 0, 49000: 0, 50000: 0, 55000: 0, 58000: 0, 61000: 0, 63000: 0, 65000: 0, 67000: 0, 69000: 0, 77000: 0, 80000: 0, 89000: 0, 90000: 0, 100000: 0, 110000: 0, 120000: 0, 130000: 0 },
-      U_COMMON: { 28000: 0, 29000: 0, 33000: 0, 37000: 0, 39000: 0, 43000: 0, 44000: 0, 45000: 0, 47000: 0, 49000: 0, 55000: 0, 59000: 0, 61000: 0, 63000: 0, 66000: 0, 68000: 0, 69000: 0, 70000: 0, 75000: 0, 78000: 0, 85000: 0, 95000: 0, 105000: 0, 115000: 0, 130000: 0 },
-      EXTRA: {
-        KT_CHANGE_DOTCOM: { OVER_90K: { common: 0, selective: 0 } },
-        KT_CHANGE_GALCAMS: { OVER_90K: { common: 0, selective: 0 } },
-        KT_MNP_DOTCOM: { OVER_90K: { common: 0, selective: 0 } },
-        KT_MNP_GALCAMS: { OVER_90K: { common: 0, selective: 0 } },
-        U_CHANGE_DOTCOM: { OVER_95K: { common: 0, selective: 0 }, OVER_61K: { common: 0, selective: 0 } },
-        U_CHANGE_GALCAMS: { OVER_95K: { common: 0, selective: 0 }, OVER_61K: { common: 0, selective: 0 } },
-        U_MNP_DOTCOM: { OVER_95K: { common: 0, selective: 0 }, OVER_61K: { common: 0, selective: 0 } },
-        U_MNP_GALCAMS: { OVER_95K: { common: 0, selective: 0 }, OVER_61K: { common: 0, selective: 0 } },
-        U_TIER_1_DOTCOM: 0,  U_TIER_1_GALCAMS: 0, U_TIER_2_DOTCOM: 0, U_TIER_2_GALCAMS: 0, KT_TIER_1_DOTCOM: 0, KT_TIER_1_GALCAMS: 0
-      }
-    },
-    'S26+ 256G': {
-      KT_COMMON: { 19800: 0, 24000: 0, 28900: 0, 33000: 0, 37000: 0, 41000: 0, 42000: 0, 44000: 0, 45000: 0, 47000: 0, 49000: 0, 50000: 0, 55000: 0, 58000: 0, 61000: 0, 63000: 0, 65000: 0, 67000: 0, 69000: 0, 77000: 0, 80000: 0, 89000: 0, 90000: 0, 100000: 0, 110000: 0, 120000: 0, 130000: 0 },
-      U_COMMON: { 28000: 0, 29000: 0, 33000: 0, 37000: 0, 39000: 0, 43000: 0, 44000: 0, 45000: 0, 47000: 0, 49000: 0, 55000: 0, 59000: 0, 61000: 0, 63000: 0, 66000: 0, 68000: 0, 69000: 0, 70000: 0, 75000: 0, 78000: 0, 85000: 0, 95000: 0, 105000: 0, 115000: 0, 130000: 0 },
-      EXTRA: {
-        KT_CHANGE_DOTCOM: { OVER_90K: { common: 0, selective: 0 } },
-        KT_CHANGE_GALCAMS: { OVER_90K: { common: 0, selective: 0 } },
-        KT_MNP_DOTCOM: { OVER_90K: { common: 0, selective: 0 } },
-        KT_MNP_GALCAMS: { OVER_90K: { common: 0, selective: 0 } },
-        U_CHANGE_DOTCOM: { OVER_95K: { common: 0, selective: 0 }, OVER_61K: { common: 0, selective: 0 } },
-        U_CHANGE_GALCAMS: { OVER_95K: { common: 0, selective: 0 }, OVER_61K: { common: 0, selective: 0 } },
-        U_MNP_DOTCOM: { OVER_95K: { common: 0, selective: 0 }, OVER_61K: { common: 0, selective: 0 } },
-        U_MNP_GALCAMS: { OVER_95K: { common: 0, selective: 0 }, OVER_61K: { common: 0, selective: 0 } },
-        U_TIER_1_DOTCOM: 0,  U_TIER_1_GALCAMS: 0, U_TIER_2_DOTCOM: 0, U_TIER_2_GALCAMS: 0, KT_TIER_1_DOTCOM: 0, KT_TIER_1_GALCAMS: 0
-      }
-    },
-    'S26 256G': {
-      KT_COMMON: { 19800: 0, 24000: 0, 28900: 0, 33000: 0, 37000: 0, 41000: 0, 42000: 0, 44000: 0, 45000: 0, 47000: 0, 49000: 0, 50000: 0, 55000: 0, 58000: 0, 61000: 0, 63000: 0, 65000: 0, 67000: 0, 69000: 0, 77000: 0, 80000: 0, 89000: 0, 90000: 0, 100000: 0, 110000: 0, 120000: 0, 130000: 0 },
-      U_COMMON: { 28000: 0, 29000: 0, 33000: 0, 37000: 0, 39000: 0, 43000: 0, 44000: 0, 45000: 0, 47000: 0, 49000: 0, 55000: 0, 59000: 0, 61000: 0, 63000: 0, 66000: 0, 68000: 0, 69000: 0, 70000: 0, 75000: 0, 78000: 0, 85000: 0, 95000: 0, 105000: 0, 115000: 0, 130000: 0 },
-      EXTRA: {
-        KT_CHANGE_DOTCOM: { OVER_90K: { common: 0, selective: 0 } },
-        KT_CHANGE_GALCAMS: { OVER_90K: { common: 0, selective: 0 } },
-        KT_MNP_DOTCOM: { OVER_90K: { common: 0, selective: 0 } },
-        KT_MNP_GALCAMS: { OVER_90K: { common: 0, selective: 0 } },
-        U_CHANGE_DOTCOM: { OVER_95K: { common: 0, selective: 0 }, OVER_61K: { common: 0, selective: 0 } },
-        U_CHANGE_GALCAMS: { OVER_95K: { common: 0, selective: 0 }, OVER_61K: { common: 0, selective: 0 } },
-        U_MNP_DOTCOM: { OVER_95K: { common: 0, selective: 0 }, OVER_61K: { common: 0, selective: 0 } },
-        U_MNP_GALCAMS: { OVER_95K: { common: 0, selective: 0 }, OVER_61K: { common: 0, selective: 0 } },
-        U_TIER_1_DOTCOM: 0,  U_TIER_1_GALCAMS: 0, U_TIER_2_DOTCOM: 0, U_TIER_2_GALCAMS: 0, KT_TIER_1_DOTCOM: 0, KT_TIER_1_GALCAMS: 0
-      }
-    },
-    'S25 Ultra 256G': {
-      KT_COMMON: { 19800: 0, 24000: 0, 28900: 0, 33000: 0, 37000: 0, 41000: 0, 42000: 0, 44000: 0, 45000: 0, 47000: 0, 49000: 0, 50000: 0, 55000: 0, 58000: 0, 61000: 0, 63000: 0, 65000: 0, 67000: 0, 69000: 0, 77000: 0, 80000: 0, 89000: 0, 90000: 0, 100000: 0, 110000: 0, 120000: 0, 130000: 0 },
-      U_COMMON: { 28000: 0, 29000: 0, 33000: 0, 37000: 0, 39000: 0, 43000: 0, 44000: 0, 45000: 0, 47000: 0, 49000: 0, 55000: 0, 59000: 0, 61000: 0, 63000: 0, 66000: 0, 68000: 0, 69000: 0, 70000: 0, 75000: 0, 85000: 0, 95000: 0, 105000: 0, 115000: 0, 130000: 0 },
-      EXTRA: {
-        KT_CHANGE_DOTCOM: { OVER_90K: { common: 0, selective: 0 } },
-        KT_CHANGE_GALCAMS: { OVER_90K: { common: 0, selective: 0 } },
-        KT_MNP_DOTCOM: { OVER_90K: { common: 0, selective: 0 } },
-        KT_MNP_GALCAMS: { OVER_90K: { common: 0, selective: 0 } },
-        U_CHANGE_DOTCOM: { OVER_95K: { common: 0, selective: 0 }, OVER_61K: { common: 0, selective: 0 } },
-        U_CHANGE_GALCAMS: { OVER_95K: { common: 0, selective: 0 }, OVER_61K: { common: 0, selective: 0 } },
-        U_MNP_DOTCOM: { OVER_95K: { common: 0, selective: 0 }, OVER_61K: { common: 0, selective: 0 } },
-        U_MNP_GALCAMS: { OVER_95K: { common: 0, selective: 0 }, OVER_61K: { common: 0, selective: 0 } },
-        U_TIER_1_DOTCOM: 0,  U_TIER_1_GALCAMS: 0, U_TIER_2_DOTCOM: 0, U_TIER_2_GALCAMS: 0, KT_TIER_1_DOTCOM: 0, KT_TIER_1_GALCAMS: 0
-      }
-    },
-    'S25+ 256G': {
-      KT_COMMON: { 19800: 0, 24000: 0, 28900: 0, 33000: 0, 37000: 0, 41000: 0, 42000: 0, 44000: 0, 45000: 0, 47000: 0, 49000: 0, 50000: 0, 55000: 0, 58000: 0, 61000: 0, 63000: 0, 65000: 0, 67000: 0, 69000: 0, 77000: 0, 80000: 0, 89000: 0, 90000: 0, 100000: 0, 110000: 0, 120000: 0, 130000: 0 },
-      U_COMMON: { 28000: 0, 29000: 0, 33000: 0, 37000: 0, 39000: 0, 43000: 0, 44000: 0, 45000: 0, 47000: 0, 49000: 0, 55000: 0, 59000: 0, 61000: 0, 63000: 0, 66000: 0, 68000: 0, 69000: 0, 70000: 0, 75000: 0, 85000: 0, 95000: 0, 105000: 0, 115000: 0, 130000: 0 },
-      EXTRA: {
-        KT_CHANGE_DOTCOM: { OVER_90K: { common: 0, selective: 0 } },
-        KT_CHANGE_GALCAMS: { OVER_90K: { common: 0, selective: 0 } },
-        KT_MNP_DOTCOM: { OVER_90K: { common: 0, selective: 0 } },
-        KT_MNP_GALCAMS: { OVER_90K: { common: 0, selective: 0 } },
-        U_CHANGE_DOTCOM: { OVER_95K: { common: 0, selective: 0 }, OVER_61K: { common: 0, selective: 0 } },
-        U_CHANGE_GALCAMS: { OVER_95K: { common: 0, selective: 0 }, OVER_61K: { common: 0, selective: 0 } },
-        U_MNP_DOTCOM: { OVER_95K: { common: 0, selective: 0 }, OVER_61K: { common: 0, selective: 0 } },
-        U_MNP_GALCAMS: { OVER_95K: { common: 0, selective: 0 }, OVER_61K: { common: 0, selective: 0 } },
-        U_TIER_1_DOTCOM: 0,  U_TIER_1_GALCAMS: 0, U_TIER_2_DOTCOM: 0, U_TIER_2_GALCAMS: 0, KT_TIER_1_DOTCOM: 0, KT_TIER_1_GALCAMS: 0
-      }
-    },
-    'S25 256G': {
-      KT_COMMON: { 19800: 0, 24000: 0, 28900: 0, 33000: 0, 37000: 0, 41000: 0, 42000: 0, 44000: 0, 45000: 0, 47000: 0, 49000: 0, 50000: 0, 55000: 0, 58000: 0, 61000: 0, 63000: 0, 65000: 0, 67000: 0, 69000: 0, 77000: 0, 80000: 0, 89000: 0, 90000: 0, 100000: 0, 110000: 0, 120000: 0, 130000: 0 },
-      U_COMMON: { 28000: 0, 29000: 0, 33000: 0, 37000: 0, 39000: 0, 43000: 0, 44000: 0, 45000: 0, 47000: 0, 49000: 0, 55000: 0, 59000: 0, 61000: 0, 63000: 0, 66000: 0, 68000: 0, 69000: 0, 70000: 0, 75000: 0, 85000: 0, 95000: 0, 105000: 0, 115000: 0, 130000: 0 },
-      EXTRA: {
-        KT_CHANGE_DOTCOM: { OVER_90K: { common: 0, selective: 0 } },
-        KT_CHANGE_GALCAMS: { OVER_90K: { common: 0, selective: 0 } },
-        KT_MNP_DOTCOM: { OVER_90K: { common: 0, selective: 0 } },
-        KT_MNP_GALCAMS: { OVER_90K: { common: 0, selective: 0 } },
-        U_CHANGE_DOTCOM: { OVER_95K: { common: 0, selective: 0 }, OVER_61K: { common: 0, selective: 0 } },
-        U_CHANGE_GALCAMS: { OVER_95K: { common: 0, selective: 0 }, OVER_61K: { common: 0, selective: 0 } },
-        U_MNP_DOTCOM: { OVER_95K: { common: 0, selective: 0 }, OVER_61K: { common: 0, selective: 0 } },
-        U_MNP_GALCAMS: { OVER_95K: { common: 0, selective: 0 }, OVER_61K: { common: 0, selective: 0 } },
-        U_TIER_1_DOTCOM: 0,  U_TIER_1_GALCAMS: 0, U_TIER_2_DOTCOM: 0, U_TIER_2_GALCAMS: 0, KT_TIER_1_DOTCOM: 0, KT_TIER_1_GALCAMS: 0
-      }
-    },
-    'S25 Edge 256G': {
-      KT_COMMON: { 19800: 0, 24000: 0, 28900: 0, 33000: 0, 37000: 0, 41000: 0, 42000: 0, 44000: 0, 45000: 0, 47000: 0, 49000: 0, 50000: 0, 55000: 0, 58000: 0, 61000: 0, 63000: 0, 65000: 0, 67000: 0, 69000: 0, 77000: 0, 80000: 0, 89000: 0, 90000: 0, 100000: 0, 110000: 0, 120000: 0, 130000: 0 },
-      U_COMMON: { 28000: 0, 29000: 0, 33000: 0, 37000: 0, 39000: 0, 43000: 0, 44000: 0, 45000: 0, 47000: 0, 49000: 0, 55000: 0, 59000: 0, 61000: 0, 63000: 0, 66000: 0, 68000: 0, 69000: 0, 69000: 0, 70000: 0, 75000: 0, 85000: 0, 95000: 0, 105000: 0, 115000: 0, 130000: 0 },
-      EXTRA: {
-        KT_CHANGE_DOTCOM: { OVER_90K: { common: 0, selective: 0 } },
-        KT_CHANGE_GALCAMS: { OVER_90K: { common: 0, selective: 0 } },
-        KT_MNP_DOTCOM: { OVER_90K: { common: 0, selective: 0 } },
-        KT_MNP_GALCAMS: { OVER_90K: { common: 0, selective: 0 } },
-        U_CHANGE_DOTCOM: { OVER_95K: { common: 0, selective: 0 }, OVER_61K: { common: 0, selective: 0 } },
-        U_CHANGE_GALCAMS: { OVER_95K: { common: 0, selective: 0 }, OVER_61K: { common: 0, selective: 0 } },
-        U_MNP_DOTCOM: { OVER_95K: { common: 0, selective: 0 }, OVER_61K: { common: 0, selective: 0 } },
-        U_MNP_GALCAMS: { OVER_95K: { common: 0, selective: 0 }, OVER_61K: { common: 0, selective: 0 } },
-        U_TIER_1_DOTCOM: 0,  U_TIER_1_GALCAMS: 0, U_TIER_2_DOTCOM: 0, U_TIER_2_GALCAMS: 0, KT_TIER_1_DOTCOM: 0, KT_TIER_1_GALCAMS: 0
-      }
-    },
-    'S25 FE': {
-      KT_COMMON: { 19800: 0, 24000: 0, 28900: 0, 33000: 0, 37000: 0, 41000: 0, 42000: 0, 44000: 0, 45000: 0, 47000: 0, 49000: 0, 50000: 0, 55000: 0, 58000: 0, 61000: 0, 63000: 0, 65000: 0, 67000: 0, 69000: 0, 77000: 0, 80000: 0, 89000: 0, 90000: 0, 100000: 0, 110000: 0, 120000: 0, 130000: 0 },
-      U_COMMON: { 28000: 0, 29000: 0, 33000: 0, 37000: 0, 39000: 0, 43000: 0, 44000: 0, 45000: 0, 47000: 0, 55000: 0, 59000: 0, 61000: 0, 63000: 0, 66000: 0, 68000: 0, 69000: 0, 70000: 0, 75000: 0, 78000: 0, 85000: 0, 95000: 0, 105000: 0, 115000: 0, 130000: 0 },
-      EXTRA: {
-        KT_CHANGE_DOTCOM: { OVER_90K: { common: 0, selective: 0 } },
-        KT_CHANGE_GALCAMS: { OVER_90K: { common: 0, selective: 0 } },
-        KT_MNP_DOTCOM: { OVER_90K: { common: 0, selective: 0 } },
-        KT_MNP_GALCAMS: { OVER_90K: { common: 0, selective: 0 } },
-        U_CHANGE_DOTCOM: { OVER_95K: { common: 0, selective: 0 }, OVER_61K: { common: 0, selective: 0 } },
-        U_CHANGE_GALCAMS: { OVER_95K: { common: 0, selective: 0 }, OVER_61K: { common: 0, selective: 0 } },
-        U_MNP_DOTCOM: { OVER_95K: { common: 0, selective: 0 }, OVER_61K: { common: 0, selective: 0 } },
-        U_MNP_GALCAMS: { OVER_95K: { common: 0, selective: 0 }, OVER_61K: { common: 0, selective: 0 } },
-        U_TIER_1_DOTCOM: 0,  U_TIER_1_GALCAMS: 0, U_TIER_2_DOTCOM: 0, U_TIER_2_GALCAMS: 0, KT_TIER_1_DOTCOM: 0, KT_TIER_1_GALCAMS: 0
-      }
-    },
-    'Z Fold7 256G': {
-      KT_COMMON: { 19800: 0, 24000: 0, 28900: 0, 33000: 0, 37000: 0, 41000: 0, 42000: 0, 44000: 0, 45000: 0, 47000: 0, 49000: 0, 50000: 0, 55000: 0, 58000: 0, 61000: 0, 63000: 0, 65000: 0, 67000: 0, 69000: 0, 77000: 0, 80000: 0, 89000: 0, 90000: 0, 100000: 0, 110000: 0, 120000: 0, 130000: 0 },
-      U_COMMON: { 28000: 0, 29000: 0, 33000: 0, 37000: 0, 39000: 0, 43000: 0, 44000: 0, 45000: 0, 47000: 0, 49000: 0, 55000: 0, 59000: 0, 61000: 0, 63000: 0, 66000: 0, 68000: 0, 69000: 0, 70000: 0, 75000: 0, 78000: 0, 85000: 0, 95000: 0, 105000: 0, 115000: 0, 130000: 0 },
-      EXTRA: {
-        KT_CHANGE_DOTCOM: { OVER_90K: { common: 0, selective: 0 } },
-        KT_CHANGE_GALCAMS: { OVER_90K: { common: 0, selective: 0 } },
-        KT_MNP_DOTCOM: { OVER_90K: { common: 0, selective: 0 } },
-        KT_MNP_GALCAMS: { OVER_90K: { common: 0, selective: 0 } },
-        U_CHANGE_DOTCOM: { OVER_95K: { common: 0, selective: 0 }, OVER_61K: { common: 0, selective: 0 } },
-        U_CHANGE_GALCAMS: { OVER_95K: { common: 0, selective: 0 }, OVER_61K: { common: 0, selective: 0 } },
-        U_MNP_DOTCOM: { OVER_95K: { common: 0, selective: 0 }, OVER_61K: { common: 0, selective: 0 } },
-        U_MNP_GALCAMS: { OVER_95K: { common: 0, selective: 0 }, OVER_61K: { common: 0, selective: 0 } },
-        U_TIER_1_DOTCOM: 0,  U_TIER_1_GALCAMS: 0, U_TIER_2_DOTCOM: 0, U_TIER_2_GALCAMS: 0, KT_TIER_1_DOTCOM: 0, KT_TIER_1_GALCAMS: 0
-      }
-    },
-    'Z Flip7 256G': {
-      KT_COMMON: { 19800: 0, 24000: 0, 28900: 0, 33000: 0, 37000: 0, 41000: 0, 42000: 0, 44000: 0, 45000: 0, 47000: 0, 49000: 0, 50000: 0, 55000: 0, 58000: 0, 61000: 0, 63000: 0, 65000: 0, 67000: 0, 69000: 0, 77000: 0, 80000: 0, 89000: 0, 90000: 0, 100000: 0, 110000: 0, 120000: 0, 130000: 0 },
-      U_COMMON: { 28000: 0, 29000: 0, 33000: 0, 37000: 0, 39000: 0, 43000: 0, 44000: 0, 45000: 0, 47000: 0, 49000: 0, 55000: 0, 59000: 0, 61000: 0, 63000: 0, 66000: 0, 68000: 0, 69000: 0, 70000: 0, 75000: 0, 78000: 0, 85000: 0, 95000: 0, 105000: 0, 115000: 0, 130000: 0 },
-      EXTRA: {
-        KT_CHANGE_DOTCOM: { OVER_90K: { common: 0, selective: 0 } },
-        KT_CHANGE_GALCAMS: { OVER_90K: { common: 0, selective: 0 } },
-        KT_MNP_DOTCOM: { OVER_90K: { common: 0, selective: 0 } },
-        KT_MNP_GALCAMS: { OVER_90K: { common: 0, selective: 0 } },
-        U_CHANGE_DOTCOM: { OVER_95K: { common: 0, selective: 0 }, OVER_61K: { common: 0, selective: 0 } },
-        U_CHANGE_GALCAMS: { OVER_95K: { common: 0, selective: 0 }, OVER_61K: { common: 0, selective: 0 } },
-        U_MNP_DOTCOM: { OVER_95K: { common: 0, selective: 0 }, OVER_61K: { common: 0, selective: 0 } },
-        U_MNP_GALCAMS: { OVER_95K: { common: 0, selective: 0 }, OVER_61K: { common: 0, selective: 0 } },
-        U_TIER_1_DOTCOM: 0,  U_TIER_1_GALCAMS: 0, U_TIER_2_DOTCOM: 0, U_TIER_2_GALCAMS: 0, KT_TIER_1_DOTCOM: 0, KT_TIER_1_GALCAMS: 0
-      }
-    },
-    'Z Flip7 FE': {
-      KT_COMMON: { 19800: 0, 24000: 0, 28900: 0, 33000: 0, 37000: 0, 41000: 0, 42000: 0, 44000: 0, 45000: 0, 47000: 0, 49000: 0, 50000: 0, 55000: 0, 58000: 0, 61000: 0, 63000: 0, 65000: 0, 67000: 0, 69000: 0, 77000: 0, 80000: 0, 89000: 0, 90000: 0, 100000: 0, 110000: 0, 120000: 0, 130000: 0 },
-      U_COMMON: { 28000: 0, 29000: 0, 33000: 0, 37000: 0, 39000: 0, 43000: 0, 44000: 0, 45000: 0, 47000: 0, 49000: 0, 55000: 0, 59000: 0, 61000: 0, 63000: 0, 66000: 0, 68000: 0, 69000: 0, 70000: 0, 75000: 0, 78000: 0, 85000: 0, 95000: 0, 105000: 0, 115000: 0, 130000: 0 },
-      EXTRA: {
-        KT_CHANGE_DOTCOM: { OVER_90K: { common: 0, selective: 0 } },
-        KT_CHANGE_GALCAMS: { OVER_90K: { common: 0, selective: 0 } },
-        KT_MNP_DOTCOM: { OVER_90K: { common: 0, selective: 0 } },
-        KT_MNP_GALCAMS: { OVER_90K: { common: 0, selective: 0 } },
-        U_CHANGE_DOTCOM: { OVER_95K: { common: 0, selective: 0 }, OVER_61K: { common: 0, selective: 0 } },
-        U_CHANGE_GALCAMS: { OVER_95K: { common: 0, selective: 0 }, OVER_61K: { common: 0, selective: 0 } },
-        U_MNP_DOTCOM: { OVER_95K: { common: 0, selective: 0 }, OVER_61K: { common: 0, selective: 0 } },
-        U_MNP_GALCAMS: { OVER_95K: { common: 0, selective: 0 }, OVER_61K: { common: 0, selective: 0 } },
-        U_TIER_1_DOTCOM: 0,  U_TIER_1_GALCAMS: 0, U_TIER_2_DOTCOM: 0, U_TIER_2_GALCAMS: 0, KT_TIER_1_DOTCOM: 0, KT_TIER_1_GALCAMS: 0
-      }
-    },
-    'A37 5G': {
-      KT_COMMON: { 19800: 0, 24000: 0, 28900: 0, 33000: 0, 37000: 0, 41000: 0, 42000: 0, 44000: 0, 45000: 0, 47000: 0, 49000: 0, 50000: 0, 55000: 0, 58000: 0, 61000: 0, 63000: 0, 65000: 0, 67000: 0, 69000: 0, 77000: 0, 80000: 0, 89000: 0, 90000: 0, 100000: 0, 110000: 0, 120000: 0, 130000: 0 },
-      U_COMMON: { 28000: 0, 29000: 0, 33000: 0, 37000: 0, 39000: 0, 43000: 0, 44000: 0, 45000: 0, 47000: 0, 49000: 0, 55000: 0, 59000: 0, 61000: 0, 63000: 0, 66000: 0, 68000: 0, 68000: 0, 69000: 0, 70000: 0, 75000: 0, 78000: 0, 85000: 0, 95000: 0, 105000: 0, 115000: 0, 130000: 0 },
-      EXTRA: {
-        KT_CHANGE_DOTCOM: { OVER_61K: { common: 0, selective: 0 } },
-        KT_CHANGE_GALCAMS: { OVER_61K: { common: 0, selective: 0 } },
-        KT_MNP_DOTCOM: { OVER_61K: { common: 0, selective: 0 } },
-        KT_MNP_GALCAMS: { OVER_61K: { common: 0, selective: 0 } },
-        U_CHANGE_DOTCOM: { OVER_61K: { common: 0, selective: 0 } },
-        U_CHANGE_GALCAMS: { OVER_61K: { common: 0, selective: 0 } },
-        U_MNP_DOTCOM: { OVER_61K: { common: 0, selective: 0 } },
-        U_MNP_GALCAMS: { OVER_61K: { common: 0, selective: 0 } },
-        U_TIER_1_DOTCOM: 0,  U_TIER_1_GALCAMS: 0, U_TIER_2_DOTCOM: 0, U_TIER_2_GALCAMS: 0, KT_TIER_1_DOTCOM: 0, KT_TIER_1_GALCAMS: 0
-      }
-    },
-    'A36 5G': {
-      KT_COMMON: { 19800: 0, 24000: 0, 28900: 0, 33000: 0, 37000: 0, 41000: 0, 42000: 0, 44000: 0, 45000: 0, 47000: 0, 49000: 0, 50000: 0, 55000: 0, 58000: 0, 61000: 0, 63000: 0, 65000: 0, 67000: 0, 69000: 0, 77000: 0, 80000: 0, 89000: 0, 90000: 0, 100000: 0, 110000: 0, 120000: 0, 130000: 0 },
-      U_COMMON: { 28000: 0, 29000: 0, 33000: 0, 37000: 0, 39000: 0, 43000: 0, 44000: 0, 45000: 0, 47000: 0, 49000: 0, 55000: 0, 59000: 0, 61000: 0, 63000: 0, 66000: 0, 68000: 0, 68000: 0, 69000: 0, 70000: 0, 75000: 0, 78000: 0, 85000: 0, 95000: 0, 105000: 0, 115000: 0, 130000: 0 },
-      EXTRA: {
-        KT_CHANGE_DOTCOM: { OVER_61K: { common: 0, selective: 0 } },
-        KT_CHANGE_GALCAMS: { OVER_61K: { common: 0, selective: 0 } },
-        KT_MNP_DOTCOM: { OVER_61K: { common: 0, selective: 0 } },
-        KT_MNP_GALCAMS: { OVER_61K: { common: 0, selective: 0 } },
-        U_CHANGE_DOTCOM: { OVER_61K: { common: 0, selective: 0 } },
-        U_CHANGE_GALCAMS: { OVER_61K: { common: 0, selective: 0 } },
-        U_MNP_DOTCOM: { OVER_61K: { common: 0, selective: 0 } },
-        U_MNP_GALCAMS: { OVER_61K: { common: 0, selective: 0 } },
-        U_TIER_1_DOTCOM: 0,  U_TIER_1_GALCAMS: 0, U_TIER_2_DOTCOM: 0, U_TIER_2_GALCAMS: 0, KT_TIER_1_DOTCOM: 0, KT_TIER_1_GALCAMS: 0
-      }
-    },
-    'A17 LTE': {
-      KT_COMMON: { 19800: 0, 24000: 0, 28900: 0, 33000: 0, 37000: 0, 41000: 0, 42000: 0, 44000: 0, 45000: 0, 47000: 0, 49000: 0, 50000: 0, 55000: 0, 58000: 0, 61000: 0, 63000: 0, 65000: 0, 67000: 0, 69000: 0, 77000: 0, 80000: 0, 89000: 0, 90000: 0, 100000: 0, 110000: 0, 120000: 0, 130000: 0 },
-      U_COMMON: { 22000: 0, 28000: 0, 29000: 0, 33000: 0, 37000: 0, 39000: 0, 43000: 0, 44000: 0, 45000: 0, 47000: 0, 55000: 0, 59000: 0, 61000: 0, 63000: 0, 66000: 0, 68000: 0, 69000: 0, 70000: 0, 75000: 0, 78000: 0, 85000: 0, 95000: 0, 105000: 0, 115000: 0, 130000: 0 },
-      EXTRA: {
-        KT_CHANGE_DOTCOM: { OVER_33K: { common: 0, selective: 0 } },
-        KT_CHANGE_GALCAMS: { OVER_33K: { common: 0, selective: 0 } },
-        KT_MNP_DOTCOM: { OVER_33K: { common: 0, selective: 0 } },
-        KT_MNP_GALCAMS: { OVER_33K: { common: 0, selective: 0 } },
-        U_CHANGE_DOTCOM: { OVER_33K: { common: 0, selective: 0 } },
-        U_CHANGE_GALCAMS: { OVER_33K: { common: 0, selective: 0 } },
-        U_MNP_DOTCOM: { OVER_33K: { common: 0, selective: 0 } },
-        U_MNP_GALCAMS: { OVER_33K: { common: 0, selective: 0 } },
-        U_TIER_A_DOTCOM: 0,  U_TIER_A_GALCAMS: 0, KT_TIER_1_DOTCOM: 0, KT_TIER_1_GALCAMS: 0
-      }
-    }
+  DEVICES: {
+    'Z Fold8 Ultra 512G': { KT_COMMON: {}, U_COMMON: {}, EXTRA: {} },
+    'Z Fold8 512G': { KT_COMMON: {}, U_COMMON: {}, EXTRA: {} },
+    'Z Flip8 512G': { KT_COMMON: {}, U_COMMON: {}, EXTRA: {} },
+    'S26 Ultra 512G': { KT_COMMON: {}, U_COMMON: {}, EXTRA: {} },
+    'S26+ 512G': { KT_COMMON: {}, U_COMMON: {}, EXTRA: {} },
+    'S26 512G': { KT_COMMON: {}, U_COMMON: {}, EXTRA: {} },
+    'S26 Ultra 256G': { KT_COMMON: {}, U_COMMON: {}, EXTRA: {} },
+    'S26+ 256G': { KT_COMMON: {}, U_COMMON: {}, EXTRA: {} },
+    'S26 256G': { KT_COMMON: {}, U_COMMON: {}, EXTRA: {} },
+    'S25 Ultra 256G': { KT_COMMON: {}, U_COMMON: {}, EXTRA: {} },
+    'S25+ 256G': { KT_COMMON: {}, U_COMMON: {}, EXTRA: {} },
+    'S25 256G': { KT_COMMON: {}, U_COMMON: {}, EXTRA: {} },
+    'S25 Edge 256G': { KT_COMMON: {}, U_COMMON: {}, EXTRA: {} },
+    'S25 FE': { KT_COMMON: {}, U_COMMON: {}, EXTRA: {} },
+    'Z Fold7 256G': { KT_COMMON: {}, U_COMMON: {}, EXTRA: {} },
+    'Z Flip7 256G': { KT_COMMON: {}, U_COMMON: {}, EXTRA: {} },
+    'Z Flip7 FE': { KT_COMMON: {}, U_COMMON: {}, EXTRA: {} },
+    'A37 5G': { KT_COMMON: {}, U_COMMON: {}, EXTRA: {} },
+    'A36 5G': { KT_COMMON: {}, U_COMMON: {}, EXTRA: {} },
+    'A17 LTE': { KT_COMMON: {}, U_COMMON: {}, EXTRA: {} }
   }
 };
 
 // =====================================================================
-// 💡 [색상 복사 텍스트 설정] 단말기별 색상과 복사될 텍스트를 추가/수정하세요 💡
+// 💡 [색상 복사 텍스트 설정] 단말기별 색상과 복사될 텍스트 💡
 // =====================================================================
 const DEVICE_COLORS_MAP = {
-  // 예시: S26 울트라 512기가 색상 설정
   'Z Fold8 Ultra 512G': [
     { name: '코발트 바이올렛', copyText: 'SM-F976NZKOD' },
     { name: '화이트', copyText: 'SM-F976NZKOD' },
     { name: '스카이 블루', copyText: 'SM-F976NZKOD' },
     { name: '블랙', copyText: 'SM-F976NZKOD' },
   ],
-
   'Z Fold8 512G': [
     { name: '코발트 바이올렛', copyText: 'SM-F971NZKOD' },
     { name: '화이트', copyText: 'SM-F971NZKOD' },
     { name: '스카이 블루', copyText: 'SM-F971NZKOD' },
     { name: '블랙', copyText: 'SM-F971NZKOD' },
   ],
-
   'Z Flip8 512G': [
     { name: '코발트 바이올렛', copyText: 'SM-F776NZKOD' },
     { name: '화이트', copyText: 'SM-F776NZKOD' },
     { name: '스카이 블루', copyText: 'SM-F776NZKOD' },
     { name: '블랙', copyText: 'SM-F776NZKOD' },
   ],
-
-    'S26 Ultra 512G': [
+  'S26 Ultra 512G': [
     { name: '코발트 바이올렛', copyText: 'SM-S948NZVWKOD' },
     { name: '화이트', copyText: 'SM-S948NZWWKOD' },
     { name: '스카이 블루', copyText: 'SM-S948NLBWKOD' },
     { name: '블랙', copyText: 'SM-S948NZKWKOD' },
   ],
-
   'S26 Ultra 256G': [
     { name: '코발트 바이올렛', copyText: 'SM-S948NZVBKOD' },
     { name: '화이트', copyText: 'SM-S948NZWBKOD' },
     { name: '스카이 블루', copyText: 'SM-S948NLBBKOD' },
     { name: '블랙', copyText: 'SM-S948NZKBKOD' },
   ],
-  
   'S26+ 512G': [
     { name: '코발트 바이올렛', copyText: 'SM-S947NZVEKOD' },
     { name: '화이트', copyText: 'SM-S947NZWEKOD' },
     { name: '스카이 블루', copyText: 'SM-S947NLBEKOD' },
     { name: '블랙', copyText: 'SM-S947NZKEKOD' },
   ],
-
   'S26+ 256G': [
     { name: '코발트 바이올렛', copyText: 'SM-S947NZVAKOD' },
     { name: '화이트', copyText: 'SM-S947NZWAKOD' },
     { name: '스카이 블루', copyText: 'SM-S947NLBAKOD' },
     { name: '블랙', copyText: 'SM-S947NZKAKOD' },
   ],
-
   'S26 512G': [
     { name: '코발트 바이올렛', copyText: 'SM-S942NZVFKOD' },
     { name: '화이트', copyText: 'SM-S942NZWFKOD' },
     { name: '스카이 블루', copyText: 'SM-S942NLBFKOD' },
     { name: '블랙', copyText: 'SM-S942NZKFKOD' },
   ],
-
   'S26 256G': [
     { name: '코발트 바이올렛', copyText: 'SM-S942NZVEKOD' },
     { name: '화이트', copyText: 'SM-S942NZWEKOD' },
     { name: '스카이 블루', copyText: 'SM-S942NLBEKOD' },
     { name: '블랙', copyText: 'SM-S942NZKEKOD' },
   ],
-
   'S25 Edge 256G': [
     { name: '티타늄 실버', copyText: 'SM-S937NZSBKOD' },
     { name: '티타늄 아이스블루', copyText: 'SM-S937NLBBKOD' },
     { name: '티타늄 제트블랙', copyText: 'SM-S937NZKBKOD' },
   ],
-
   'S25 Ultra 256G': [
     { name: '티타늄 블랙', copyText: 'SM-S938NZKAKOD' },
     { name: '티타늄 그레이', copyText: 'SM-S938NZTAKOD' },
     { name: '티타늄 실버블루', copyText: 'SM-S938NZBAKOD' },
     { name: '티타늄 화이트실버', copyText: 'SM-S938NZSAKOD' },
   ],
-
   'S25+ 256G': [
     { name: '아이스블루', copyText: 'SM-S936NLBAKOD' },
     { name: '민트', copyText: 'SM-S936NLGAKOD' },
     { name: '네이비', copyText: 'SM-S936NDBAKOD' },
     { name: '실버 쉐도우', copyText: 'SM-S936NZSAKOD' },
   ],
-
   'S25 256G': [
     { name: '아이스블루', copyText: 'SM-S931NLBEKOD' },
     { name: '민트', copyText: 'SM-S931NLGEKOD' },
     { name: '네이비', copyText: 'SM-S931NDBEKOD' },
     { name: '실버 쉐도우', copyText: 'SM-S931NZSEKOD' },
   ],
-
   'S25 FE': [
     { name: '네이비', copyText: 'SM-S731NDBWKOD' },
     { name: '아이스블루', copyText: 'SM-S731NLBWKOD' },
     { name: '제트블랙', copyText: 'SM-S731NZKWKOD' },
     { name: '화이트', copyText: 'SM-S731NZWWKOD' },
   ],
-
   'Z Fold7 256G': [
     { name: '블루 쉐도우', copyText: 'SM-F966NDBAKOD' },
     { name: '제트블랙', copyText: 'SM-F966NZKAKOD' },
     { name: '실버 쉐도우', copyText: 'SM-F966NZSAKOD' },
   ],
-
   'Z Flip7 256G': [
     { name: '블루 쉐도우', copyText: 'SM-F766NDBAKOD' },
     { name: '코랄레드', copyText: 'SM-F766NZRAKOD' },
     { name: '제트블랙', copyText: 'SM-F766NZKAKOD' },
   ],
-
   'Z Flip7 FE': [
     { name: '블랙', copyText: 'SM-F761NZKVKOD' },
     { name: '화이트', copyText: 'SM-F761NZWVKOD' },
   ],
-
   'A37 5G': [
     { name: '어썸 라벤더', copyText: 'SM-A376NZKOD' },
     { name: '어썸 화이트', copyText: 'SM-A376NZKOD' },
     { name: '어썸 블랙', copyText: 'SM-A376NZKOD' },
   ],
-
   'A36 5G': [
     { name: '어썸 라벤더', copyText: 'SM-A366NLVAKOD' },
     { name: '어썸 화이트', copyText: 'SM-A366NZAAKOD' },
     { name: '어썸 블랙', copyText: 'SM-A366NZKAKOD' },
   ],
-
   'A17 LTE': [
     { name: '블랙', copyText: 'SM-A175NZKAKOD' },
     { name: '그레이', copyText: 'SM-A175NZAAKOD' },
     { name: '라이트 블루', copyText: 'SM-A175NLBAKOD' },
   ],
 };
-// =====================================================================
 
-// 월 할부 계산 함수
 function pmt(rate, nper, pv) {
   if(rate===0) return pv/nper;
   return (rate*pv)/(1-Math.pow(1+rate, -nper));
 }
 
-// ------------------ 단말기 ------------------
 const CATEGORIZED_DEVICE_LIST = [
   {
     category: '사전예약',
     devices: [
-      // 💡 [단말기 세팅] 추후 이곳에 사전예약 단말기 이름과 가격을 입력하세요 💡
       { name: 'Z Fold8 Ultra 512G', price: 5000000, isHighlight: true },
       { name: 'Z Fold8 512G', price: 4500000, isHighlight: true },
       { name: 'Z Flip8 512G', price: 4000000, isHighlight: true }
@@ -545,7 +237,6 @@ const CATEGORIZED_DEVICE_LIST = [
   }
 ];
 
-// ------------------ 요금제 데이터 ------------------
 const PLAN_LIST_KT = [
   { category: '통합', name: '초이스 130', price: 130000 },
   { category: '통합', name: '초이스 120', price: 120000 },
@@ -654,6 +345,7 @@ const PLAN_LIST_U = [
   { category: 'LTE', name: '데이터 일반(가입 중단)', price: 32890 },
   { category: 'LTE', name: 'LTE 키즈 22', price: 22000 }
 ];
+
 const PLAN_FEATURES_U = {
   'LTE 키즈 22':'700MB + 400kbps/만 12세 이하', '5G 시니어 A형(가입 중단)':'10GB + 1Mbps', '5G 시니어 B형(가입 중단)':'10GB + 1Mbps', '5G 시니어 C형(가입 중단)':'10GB + 1Mbps', '데이터플랜 300MB':'300MB + 400kbps/시니어&청소년&키즈 1GB + 400kbps', '데이터플랜':'750MB + 400kbps/시니어&청소년 1.25GB + 400kbps/키즈 1GB + 400kbps', '데이터 일반':'300MB', '데이터 1.3':'1.3GB', '데이터 2.3':'2.3GB', '데이터 3.6':'3.6GB', '데이터 6.6':'6.6GB', '데이터 스페셜 A':'11GB + 일 2GB + 3Mbps', '데이터 스페셜 B':'16GB + 일 2GB + 3Mbps', 'LTE 데이터33':'1.5GB + 종량과금', 'LTE 추걱데44':'2.5GB + 400Kbps', 'LTE 추걱데49':'3.5GB + 1Mbps', 'LTE 추걱데59':'6.6GB + 1Mbps', 'LTE 추걱데69':'일 5GB + 5Mbps', 'LTE 속걱데78':'무제한', 'LTE 속걱데88':'무제한/스마트기기 2회선 무료', 'LTE 프리미어 에센셜':'무제한', 'LTE 프리미어 플러스':'무제한/스마트기기 2회선 무료',
   '데이터플랜 9GB':'9GB + 1Mbps/유쓰 15GB + 400kbps/시니어 12GB + 1Mbps/청소년 11GB + 1Mbps/키즈 10GB + 1Mbps', '데이터플랜 5GB': '8GB + 400kbps/유쓰 9GB + 400kbps/시니어 8GB + 400kbps/청소년 7GB + 400kbps/키즈 6GB + 1Mbps', '데이터플랜 1.5GB': '1.5GB + 400kbps/유쓰 2GB + 400kbps/시니어 2.5GB + 400kbps',
@@ -678,11 +370,226 @@ function formatPlanName(name) {
 
 const DEVICE_LIST = CATEGORIZED_DEVICE_LIST.flatMap(group => group.devices);
 
+// =====================================================================
+// 🛠️ [리팩토링] 공통 요금 정산 바인딩 함수 (지원금 추출 자동 매핑 로직)
+// =====================================================================
+function getSupportAmounts({ selectedDevice, selectedPlanPrice, operator, joinType, isGalcams, policyData }) {
+  const devicePolicy = policyData.DEVICES[selectedDevice];
+  if (!devicePolicy) {
+    return { commonSupport: 0, additionalSupport: 0, selectiveAdditionalSupport: 0 };
+  }
+
+  let commonSupport = 0;
+  if (operator === 'U' && devicePolicy.U_COMMON && devicePolicy.U_COMMON[selectedPlanPrice] !== undefined) {
+    commonSupport = devicePolicy.U_COMMON[selectedPlanPrice];
+  } else if (operator === 'KT' && devicePolicy.KT_COMMON && devicePolicy.KT_COMMON[selectedPlanPrice] !== undefined) {
+    commonSupport = devicePolicy.KT_COMMON[selectedPlanPrice];
+  }
+
+  let additionalSupport = 0;
+  let selectiveAdditionalSupport = 0;
+  const extraConfig = devicePolicy.EXTRA || {};
+
+  if (operator === 'U') {
+    let policyBlock = null;
+    if (joinType === '기기변경') {
+      policyBlock = isGalcams ? extraConfig.U_CHANGE_GALCAMS : extraConfig.U_CHANGE_DOTCOM;
+    } else if (joinType === '번호이동') {
+      policyBlock = isGalcams ? extraConfig.U_MNP_GALCAMS : extraConfig.U_MNP_DOTCOM;
+    }
+
+    if (policyBlock) {
+      if (policyBlock.OVER_95K !== undefined && selectedPlanPrice >= 95000) {
+        additionalSupport = policyBlock.OVER_95K.common;
+        selectiveAdditionalSupport = policyBlock.OVER_95K.selective;
+      } else if (policyBlock.OVER_61K !== undefined && selectedPlanPrice >= 61000) {
+        additionalSupport = policyBlock.OVER_61K.common;
+        selectiveAdditionalSupport = policyBlock.OVER_61K.selective;
+      } else if (policyBlock.OVER_33K !== undefined && selectedPlanPrice >= 33000) {
+        additionalSupport = policyBlock.OVER_33K.common;
+        selectiveAdditionalSupport = policyBlock.OVER_33K.selective;
+      }
+    } else {
+      let baseAdd = 0;
+      if (extraConfig.U_TIER_A_DOTCOM !== undefined) {
+        if (selectedPlanPrice >= policyData.TIERS.U_TIER_A_MIN) baseAdd = isGalcams ? (extraConfig.U_TIER_A_GALCAMS || 0) : (extraConfig.U_TIER_A_DOTCOM || 0);
+      } else if (selectedPlanPrice >= policyData.TIERS.U_TIER_1_MIN && selectedPlanPrice < policyData.TIERS.U_TIER_1_MAX) {
+        baseAdd = isGalcams ? (extraConfig.U_TIER_1_GALCAMS || 0) : (extraConfig.U_TIER_1_DOTCOM || 0);
+      } else if (selectedPlanPrice >= policyData.TIERS.U_TIER_2_MIN) {
+        baseAdd = isGalcams ? (extraConfig.U_TIER_2_GALCAMS || 0) : (extraConfig.U_TIER_2_DOTCOM || 0);
+      }
+      additionalSupport = baseAdd;
+      selectiveAdditionalSupport = baseAdd;
+    }
+  } else if (operator === 'KT') {
+    let policyBlock = null;
+    if (joinType === '기기변경') {
+      policyBlock = isGalcams ? extraConfig.KT_CHANGE_GALCAMS : extraConfig.KT_CHANGE_DOTCOM;
+    } else if (joinType === '번호이동') {
+      policyBlock = isGalcams ? extraConfig.KT_MNP_GALCAMS : extraConfig.KT_MNP_DOTCOM;
+    }
+
+    if (policyBlock) {
+      if (policyBlock.OVER_90K !== undefined && selectedPlanPrice >= 90000) {
+        additionalSupport = policyBlock.OVER_90K.common;
+        selectiveAdditionalSupport = policyBlock.OVER_90K.selective;
+      } else if (policyBlock.OVER_61K !== undefined && selectedPlanPrice >= 61000) {
+        additionalSupport = policyBlock.OVER_61K.common;
+        selectiveAdditionalSupport = policyBlock.OVER_61K.selective;
+      } else if (policyBlock.OVER_33K !== undefined && selectedPlanPrice >= 33000) {
+        additionalSupport = policyBlock.OVER_33K.common;
+        selectiveAdditionalSupport = policyBlock.OVER_33K.selective;
+      }
+    } else {
+      if (selectedPlanPrice >= policyData.TIERS.KT_TIER_1_MIN) {
+        let baseAdd = isGalcams ? (extraConfig.KT_TIER_1_GALCAMS || 0) : (extraConfig.KT_TIER_1_DOTCOM || 0);
+        additionalSupport = baseAdd;
+        selectiveAdditionalSupport = baseAdd;
+      }
+    }
+  }
+
+  return { commonSupport, additionalSupport, selectiveAdditionalSupport };
+}
+
+// =====================================================================
+// 🛠️ [리팩토링] 공통 결과 데이터 카드 컴포넌트 (공통지원/선택약정 구조 통합)
+// =====================================================================
+function CostCard({
+  title,
+  type,
+  planName,
+  planPrice,
+  planDiscount = 0,
+  devicePrice,
+  isPreorderDevice,
+  doubleStorageDiscount,
+  commonSupport = 0,
+  additionalSupport = 0,
+  principal,
+  installMonths,
+  monthlyDevice,
+  monthlyInterest,
+  totalInterest,
+  totalMonthly,
+  totalCostLabel,
+  totalCostValue,
+  totalCostSubtext,
+  highlightClass,
+  arrowColor
+}) {
+  return (
+    <div className={`p-3 rounded-xl shadow-md border border-gray-200 transition-all flex flex-col relative ${highlightClass}`}>
+      <h3 className="text-[17px] font-bold text-center text-blue-700 mb-3">{title}</h3>
+
+      {/* A 월 통신요금 */}
+      <div className="mb-2">
+        <div className="flex justify-between items-end mb-2">
+          <div className="flex items-center gap-1.5">
+            <span className="bg-[#ec008c] text-white text-sm font-bold px-1.5 py-0 rounded">A</span>
+            <span className="font-bold text-[17px]">월 통신요금</span>
+          </div>
+          <span className="font-bold text-lg">{(planPrice - planDiscount).toLocaleString()} 원</span>
+        </div>
+        <div className="flex justify-between text-gray-500 text-[15px] mb-1">
+          <span>{formatPlanName(planName)}</span>
+          <span>{planPrice.toLocaleString()} 원</span>
+        </div>
+        {planDiscount > 0 && (
+          <div className="flex justify-between text-[#ec008c] font-bold text-[15px]">
+            <span>선택약정 할인</span>
+            <span>- {planDiscount.toLocaleString()} 원</span>
+          </div>
+        )}
+      </div>
+
+      <hr className="border-black mb-2" />
+
+      {/* B 월 할부금 */}
+      <div className="mb-2">
+        <div className="flex justify-between items-end mb-2">
+          <div className="flex items-center gap-1.5">
+            <span className="bg-[#ec008c] text-white text-sm font-bold px-1.5 py-0 rounded">B</span>
+            <span className="font-bold text-[17px]">월 할부금({installMonths === 0 ? '일시불' : installMonths + '개월'})</span>
+          </div>
+          <span className="font-bold text-lg">{monthlyDevice.toLocaleString()} 원</span>
+        </div>
+        <div className="flex justify-between text-gray-500 text-[15px] mb-1">
+          <span>출고가</span>
+          <span>{devicePrice.toLocaleString()} 원</span>
+        </div>
+        {isPreorderDevice && doubleStorageDiscount > 0 && (
+          <div className="flex justify-between text-[#ec008c] font-bold text-[15px] mb-1">
+            <span>더블 스토리지 할인</span>
+            <span>- {doubleStorageDiscount.toLocaleString()} 원</span>
+          </div>
+        )}
+        {type === 'public' && commonSupport > 0 && (
+          <div className="flex justify-between text-[#ec008c] font-bold text-[15px] mb-1">
+            <span>공통 지원금</span>
+            <span>- {commonSupport.toLocaleString()} 원</span>
+          </div>
+        )}
+        {additionalSupport > 0 && (
+          <div className="flex justify-between text-[#ec008c] font-bold text-[15px] mb-2">
+            <span>삼성닷컴 추가지원금</span>
+            <span>- {additionalSupport.toLocaleString()} 원</span>
+          </div>
+        )}
+
+        <hr className="border-dashed border-gray-300 my-2" />
+
+        <div className="flex justify-between text-blue-600 font-bold text-[15px] mb-1">
+          <span>기기값(할부원금)</span>
+          <span className="flex items-center">
+            <span className={`${arrowColor || 'text-red-600'} font-black text-lg mr-1 leading-none`}>➔</span> 
+            {principal.toLocaleString()} 원
+          </span>
+        </div>
+        {installMonths > 0 && (
+          <div className="flex justify-between text-gray-500 text-[15px]">
+            <span>할부이자 (연 5.9%) <span className="text-[13px] ml-1 tracking-tight">(총 {totalInterest.toLocaleString()}원)</span></span>
+            <span>{monthlyInterest.toLocaleString()} 원</span>
+          </div>
+        )}
+      </div>
+
+      <hr className="border-black border-t-[2px] mb-2" />
+
+      {/* A + B 월납부금 */}
+      <div className="mt-1 flex justify-between items-end mb-2">
+        <div className="flex items-center gap-1.5">
+          <span className="bg-[#ec008c] text-white text-sm font-bold px-1.5 py-0 rounded">A + B</span>
+          <span className="font-bold text-[17px]">월 납부 예상금액</span>
+        </div>
+        <div className="text-right">
+          <span className="font-extrabold text-3xl tracking-tight">{totalMonthly.toLocaleString()}</span>
+          <span className="font-bold text-xl ml-1">원</span>
+        </div>
+      </div>
+
+      {/* 총 유지비용 */}
+      <div className="mt-auto pt-3">
+        <div className="pt-3 border-t-2 border-dashed border-red-200">
+          <div className="flex justify-between items-center text-red-600">
+            <span className="font-bold text-[17px]">{totalCostLabel}</span>
+            <span className="font-extrabold text-xl">{totalCostValue.toLocaleString()}원</span>
+          </div>
+          {totalCostSubtext && (
+            <div className="text-right text-xs font-bold text-gray-500 mt-1">
+              {totalCostSubtext}
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ------------------ MVNO 팝업 컴포넌트 ------------------
 function StoreMapPopup({ onClose }) {
   const [searchTerm, setSearchTerm] = useState('');
 
-  // 사진의 전체 데이터
   const mvnoList = {
     SK망: [
       { brand: '아이즈 모바일', company: '아이즈비전 SK' },
@@ -849,12 +756,10 @@ function StoreMapPopup({ onClose }) {
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
       <div className="bg-white p-5 rounded-lg shadow-xl relative w-[95vw] max-w-[1200px] h-[85vh] flex flex-col">
-        
         <div className="flex justify-between items-center mb-4 shrink-0">
           <h2 className="text-2xl font-bold text-gray-800">MVNO 사업자 확인</h2>
           <button onClick={onClose} className="text-gray-500 hover:text-gray-800 text-3xl leading-none font-bold">&times;</button>
         </div>
-
         <div className="mb-4 shrink-0">
           <input 
             type="text" 
@@ -864,7 +769,6 @@ function StoreMapPopup({ onClose }) {
             className="w-full border-2 border-blue-200 focus:border-blue-500 rounded-lg p-3 outline-none text-[15px]"
           />
         </div>
-        
         <div className="flex-1 w-full overflow-y-auto pr-2 pb-2 custom-scrollbar">
           <div className="flex flex-col md:flex-row gap-4">
             {renderTable('SK망', mvnoList.SK망)}
@@ -872,7 +776,6 @@ function StoreMapPopup({ onClose }) {
             {renderTable('U+망', mvnoList["U+망"])}
           </div>
         </div>
-        
       </div>
     </div>
   );
@@ -888,7 +791,7 @@ function MaintenanceCostPopup({ onClose, operator, plans, features, initialData,
   const [commonSupport, setCommonSupport] = useState(initialData?.commonSupport || 0);
   const [additionalSupport, setAdditionalSupport] = useState(initialData?.additionalSupport || 0);
   const [selectiveAdditionalSupport, setSelectiveAdditionalSupport] = useState(initialData?.selectiveAdditionalSupport || 0); 
-  const [additionalEdited, setAdditionalEdited] = useState(initialData?.additionalEdited || false);
+  const [, setAdditionalEdited] = useState(initialData?.additionalEdited || false);
   const [contractType, setContractType] = useState(initialData?.contractType || '공통지원');
   
   const [joinType, setJoinType] = useState(initialData?.joinType || '기기변경');
@@ -905,13 +808,11 @@ function MaintenanceCostPopup({ onClose, operator, plans, features, initialData,
   
   const isFirstRender = useRef(true);
 
-  // 사전예약 단말기 여부 확인
   const isPreorderDevice = useMemo(() => {
     const preorderCategory = CATEGORIZED_DEVICE_LIST.find(c => c.category === '사전예약');
     return preorderCategory ? preorderCategory.devices.some(d => d.name === selectedDevice) : false;
   }, [selectedDevice]);
 
-  // 사전예약 단말기일 경우에만 더블 스토리지 할인 적용
   const doubleStorageDiscount = isPreorderDevice ? PREORDER_DOUBLE_STORAGE_DISCOUNT : 0;
 
   useEffect(() => { 
@@ -979,7 +880,6 @@ function MaintenanceCostPopup({ onClose, operator, plans, features, initialData,
     );
   }, [plans, planSearchTerm2, selectedPlan2]);
 
-
   const isFirstRenderGalcams = useRef(true);
   useEffect(() => {
     if (isFirstRenderGalcams.current) {
@@ -994,111 +894,32 @@ function MaintenanceCostPopup({ onClose, operator, plans, features, initialData,
       isFirstRender.current = false;
       return;
     }
-    const devicePolicy = policyData.DEVICES[selectedDevice];
     const planInfo = plans.find(p => p.name === selectedPlan);
     const planPrice = planInfo ? planInfo.price : 0;
 
-    if (devicePolicy) {
-      let newCommon = 0;
-      if (operator === 'U' && devicePolicy.U_COMMON && devicePolicy.U_COMMON[planPrice] !== undefined) {
-        newCommon = devicePolicy.U_COMMON[planPrice];
-      } else if (operator === 'KT' && devicePolicy.KT_COMMON && devicePolicy.KT_COMMON[planPrice] !== undefined) {
-        newCommon = devicePolicy.KT_COMMON[planPrice];
-      }
-      setCommonSupport(newCommon);
+    const { commonSupport: comm, additionalSupport: addComm, selectiveAdditionalSupport: addSel } = getSupportAmounts({
+      selectedDevice,
+      selectedPlanPrice: planPrice,
+      operator,
+      joinType,
+      isGalcams,
+      policyData
+    });
 
-      let newAddCommon = 0;
-      let newAddSelective = 0;
-      const extraConfig = devicePolicy.EXTRA || {};
-      
-      if (operator === 'U') {
-        let policyBlock = null;
-        if (joinType === '기기변경') {
-          policyBlock = isGalcams ? extraConfig.U_CHANGE_GALCAMS : extraConfig.U_CHANGE_DOTCOM;
-        } else if (joinType === '번호이동') {
-          policyBlock = isGalcams ? extraConfig.U_MNP_GALCAMS : extraConfig.U_MNP_DOTCOM;
-        }
-
-        if (policyBlock) {
-          if (policyBlock.OVER_95K !== undefined && planPrice >= 95000) {
-            newAddCommon = policyBlock.OVER_95K.common;
-            newAddSelective = policyBlock.OVER_95K.selective;
-          } else if (policyBlock.OVER_61K !== undefined && planPrice >= 61000) {
-            newAddCommon = policyBlock.OVER_61K.common;
-            newAddSelective = policyBlock.OVER_61K.selective;
-          } else if (policyBlock.OVER_33K !== undefined && planPrice >= 33000) {
-            newAddCommon = policyBlock.OVER_33K.common;
-            newAddSelective = policyBlock.OVER_33K.selective;
-          } else {
-            newAddCommon = 0;
-            newAddSelective = 0;
-          }
-        } else {
-          if (extraConfig.U_TIER_A_DOTCOM !== undefined) {
-            if (planPrice >= policyData.TIERS.U_TIER_A_MIN) newAddCommon = isGalcams ? (extraConfig.U_TIER_A_GALCAMS || 0) : (extraConfig.U_TIER_A_DOTCOM || 0);
-          } else if (planPrice >= policyData.TIERS.U_TIER_1_MIN && planPrice < policyData.TIERS.U_TIER_1_MAX) {
-            newAddCommon = isGalcams ? (extraConfig.U_TIER_1_GALCAMS || 0) : (extraConfig.U_TIER_1_DOTCOM || 0);
-          } else if (planPrice >= policyData.TIERS.U_TIER_2_MIN) {
-            newAddCommon = isGalcams ? (extraConfig.U_TIER_2_GALCAMS || 0) : (extraConfig.U_TIER_2_DOTCOM || 0);
-          }
-          newAddSelective = newAddCommon;
-        }
-      } 
-      else if (operator === 'KT') {
-        let policyBlock = null;
-        if (joinType === '기기변경') {
-          policyBlock = isGalcams ? extraConfig.KT_CHANGE_GALCAMS : extraConfig.KT_CHANGE_DOTCOM;
-        } else if (joinType === '번호이동') {
-          policyBlock = isGalcams ? extraConfig.KT_MNP_GALCAMS : extraConfig.KT_MNP_DOTCOM;
-        }
-
-        if (policyBlock) {
-          if (policyBlock.OVER_90K !== undefined && planPrice >= 90000) {
-            newAddCommon = policyBlock.OVER_90K.common;
-            newAddSelective = policyBlock.OVER_90K.selective;
-          } else if (policyBlock.OVER_61K !== undefined && planPrice >= 61000) {
-            newAddCommon = policyBlock.OVER_61K.common;
-            newAddSelective = policyBlock.OVER_61K.selective;
-          } else if (policyBlock.OVER_33K !== undefined && planPrice >= 33000) {
-            newAddCommon = policyBlock.OVER_33K.common;
-            newAddSelective = policyBlock.OVER_33K.selective;
-          } else {
-            newAddCommon = 0;
-            newAddSelective = 0;
-          }
-        } else {
-          if (planPrice >= policyData.TIERS.KT_TIER_1_MIN) {
-            newAddCommon = isGalcams ? (extraConfig.KT_TIER_1_GALCAMS || 0) : (extraConfig.KT_TIER_1_DOTCOM || 0);
-            newAddSelective = newAddCommon;
-          }
-        }
-      }
-      setAdditionalSupport(newAddCommon);
-      setSelectiveAdditionalSupport(newAddSelective);
-      setAdditionalEdited(true); 
-
-    } else {
-      setCommonSupport(0);
-      setAdditionalSupport(0);
-      setSelectiveAdditionalSupport(0);
-      setAdditionalEdited(false);
-    }
-  }, [selectedDevice, selectedPlan, operator, isGalcams, joinType, plans]);
-
+    setCommonSupport(comm);
+    setAdditionalSupport(addComm);
+    setSelectiveAdditionalSupport(addSel);
+    setAdditionalEdited(true);
+  }, [selectedDevice, selectedPlan, operator, isGalcams, joinType, plans, policyData]);
 
   const devicePrice = useMemo(()=> DEVICE_LIST.find(d=>d.name===selectedDevice)?.price || 0, [selectedDevice]);
-
-  const originalPlanPrice = useMemo(() => plans.find(p => p.name === selectedPlan)?.price || 0, [selectedPlan, plans]);
 
   const totalDiscount_Public = commonSupport + additionalSupport;
   const principal_Public = Math.max(0, devicePrice - totalDiscount_Public - doubleStorageDiscount);
   const monthlyDevice_Public = installMonths === 0 ? 0 : Math.round(pmt(interestRate/12, installMonths, principal_Public));
-  const totalMonthly_Public = monthlyDevice_Public + originalPlanPrice;
 
   const principal_Selective = Math.max(0, devicePrice - selectiveAdditionalSupport - doubleStorageDiscount);
   const monthlyDevice_Selective = installMonths === 0 ? 0 : Math.round(pmt(interestRate/12, installMonths, principal_Selective));
-  const planPrice_Selective = Math.round(originalPlanPrice * 0.75);
-  const totalMonthly_Selective = monthlyDevice_Selective + planPrice_Selective;
   
   const originalPlanPrice2 = useMemo(() => plans.find(p => p.name === selectedPlan2)?.price || 0, [selectedPlan2, plans]);
   const monthlyPlanDiscount2 = useMemo(() => Math.round(originalPlanPrice2 * 0.25), [originalPlanPrice2]);
@@ -1111,6 +932,12 @@ function MaintenanceCostPopup({ onClose, operator, plans, features, initialData,
   const totalInterest_Selective = installMonths === 0 ? 0 : Math.max(0, (monthlyDevice_Selective * installMonths) - principal_Selective);
   const monthlyInterest_Public = installMonths === 0 ? 0 : Math.max(0, monthlyDevice_Public - Math.round(principal_Public / installMonths));
   const monthlyInterest_Selective = installMonths === 0 ? 0 : Math.max(0, monthlyDevice_Selective - Math.round(principal_Selective / installMonths));
+
+  // 6개월 누적 식 가중 정산 산출
+  const originalPlanPrice = useMemo(() => plans.find(p => p.name === selectedPlan)?.price || 0, [selectedPlan, plans]);
+  const totalMonthly_Public = monthlyDevice_Public + originalPlanPrice;
+  const planPrice_Selective = Math.round(originalPlanPrice * 0.75);
+  const totalMonthly_Selective = monthlyDevice_Selective + planPrice_Selective;
 
   const totalCost2_Public = (totalMonthly_Public * 6) + (totalMonthly_Public2 * 18);
   const totalCost2_Selective = (totalMonthly_Selective * 6) + (totalMonthly_Selective2 * 18);
@@ -1125,13 +952,12 @@ function MaintenanceCostPopup({ onClose, operator, plans, features, initialData,
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
       <div className="bg-white py-2 px-5 rounded-lg shadow-xl relative w-[880px] max-w-[95vw] max-h-[95vh] overflow-y-auto border-4 border-indigo-200">
+        <button onClick={onClose} className="absolute top-3 right-3 text-gray-400 hover:text-gray-800 text-3xl leading-none">&times;</button>
 
-<button onClick={onClose} className="absolute top-3 right-3 text-gray-400 hover:text-gray-800 text-3xl leading-none">&times;</button>
-
-{/* 상단 컨트롤러 */}
-<div className="mb-2 flex flex-nowrap gap-2 items-end w-full">          
-  <div className="flex flex-col w-[350px] shrink-0">
-    <div className="text-red-500 font-bold text-[13px] mb-1 text-center w-full whitespace-nowrap">개통 요금제</div>
+        {/* 상단 컨트롤러 */}
+        <div className="mb-2 flex flex-nowrap gap-2 items-end w-full">          
+          <div className="flex flex-col w-[350px] shrink-0">
+            <div className="text-red-500 font-bold text-[13px] mb-1 text-center w-full whitespace-nowrap">개통 요금제</div>
             <div className="relative w-full" ref={planDropdownRef}>
               <input type="text" value={planSearchTerm} onChange={(e) => { setPlanSearchTerm(e.target.value); setIsPlanDropdownOpen(true); }} onClick={(e) => { setIsPlanDropdownOpen(true); e.target.select(); }} placeholder="요금제 검색..." className="border p-2 rounded w-full outline-none focus:ring-2 focus:ring-blue-500 h-[38px]" />
               {isPlanDropdownOpen && (
@@ -1147,7 +973,6 @@ function MaintenanceCostPopup({ onClose, operator, plans, features, initialData,
               )}
             </div>
           </div>
-
           <select value={installMonths} onChange={e=>setInstallMonths(Number(e.target.value))} className="border p-2 rounded w-[72px] md:w-24 text-center outline-none focus:ring-2 focus:ring-blue-500 h-[38px] shrink-0">
             {[0,6,12,18,24,30,36,48].map(m=><option key={m} value={m}>{m===0?'일시불':m+'개월'}</option>)}
           </select>
@@ -1213,193 +1038,52 @@ function MaintenanceCostPopup({ onClose, operator, plans, features, initialData,
           </div>
 
           <div className="relative grid grid-cols-1 md:grid-cols-2 gap-3 mb-7 w-full mt-auto">
-            <div className={`p-3 rounded-xl shadow-md border border-gray-200 transition-all flex flex-col relative ${highlightClassPublic2}`}>
-              <h3 className="text-[17px] font-bold text-center text-blue-700 mb-3">공통지원</h3>
+            <CostCard
+              title="공통지원"
+              type="public"
+              planName={selectedPlan2}
+              planPrice={originalPlanPrice2}
+              devicePrice={devicePrice}
+              isPreorderDevice={isPreorderDevice}
+              doubleStorageDiscount={doubleStorageDiscount}
+              commonSupport={commonSupport}
+              additionalSupport={additionalSupport}
+              principal={principal_Public}
+              installMonths={installMonths}
+              monthlyDevice={monthlyDevice_Public}
+              monthlyInterest={monthlyInterest_Public}
+              totalInterest={totalInterest_Public}
+              totalMonthly={totalMonthly_Public2}
+              totalCostLabel="총 유지비용"
+              totalCostValue={totalCost2_Public}
+              totalCostSubtext={`(${totalMonthly_Public.toLocaleString()}원 × 6개월 + ${totalMonthly_Public2.toLocaleString()}원 × 18개월)`}
+              highlightClass={highlightClassPublic2}
+              arrowColor="text-blue-600"
+            />
 
-              {/* A 월 통신요금 */}
-              <div className="mb-2">
-                <div className="flex justify-between items-end mb-2">
-                  <div className="flex items-center gap-1.5">
-                    <span className="bg-[#ec008c] text-white text-sm font-bold px-1.5 py-0 rounded">A</span>
-                    <span className="font-bold text-[17px]">월 통신요금</span>
-                  </div>
-                  <span className="font-bold text-lg">{originalPlanPrice2.toLocaleString()} 원</span>
-                </div>
-                <div className="flex justify-between text-gray-500 text-[15px]">
-                  <span>{formatPlanName(selectedPlan2)}</span>
-                  <span>{originalPlanPrice2.toLocaleString()} 원</span>
-                </div>
-              </div>
-
-              <hr className="border-black mb-2" />
-
-              {/* B 월 할부금 */}
-              <div className="mb-2">
-                <div className="flex justify-between items-end mb-2">
-                  <div className="flex items-center gap-1.5">
-                    <span className="bg-[#ec008c] text-white text-sm font-bold px-1.5 py-0 rounded">B</span>
-                    <span className="font-bold text-[17px]">월 할부금({installMonths === 0 ? '일시불' : installMonths + '개월'})</span>
-                  </div>
-                  <span className="font-bold text-lg">{monthlyDevice_Public.toLocaleString()} 원</span>
-                </div>
-                <div className="flex justify-between text-gray-500 text-[15px] mb-1">
-                  <span>출고가</span>
-                  <span>{devicePrice.toLocaleString()} 원</span>
-                </div>
-                {isPreorderDevice && (
-                  <div className="flex justify-between text-[#ec008c] font-bold text-[15px] mb-1">
-                    <span>더블 스토리지 할인</span>
-                    <span>- {doubleStorageDiscount.toLocaleString()} 원</span>
-                  </div>
-                )}
-                {commonSupport > 0 && (
-                  <div className="flex justify-between text-[#ec008c] font-bold text-[15px] mb-1">
-                    <span>공통 지원금</span>
-                    <span>- {commonSupport.toLocaleString()} 원</span>
-                  </div>
-                )}
-                {additionalSupport > 0 && (
-                  <div className="flex justify-between text-[#ec008c] font-bold text-[15px] mb-2">
-                    <span>삼성닷컴 추가지원금</span>
-                    <span>- {additionalSupport.toLocaleString()} 원</span>
-                  </div>
-                )}
-
-                <hr className="border-dashed border-gray-300 my-2" />
-
-<div className="flex justify-between text-blue-600 font-bold text-[15px] mb-1">
-                  <span>기기값(할부원금)</span>
-                  <span className="flex items-center"><span className="text-blue-600 font-black text-lg mr-1 leading-none">➔</span> {principal_Public.toLocaleString()} 원</span>
-                </div>
-                {installMonths > 0 && (
-                  <div className="flex justify-between text-gray-500 text-[15px]">
-                    <span>할부이자 (연 5.9%) <span className="text-[13px] ml-1 tracking-tight">(총 {totalInterest_Public.toLocaleString()}원)</span></span>
-                    <span>{monthlyInterest_Public.toLocaleString()} 원</span>
-                  </div>
-                )}
-              </div>
-
-              <hr className="border-black border-t-[2px] mb-2" />
-
-              {/* A + B 월납부금 */}
-<div className="mt-1 flex justify-between items-end mb-2">  {/* 👈 1. 한 줄로 만들고 양끝으로 벌림 */}
-              <div className="flex items-center gap-1.5">  {/* 👈 2. mb-2 삭제 */}
-                <span className="bg-[#ec008c] text-white text-sm font-bold px-1.5 py-0 rounded">A + B</span>
-                <span className="font-bold text-[17px]">월 납부 예상금액</span>
-              </div>
-              <div className="text-right">  {/* 👈 3. mt-2 삭제 */}
-                <span className="font-extrabold text-3xl tracking-tight">{totalMonthly_Public2.toLocaleString()}</span>
-                <span className="font-bold text-xl ml-1">원</span>
-              </div>
-            </div>
-
-              {/* 총 유지비용 (Popup Only) */}
-              <div className="mt-auto pt-3">
-                <div className="pt-3 border-t-2 border-dashed border-red-200">
-                  <div className="flex justify-between items-center text-red-600 mb-1">
-                    <span className="font-bold text-[17px]">총 유지비용</span>
-                    <span className="font-extrabold text-xl">{totalCost2_Public.toLocaleString()}원</span>
-                  </div>
-                  <div className="text-right text-xs font-bold text-gray-500">
-                    ({totalMonthly_Public.toLocaleString()}원 × 6개월 + {totalMonthly_Public2.toLocaleString()}원 × 18개월)
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div className={`p-3 rounded-xl shadow-md border border-gray-200 transition-all flex flex-col relative ${highlightClassSelective2}`}>
-              <h3 className="text-[17px] font-bold text-center text-blue-700 mb-3">선택약정 (25% 요금할인)</h3>
-
-              {/* A 월 통신요금 */}
-              <div className="mb-2">
-                <div className="flex justify-between items-end mb-2">
-                  <div className="flex items-center gap-1.5">
-                    <span className="bg-[#ec008c] text-white text-sm font-bold px-1.5 py-0 rounded">A</span>
-                    <span className="font-bold text-[17px]">월 통신요금</span>
-                  </div>
-                  <span className="font-bold text-lg">{planPrice_Selective2.toLocaleString()} 원</span>
-                </div>
-                <div className="flex justify-between text-gray-500 text-[15px] mb-1">
-                  <span>{selectedPlan2}</span>
-                  <span>{originalPlanPrice2.toLocaleString()} 원</span>
-                </div>
-                <div className="flex justify-between text-[#ec008c] font-bold text-[15px]">
-                  <span>선택약정 할인</span>
-                  <span>- {monthlyPlanDiscount2.toLocaleString()} 원</span>
-                </div>
-              </div>
-
-              <hr className="border-black mb-2" />
-
-              {/* B 월 할부금 */}
-              <div className="mb-2">
-                <div className="flex justify-between items-end mb-2">
-                  <div className="flex items-center gap-1.5">
-                    <span className="bg-[#ec008c] text-white text-sm font-bold px-1.5 py-0 rounded">B</span>
-                    <span className="font-bold text-[17px]">월 할부금({installMonths === 0 ? '일시불' : installMonths + '개월'})</span>
-                  </div>
-                  <span className="font-bold text-lg">{monthlyDevice_Selective.toLocaleString()} 원</span>
-                </div>
-                <div className="flex justify-between text-gray-500 text-[15px] mb-1">
-                  <span>출고가</span>
-                  <span>{devicePrice.toLocaleString()} 원</span>
-                </div>
-                {isPreorderDevice && (
-                  <div className="flex justify-between text-[#ec008c] font-bold text-[15px] mb-1">
-                    <span>더블 스토리지 할인</span>
-                    <span>- {doubleStorageDiscount.toLocaleString()} 원</span>
-                  </div>
-                )}
-                {selectiveAdditionalSupport > 0 && (
-                  <div className="flex justify-between text-[#ec008c] font-bold text-[15px] mb-2">
-                    <span>삼성닷컴 추가지원금</span>
-                    <span>- {selectiveAdditionalSupport.toLocaleString()} 원</span>
-                  </div>
-                )}
-
-                <hr className="border-dashed border-gray-300 my-2" />
-
-<div className="flex justify-between text-blue-600 font-bold text-[15px] mb-1">
-                  <span>기기값(할부원금)</span>
-                  <span className="flex items-center"><span className="text-blue-600 font-black text-lg mr-1 leading-none">➔</span> {principal_Selective.toLocaleString()} 원</span>
-                </div>
-                {installMonths > 0 && (
-                  <div className="flex justify-between text-gray-500 text-[15px]">
-                    <span>할부이자 (연 5.9%) <span className="text-[13px] ml-1 tracking-tight">(총 {totalInterest_Selective.toLocaleString()}원)</span></span>
-                    <span>{monthlyInterest_Selective.toLocaleString()} 원</span>
-                  </div>
-                )}
-              </div>
-
-              <hr className="border-black border-t-[2px] mb-2" />
-
-              {/* A + B 월납부금 */}
-<div className="mt-1 flex justify-between items-end mb-2">  {/* 👈 1. 한 줄로 만들고 양끝으로 벌림 */}
-              <div className="flex items-center gap-1.5">  {/* 👈 2. mb-2 삭제 */}
-                <span className="bg-[#ec008c] text-white text-sm font-bold px-1.5 py-0 rounded">A + B</span>
-                <span className="font-bold text-[17px]">월 납부 예상금액</span>
-              </div>
-              <div className="text-right">  {/* 👈 3. mt-2 삭제 */}
-                <span className="font-extrabold text-3xl tracking-tight">{totalMonthly_Selective2.toLocaleString()}</span>
-                <span className="font-bold text-xl ml-1">원</span>
-              </div>
-            </div>
-
-              {/* 총 유지비용 (Popup Only) */}
-              <div className="mt-auto pt-3">
-                <div className="pt-3 border-t-2 border-dashed border-red-200">
-                  <div className="flex justify-between items-center text-red-600 mb-1">
-                    <span className="font-bold text-[17px]">총 유지비용</span>
-                    <span className="font-extrabold text-xl">{totalCost2_Selective.toLocaleString()}원</span>
-                  </div>
-                  <div className="text-right text-xs font-bold text-gray-500">
-                    ({totalMonthly_Selective.toLocaleString()}원 × 6개월 + {totalMonthly_Selective2.toLocaleString()}원 × 18개월)
-                  </div>
-                </div>
-              </div>
-            </div>
+            <CostCard
+              title="선택약정 (25% 요금할인)"
+              type="selective"
+              planName={selectedPlan2}
+              planPrice={originalPlanPrice2}
+              planDiscount={monthlyPlanDiscount2}
+              devicePrice={devicePrice}
+              isPreorderDevice={isPreorderDevice}
+              doubleStorageDiscount={doubleStorageDiscount}
+              additionalSupport={selectiveAdditionalSupport}
+              principal={principal_Selective}
+              installMonths={installMonths}
+              monthlyDevice={monthlyDevice_Selective}
+              monthlyInterest={monthlyInterest_Selective}
+              totalInterest={totalInterest_Selective}
+              totalMonthly={totalMonthly_Selective2}
+              totalCostLabel="총 유지비용"
+              totalCostValue={totalCost2_Selective}
+              totalCostSubtext={`(${totalMonthly_Selective.toLocaleString()}원 × 6개월 + ${totalMonthly_Selective2.toLocaleString()}원 × 18개월)`}
+              highlightClass={highlightClassSelective2}
+              arrowColor="text-blue-600"
+            />
             
-            {/* 가운데 차액 표시 뱃지 */}
             {diff2 > 0 && (
               <div className="hidden md:flex absolute -bottom-8 left-1/2 -translate-x-1/2 bg-white border-2 border-blue-500 text-blue-600 font-extrabold text-[15px] px-5 py-1 rounded-full shadow-[0_4px_12px_rgba(0,0,0,0.15)] z-20 items-center justify-center whitespace-nowrap">
                 {winner2} {diff2.toLocaleString()}원 더 유리함
@@ -1461,17 +1145,14 @@ function RequestFormPopup({ onClose }) {
 
 // ------------------ 이벤트 이미지 팝업 컴포넌트 ------------------
 function DeviceColorPopup({ onClose }) {
-  // 💡 아래 큰따옴표("") 안에 띄우고 싶으신 이벤트 이미지 주소(링크)를 넣어주세요!
   const imageSrc = "https://img1.daumcdn.net/thumb/R1280x0/?scode=mtistory2&fname=https%3A%2F%2Fblog.kakaocdn.net%2Fdna%2Fb6zz3g%2FdJMcafz7wpK%2FAAAAAAAAAAAAAAAAAAAAACgRWLsDhepJ-tw-VJEKVa93IaRQTU_kv4c7zGR5Vqps%2Fimg.png%3Fcredential%3DyqXZFxpELC7KVnFOS48ylbz2pIh7yKj8%26expires%3D1782831599%26allow_ip%3D%26allow_referer%3D%26signature%3Ddmk8AX%252FSBULZQ%252BI0K5fpjA9PIc4%253D"; 
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
       <div className="bg-white p-2 rounded-lg shadow-xl relative w-[95vw] max-w-[1400px] h-[90vh] flex flex-col">
-        {/* 우측 상단 X 닫기 버튼 */}
         <div className="flex justify-end p-1 shrink-0">
           <button onClick={onClose} className="text-gray-500 hover:text-gray-800 text-4xl leading-none font-bold px-2">&times;</button>
         </div>
-        {/* 이미지 출력 영역 */}
         <div className="overflow-y-auto flex-1 bg-gray-50 rounded border">
            {imageSrc ? (
              <img src={imageSrc} alt="이벤트 안내" className="w-full h-auto object-contain mx-auto" />
@@ -1528,7 +1209,7 @@ function Calculator({
   const [commonSupport, setCommonSupport] = useState(0);
   const [additionalSupport, setAdditionalSupport] = useState(0);
   const [selectiveAdditionalSupport, setSelectiveAdditionalSupport] = useState(0); 
-  const [additionalEdited, setAdditionalEdited] = useState(false);
+  const [, setAdditionalEdited] = useState(false);
   const [contractType, setContractType] = useState('공통지원');
   
   const [joinType, setJoinType] = useState('기기변경');
@@ -1538,24 +1219,20 @@ function Calculator({
   const [isPlanDropdownOpen, setIsPlanDropdownOpen] = useState(false);
   const planDropdownRef = useRef(null);
 
-  // 색상 드롭다운 State
   const [isColorDropdownOpen, setIsColorDropdownOpen] = useState(false);
   const colorDropdownRef = useRef(null);
 
-  // 사전예약 단말기 여부 확인
   const isPreorderDevice = useMemo(() => {
     const preorderCategory = CATEGORIZED_DEVICE_LIST.find(c => c.category === '사전예약');
     return preorderCategory ? preorderCategory.devices.some(d => d.name === selectedDevice) : false;
   }, [selectedDevice]);
 
-  // 사전예약 단말기일 경우에만 더블 스토리지 할인 적용
   const doubleStorageDiscount = isPreorderDevice ? PREORDER_DOUBLE_STORAGE_DISCOUNT : 0;
 
   useEffect(() => { 
     setSelectedPlan(plans[0]?.name || ''); 
   }, [plans]);
 
-  // 색상 드롭다운 외부 클릭 감지
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (colorDropdownRef.current && !colorDropdownRef.current.contains(event.target)) {
@@ -1607,104 +1284,29 @@ function Calculator({
 
   const originalPlanPrice = useMemo(() => plans.find(p => p.name === selectedPlan)?.price || 0, [selectedPlan, plans]);
 
-  // [로직 1] 통신사나 단말기 변경 시 갤캠스 체크 해제 
   useEffect(() => {
     setIsGalcams(false);
   }, [operator, selectedDevice]);
 
-  // [로직 2] 통합된 지원금 자동 매핑 로직
+  // 통합 분리된 연동 지원금 계산 함수 실행 및 상태 업데이트
   useEffect(() => {
-    const devicePolicy = policyData.DEVICES[selectedDevice];
     const planInfo = plans.find(p => p.name === selectedPlan);
     const planPrice = planInfo ? planInfo.price : 0;
 
-    if (devicePolicy) {
-      let newCommon = 0;
-      if (operator === 'U' && devicePolicy.U_COMMON && devicePolicy.U_COMMON[planPrice] !== undefined) {
-        newCommon = devicePolicy.U_COMMON[planPrice];
-      } else if (operator === 'KT' && devicePolicy.KT_COMMON && devicePolicy.KT_COMMON[planPrice] !== undefined) {
-        newCommon = devicePolicy.KT_COMMON[planPrice];
-      }
-      setCommonSupport(newCommon);
+    const { commonSupport: comm, additionalSupport: addComm, selectiveAdditionalSupport: addSel } = getSupportAmounts({
+      selectedDevice,
+      selectedPlanPrice: planPrice,
+      operator,
+      joinType,
+      isGalcams,
+      policyData
+    });
 
-      let newAddCommon = 0;
-      let newAddSelective = 0;
-      const extraConfig = devicePolicy.EXTRA || {};
-      
-      if (operator === 'U') {
-        let policyBlock = null;
-        if (joinType === '기기변경') {
-          policyBlock = isGalcams ? extraConfig.U_CHANGE_GALCAMS : extraConfig.U_CHANGE_DOTCOM;
-        } else if (joinType === '번호이동') {
-          policyBlock = isGalcams ? extraConfig.U_MNP_GALCAMS : extraConfig.U_MNP_DOTCOM;
-        }
-
-        if (policyBlock) {
-          if (policyBlock.OVER_95K !== undefined && planPrice >= 95000) {
-            newAddCommon = policyBlock.OVER_95K.common;
-            newAddSelective = policyBlock.OVER_95K.selective;
-          } else if (policyBlock.OVER_61K !== undefined && planPrice >= 61000) {
-            newAddCommon = policyBlock.OVER_61K.common;
-            newAddSelective = policyBlock.OVER_61K.selective;
-          } else if (policyBlock.OVER_33K !== undefined && planPrice >= 33000) {
-            newAddCommon = policyBlock.OVER_33K.common;
-            newAddSelective = policyBlock.OVER_33K.selective;
-          } else {
-            newAddCommon = 0;
-            newAddSelective = 0;
-          }
-        } else {
-          if (extraConfig.U_TIER_A_DOTCOM !== undefined) {
-            if (planPrice >= policyData.TIERS.U_TIER_A_MIN) newAddCommon = isGalcams ? (extraConfig.U_TIER_A_GALCAMS || 0) : (extraConfig.U_TIER_A_DOTCOM || 0);
-          } else if (planPrice >= policyData.TIERS.U_TIER_1_MIN && planPrice < policyData.TIERS.U_TIER_1_MAX) {
-            newAddCommon = isGalcams ? (extraConfig.U_TIER_1_GALCAMS || 0) : (extraConfig.U_TIER_1_DOTCOM || 0);
-          } else if (planPrice >= policyData.TIERS.U_TIER_2_MIN) {
-            newAddCommon = isGalcams ? (extraConfig.U_TIER_2_GALCAMS || 0) : (extraConfig.U_TIER_2_DOTCOM || 0);
-          }
-          newAddSelective = newAddCommon;
-        }
-      } 
-      else if (operator === 'KT') {
-        let policyBlock = null;
-        if (joinType === '기기변경') {
-          policyBlock = isGalcams ? extraConfig.KT_CHANGE_GALCAMS : extraConfig.KT_CHANGE_DOTCOM;
-        } else if (joinType === '번호이동') {
-          policyBlock = isGalcams ? extraConfig.KT_MNP_GALCAMS : extraConfig.KT_MNP_DOTCOM;
-        }
-
-        if (policyBlock) {
-          if (policyBlock.OVER_90K !== undefined && planPrice >= 90000) {
-            newAddCommon = policyBlock.OVER_90K.common;
-            newAddSelective = policyBlock.OVER_90K.selective;
-          } else if (policyBlock.OVER_61K !== undefined && planPrice >= 61000) {
-            newAddCommon = policyBlock.OVER_61K.common;
-            newAddSelective = policyBlock.OVER_61K.selective;
-          } else if (policyBlock.OVER_33K !== undefined && planPrice >= 33000) {
-            newAddCommon = policyBlock.OVER_33K.common;
-            newAddSelective = policyBlock.OVER_33K.selective;
-          } else {
-            newAddCommon = 0;
-            newAddSelective = 0;
-          }
-        } else {
-          if (planPrice >= policyData.TIERS.KT_TIER_1_MIN) {
-            newAddCommon = isGalcams ? (extraConfig.KT_TIER_1_GALCAMS || 0) : (extraConfig.KT_TIER_1_DOTCOM || 0);
-            newAddSelective = newAddCommon;
-          }
-        }
-      }
-      setAdditionalSupport(newAddCommon);
-      setSelectiveAdditionalSupport(newAddSelective);
-      setAdditionalEdited(true); 
-
-    } else {
-      setCommonSupport(0);
-      setAdditionalSupport(0);
-      setSelectiveAdditionalSupport(0);
-      setAdditionalEdited(false);
-    }
-  }, [selectedDevice, selectedPlan, operator, isGalcams, joinType, plans]);
-
+    setCommonSupport(comm);
+    setAdditionalSupport(addComm);
+    setSelectiveAdditionalSupport(addSel);
+    setAdditionalEdited(true);
+  }, [selectedDevice, selectedPlan, operator, isGalcams, joinType, plans, policyData]);
 
   const devicePrice = useMemo(()=> DEVICE_LIST.find(d=>d.name===selectedDevice)?.price || 0, [selectedDevice]);
   const monthlyPlanDiscount = useMemo(() => Math.round(originalPlanPrice * 0.25), [originalPlanPrice]);
@@ -1712,14 +1314,12 @@ function Calculator({
   const featureText = useMemo(()=> features[normalizePlanKey(selectedPlan)] || '', [selectedPlan, features]);
 
   const totalDiscount_Public = commonSupport + additionalSupport;
-  // 더블 스토리지 할인 적용 (할부원금에서 차감)
   const principal_Public = Math.max(0, devicePrice - totalDiscount_Public - doubleStorageDiscount);
   const monthlyDevice_Public = installMonths === 0 ? 0 : Math.round(pmt(interestRate/12, installMonths, principal_Public));
   const totalMonthly_Public = monthlyDevice_Public + originalPlanPrice;
   const totalInterest_Public = installMonths === 0 ? 0 : Math.max(0, (monthlyDevice_Public * installMonths) - principal_Public);
 
   const totalDiscount_Selective = selectiveAdditionalSupport + totalPlanDiscount;
-  // 더블 스토리지 할인 적용 (선택약정 할부원금에서도 차감)
   const principal_Selective = Math.max(0, devicePrice - selectiveAdditionalSupport - doubleStorageDiscount);
   const monthlyDevice_Selective = installMonths === 0 ? 0 : Math.round(pmt(interestRate/12, installMonths, principal_Selective));
   const planPrice_Selective = Math.round(originalPlanPrice * 0.75);
@@ -1729,10 +1329,9 @@ function Calculator({
   const monthlyInterest_Public = installMonths === 0 ? 0 : Math.max(0, monthlyDevice_Public - Math.round(principal_Public / installMonths));
   const monthlyInterest_Selective = installMonths === 0 ? 0 : Math.max(0, monthlyDevice_Selective - Math.round(principal_Selective / installMonths));
 
-const highlightClassPublic = totalMonthly_Public < totalMonthly_Selective ? 'bg-green-50 ring-2 ring-green-500 z-10' : 'bg-white';
+  const highlightClassPublic = totalMonthly_Public < totalMonthly_Selective ? 'bg-green-50 ring-2 ring-green-500 z-10' : 'bg-white';
   const highlightClassSelective = totalMonthly_Selective < totalMonthly_Public ? 'bg-green-50 ring-2 ring-green-500 z-10' : 'bg-white';
 
-  // ⭐️ 24개월 기준 총비용 비교 로직 ⭐️
   const total24_Public = principal_Public + totalInterest_Public + (originalPlanPrice * 24);
   const total24_Selective = principal_Selective + totalInterest_Selective + (planPrice_Selective * 24);
   const diffMain = Math.abs(total24_Public - total24_Selective);
@@ -1743,10 +1342,7 @@ const highlightClassPublic = totalMonthly_Public < totalMonthly_Selective ? 'bg-
   return (
     <div className="pt-2 pb-6 px-4 max-w-4xl mx-auto">
       <div className="mb-3 flex flex-nowrap gap-1.5 md:gap-2 items-center w-full">
-        
-        {/* 단말기 래퍼: 전체의 50%를 넉넉하게 차지하도록 변경 */}
         <div className="flex gap-1 shrink-0 relative w-[50%] md:w-[45%]" ref={colorDropdownRef}>
-          {/* select 안쪽 공간이 빈 공간을 꽉 채우도록 flex-1 부여 */}
           <select value={selectedDevice} onChange={e=>setSelectedDevice(e.target.value)} className="border p-2 rounded flex-1 min-w-0 outline-none focus:ring-2 focus:ring-blue-500 h-[38px]">
             {CATEGORIZED_DEVICE_LIST.map(group => (
               <optgroup key={group.category} label={group.category}>
@@ -1754,8 +1350,7 @@ const highlightClassPublic = totalMonthly_Public < totalMonthly_Selective ? 'bg-
                   <option 
                     key={d.name} 
                     value={d.name} 
-                    className={d.isHighlight ? "font-bold text-blue-700" : d.isGreen ? "font-bold text-emerald-600" : d.isPurple ? "font-bold text-purple-600" : ""} 
-style={d.isHighlight ? { fontWeight: 'bold', color: '#1D4ED8' } : d.isGreen ? { fontWeight: 'bold', color: '#059669' } : d.isPurple ? { fontWeight: 'bold', color: '#9333EA' } : {}}
+                    style={d.isHighlight ? { fontWeight: 'bold', color: '#1D4ED8' } : d.isGreen ? { fontWeight: 'bold', color: '#059669' } : d.isPurple ? { fontWeight: 'bold', color: '#9333EA' } : {}}
                   >
                     {d.name} ({d.price.toLocaleString()}원)
                   </option>
@@ -1766,25 +1361,16 @@ style={d.isHighlight ? { fontWeight: 'bold', color: '#1D4ED8' } : d.isGreen ? { 
           <button type="button" onClick={() => setIsColorDropdownOpen(!isColorDropdownOpen)} className="bg-gray-500 text-white px-2.5 md:px-3 rounded hover:bg-gray-600 text-[13px] font-medium whitespace-nowrap shrink-0 h-[38px]">
             모델명
           </button>
-          
-          {/* 색상 드롭다운 */}
           {isColorDropdownOpen && (
             <div className="absolute top-[40px] left-0 mt-1 z-[60] w-max min-w-[150px] bg-white border border-gray-300 rounded shadow-lg overflow-hidden max-h-60 overflow-y-auto">
               {currentColors.length > 0 ? (
                 currentColors.map((c, idx) => (
-                  <div
-                    key={idx}
-                    onClick={() => handleColorCopy(c.copyText)}
-                    className="px-3 py-2 cursor-pointer hover:bg-blue-50 text-sm border-b last:border-b-0 text-gray-800"
-                  >
+                  <div key={idx} onClick={() => handleColorCopy(c.copyText)} className="px-3 py-2 cursor-pointer hover:bg-blue-50 text-sm border-b last:border-b-0 text-gray-800">
                     {c.name}
                   </div>
                 ))
               ) : (
-                <div
-                  onClick={() => handleColorCopy(selectedDevice)}
-                  className="px-3 py-2 cursor-pointer hover:bg-gray-100 text-sm text-gray-500"
-                >
+                <div onClick={() => handleColorCopy(selectedDevice)} className="px-3 py-2 cursor-pointer hover:bg-gray-100 text-sm text-gray-500">
                   색상 설정 없음<br/><span className="text-xs text-gray-400">(모델명만 복사)</span>
                 </div>
               )}
@@ -1792,53 +1378,34 @@ style={d.isHighlight ? { fontWeight: 'bold', color: '#1D4ED8' } : d.isGreen ? { 
           )}
         </div>
         
-        {/* 요금제 칸: 남은 오른쪽 공간을 전부 차지하도록 flex-1 및 최소 너비 보장 */}
         <div className="relative flex-1 min-w-[100px]" ref={planDropdownRef}>
-          <input 
-            type="text" 
-            value={planSearchTerm} 
-            onChange={(e) => { setPlanSearchTerm(e.target.value); setIsPlanDropdownOpen(true); }}
-            onClick={(e) => { setIsPlanDropdownOpen(true); e.target.select(); }}
-            placeholder="요금제 검색..."
-            className="border p-2 rounded w-full outline-none focus:ring-2 focus:ring-blue-500 h-[38px]"
-          />
+          <input type="text" value={planSearchTerm} onChange={(e) => { setPlanSearchTerm(e.target.value); setIsPlanDropdownOpen(true); }} onClick={(e) => { setIsPlanDropdownOpen(true); e.target.select(); }} placeholder="요금제 검색..." className="border p-2 rounded w-full outline-none focus:ring-2 focus:ring-blue-500 h-[38px]" />
           {isPlanDropdownOpen && (
             <div className="absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded shadow-lg max-h-60 overflow-y-auto">
               {filteredPlans.length > 0 ? (
                 filteredPlans.map(p => (
-                  <div 
-                    key={p.name} 
-                    onClick={() => { setSelectedPlan(p.name); setPlanSearchTerm(`${p.name} (${p.price.toLocaleString()}원)`); setIsPlanDropdownOpen(false); }}
-                    className={`px-3 py-2 cursor-pointer hover:bg-blue-50 text-sm border-b last:border-b-0 ${selectedPlan === p.name ? 'bg-blue-100 font-bold' : ''}`}
-                  >
-                    <span className="text-gray-500 text-xs mr-1">[{p.category}]</span> 
-                    {formatPlanName(p.name)} <span className="text-gray-700 ml-1">({p.price.toLocaleString()}원)</span>
+                  <div key={p.name} onClick={() => { setSelectedPlan(p.name); setPlanSearchTerm(`${p.name} (${p.price.toLocaleString()}원)`); setIsPlanDropdownOpen(false); }} className={`px-3 py-2 cursor-pointer hover:bg-blue-50 text-sm border-b last:border-b-0 ${selectedPlan === p.name ? 'bg-blue-100 font-bold' : ''}`}>
+                    <span className="text-gray-500 text-xs mr-1">[{p.category}]</span> {formatPlanName(p.name)} <span className="text-gray-700 ml-1">({p.price.toLocaleString()}원)</span>
                   </div>
                 ))
-              ) : (
-                <div className="px-3 py-2 text-sm text-gray-500 text-center">검색 결과가 없습니다.</div>
-              )}
+              ) : ( <div className="px-3 py-2 text-sm text-gray-500 text-center">검색 결과가 없습니다.</div> )}
             </div>
           )}
         </div>
-
         <select value={installMonths} onChange={e=>setInstallMonths(Number(e.target.value))} className="border p-2 rounded w-[70px] md:w-24 text-center outline-none focus:ring-2 focus:ring-blue-500 shrink-0 h-[38px]">
           {[0,6,12,18,24,30,36,48].map(m=><option key={m} value={m}>{m===0?'일시불':m+'개월'}</option>)}
         </select>
       </div>
 
       <div className="mb-3 flex flex-nowrap items-end gap-1.5 w-full">
-        
         <div className="flex flex-col shrink-0">
           <label className="text-sm text-center">공통지원금</label>
           <input type="text" value={commonSupport.toLocaleString()} disabled={contractType === '선택약정'} onChange={e => { setCommonSupport(Number(e.target.value.replace(/\D/g, '')) || 0); setAdditionalEdited(false); }} className={`border p-1 rounded w-24 text-center ${contractType === '선택약정' ? 'bg-gray-200 text-gray-400' : 'bg-white'}`} onFocus={e=>e.target.select()} />
         </div>
-        
         <div className="flex flex-col shrink-0">
           <label className="text-sm text-center">추가지원금</label>
           <input type="text" value={(contractType === '공통지원' ? additionalSupport : selectiveAdditionalSupport).toLocaleString()} onChange={e => { const v = Number(e.target.value.replace(/\D/g, '')) || 0; if (contractType === '공통지원') { setAdditionalSupport(v); setAdditionalEdited(true); } else { setSelectiveAdditionalSupport(v); } }} className="border p-1 rounded w-24 text-center bg-white" onFocus={e=>e.target.select()} />
         </div>
-
         <div className="flex flex-col shrink-0">
           <label className="text-sm mb-1 text-center">지원금 직접 입력</label>
           <div className="flex border rounded overflow-hidden h-[34px]">
@@ -1847,35 +1414,24 @@ style={d.isHighlight ? { fontWeight: 'bold', color: '#1D4ED8' } : d.isGreen ? { 
             <button onClick={()=>handleContractTypeChange('선택약정')} className={`px-2 text-sm transition-colors whitespace-nowrap ${contractType==='선택약정'?'bg-blue-600 text-white':'bg-white text-gray-700 hover:bg-gray-100'}`}>선택약정</button>
           </div>
         </div>
-        
         <div className="flex flex-col shrink-0">
            <label className="text-sm mb-1 text-center">&nbsp;</label>
            <div className="flex gap-1.5 items-center h-[34px]">
-            
             <div className="flex gap-2 items-center h-full bg-white border border-gray-300 px-2 rounded">
               <label className="flex items-center text-[13px] cursor-pointer text-gray-700 whitespace-nowrap font-medium">
-                <input type="radio" value="기기변경" checked={joinType === '기기변경'} onChange={() => setJoinType('기기변경')} className="mr-1 w-3.5 h-3.5 text-blue-600 focus:ring-blue-500" />
-                기기변경
+                <input type="radio" value="기기변경" checked={joinType === '기기변경'} onChange={() => setJoinType('기기변경')} className="mr-1 w-3.5 h-3.5 text-blue-600 focus:ring-blue-500" />기기변경
               </label>
               <label className="flex items-center text-[13px] cursor-pointer text-gray-700 whitespace-nowrap font-medium">
-                <input type="radio" value="번호이동" checked={joinType === '번호이동'} onChange={() => setJoinType('번호이동')} className="mr-1 w-3.5 h-3.5 text-blue-600 focus:ring-blue-500" />
-                번호이동
+                <input type="radio" value="번호이동" checked={joinType === '번호이동'} onChange={() => setJoinType('번호이동')} className="mr-1 w-3.5 h-3.5 text-blue-600 focus:ring-blue-500" />번호이동
               </label>
               <div className="border-l border-gray-300 h-4 mx-1"></div>
               <label className="flex items-center text-[13px] cursor-pointer text-gray-700 whitespace-nowrap font-medium">
-                <input type="checkbox" checked={isGalcams} onChange={() => setIsGalcams(!isGalcams)} className="mr-1 w-3.5 h-3.5 text-blue-600 rounded border-gray-300 focus:ring-blue-500" />
-                갤캠스
+                <input type="checkbox" checked={isGalcams} onChange={() => setIsGalcams(!isGalcams)} className="mr-1 w-3.5 h-3.5 text-blue-600 rounded border-gray-300 focus:ring-blue-500" />갤캠스
               </label>
             </div>
-
             <button onClick={() => setShowPlanSummaryPopup(true)} className="bg-blue-500 text-white px-2.5 rounded hover:bg-blue-600 h-[34px] flex items-center justify-center text-[13px] font-medium whitespace-nowrap">요금제 정리</button>
             <button onClick={() => setShowRequestFormPopup(true)} className="bg-purple-600 text-white px-2.5 rounded hover:bg-purple-700 h-[34px] flex items-center justify-center text-[13px] font-medium whitespace-nowrap">요청 양식</button>
-<button 
-  onClick={() => setShowDeviceColorPopup(true)} 
-  className="bg-pink-600 text-white px-2.5 rounded hover:bg-pink-700 h-[34px] flex items-center justify-center text-[13px] font-medium whitespace-nowrap"
->
-  이벤트
-</button>
+            <button onClick={() => setShowDeviceColorPopup(true)} className="bg-pink-600 text-white px-2.5 rounded hover:bg-pink-700 h-[34px] flex items-center justify-center text-[13px] font-medium whitespace-nowrap">이벤트</button>
            </div>
         </div>
       </div>
@@ -1894,202 +1450,60 @@ style={d.isHighlight ? { fontWeight: 'bold', color: '#1D4ED8' } : d.isGreen ? { 
           </div>
         )}
         
+        {/* 리팩토링된 공통 카드 UI 렌더링 파트 */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3 relative mb-7">
-          {/* 공통지원 */}
-          <div className={`p-3 rounded-xl shadow-md border border-gray-200 transition-all flex flex-col relative ${highlightClassPublic}`}>
-            <h3 className="text-[17px] font-bold text-center text-blue-700 mb-3">공통지원</h3>
+          <CostCard
+            title="공통지원"
+            type="public"
+            planName={selectedPlan}
+            planPrice={originalPlanPrice}
+            devicePrice={devicePrice}
+            isPreorderDevice={isPreorderDevice}
+            doubleStorageDiscount={doubleStorageDiscount}
+            commonSupport={commonSupport}
+            additionalSupport={additionalSupport}
+            principal={principal_Public}
+            installMonths={installMonths}
+            monthlyDevice={monthlyDevice_Public}
+            monthlyInterest={monthlyInterest_Public}
+            totalInterest={totalInterest_Public}
+            totalMonthly={totalMonthly_Public}
+            totalCostLabel="총 유지비용"
+            totalCostValue={total24_Public}
+            highlightClass={highlightClassPublic}
+            arrowColor="text-red-600"
+          />
 
-            {/* A 월 통신요금 */}
-            <div className="mb-2">
-              <div className="flex justify-between items-end mb-2">
-                <div className="flex items-center gap-1.5">
-                  <span className="bg-[#ec008c] text-white text-sm font-bold px-1.5 py-0 rounded">A</span>
-                  <span className="font-bold text-[17px]">월 통신요금</span>
-                </div>
-                <span className="font-bold text-lg">{originalPlanPrice.toLocaleString()} 원</span>
-              </div>
-              <div className="flex justify-between text-gray-500 text-[15px]">
-  <span>{formatPlanName(selectedPlan)}</span>
-  <span>{originalPlanPrice.toLocaleString()} 원</span>
-</div>
-            </div>
+          <CostCard
+            title="선택약정 (25% 요금할인)"
+            type="selective"
+            planName={selectedPlan}
+            planPrice={originalPlanPrice}
+            planDiscount={monthlyPlanDiscount}
+            devicePrice={devicePrice}
+            isPreorderDevice={isPreorderDevice}
+            doubleStorageDiscount={doubleStorageDiscount}
+            additionalSupport={selectiveAdditionalSupport}
+            principal={principal_Selective}
+            installMonths={installMonths}
+            monthlyDevice={monthlyDevice_Selective}
+            monthlyInterest={monthlyInterest_Selective}
+            totalInterest={totalInterest_Selective}
+            totalMonthly={totalMonthly_Selective}
+            totalCostLabel="총 유지비용"
+            totalCostValue={total24_Selective}
+            highlightClass={highlightClassSelective}
+            arrowColor="text-red-600"
+          />
 
-            <hr className="border-black mb-2" />
-
-            {/* B 월 할부금 */}
-            <div className="mb-2">
-              <div className="flex justify-between items-end mb-2">
-                <div className="flex items-center gap-1.5">
-                  <span className="bg-[#ec008c] text-white text-sm font-bold px-1.5 py-0 rounded">B</span>
-                  <span className="font-bold text-[17px]">월 할부금({installMonths === 0 ? '일시불' : installMonths + '개월'})</span>
-                </div>
-                <span className="font-bold text-lg">{monthlyDevice_Public.toLocaleString()} 원</span>
-              </div>
-              <div className="flex justify-between text-gray-500 text-[15px] mb-1">
-                <span>출고가</span>
-                <span>{devicePrice.toLocaleString()} 원</span>
-              </div>
-              {/* 더블 스토리지 할인 항목 */}
-              {isPreorderDevice && (
-                <div className="flex justify-between text-[#ec008c] font-bold text-[15px] mb-1">
-                  <span>더블 스토리지 할인</span>
-                  <span>- {doubleStorageDiscount.toLocaleString()} 원</span>
-                </div>
-              )}
-              {commonSupport > 0 && (
-                <div className="flex justify-between text-[#ec008c] font-bold text-[15px] mb-1">
-                  <span>공통 지원금</span>
-                  <span>- {commonSupport.toLocaleString()} 원</span>
-                </div>
-              )}
-              {additionalSupport > 0 && (
-                <div className="flex justify-between text-[#ec008c] font-bold text-[15px] mb-2">
-                  <span>삼성닷컴 추가지원금</span>
-                  <span>- {additionalSupport.toLocaleString()} 원</span>
-                </div>
-              )}
-
-              <hr className="border-dashed border-gray-300 my-2" />
-
-              <div className="flex justify-between text-blue-600 font-bold text-[15px] mb-1">
-                <span>기기값(할부원금)</span>
-                <span className="flex items-center"><span className="text-red-600 font-black text-lg mr-1 leading-none">➔</span> {principal_Public.toLocaleString()} 원</span>
-              </div>
-              {installMonths > 0 && (
-                <div className="flex justify-between text-gray-500 text-[15px]">
-                  <span>할부이자 (연 5.9%) <span className="text-[13px] ml-1 tracking-tight">(총 {totalInterest_Public.toLocaleString()}원)</span></span>
-                  <span>{monthlyInterest_Public.toLocaleString()} 원</span>
-                </div>
-              )}
-            </div>
-
-            <hr className="border-black border-t-[2px] mb-2" />
-
-            {/* A + B 월납부금 */}
-<div className="mt-1 flex justify-between items-end mb-2">  {/* 👈 1. 한 줄로 만들고 양끝으로 벌림 */}
-              <div className="flex items-center gap-1.5">  {/* 👈 2. mb-2 삭제 */}
-                <span className="bg-[#ec008c] text-white text-sm font-bold px-1.5 py-0 rounded">A + B</span>
-                <span className="font-bold text-[17px]">월 납부 예상금액</span>
-              </div>
-              <div className="text-right">  {/* 👈 3. mt-2 삭제 */}
-                <span className="font-extrabold text-3xl tracking-tight">{totalMonthly_Public.toLocaleString()}</span>
-                <span className="font-bold text-xl ml-1">원</span>
-              </div>
-            </div>
-
-{/* ⭐️ 총 유지비용 (메인화면 - 공통지원) ⭐️ */}
-            <div className="mt-auto pt-3">
-              <div className="pt-3 border-t-2 border-dashed border-red-200">
-                <div className="flex justify-between items-center text-red-600">
-                  <span className="font-bold text-[17px]">총 유지비용</span>
-                  <span className="font-extrabold text-xl">{total24_Public.toLocaleString()}원</span>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* 선택약정 */}
-          <div className={`p-3 rounded-xl shadow-md border border-gray-200 transition-all flex flex-col relative ${highlightClassSelective}`}>
-            <h3 className="text-[17px] font-bold text-center text-blue-700 mb-3">선택약정 (25% 요금할인)</h3>
-
-            {/* A 월 통신요금 */}
-            <div className="mb-2">
-              <div className="flex justify-between items-end mb-2">
-                <div className="flex items-center gap-1.5">
-                  <span className="bg-[#ec008c] text-white text-sm font-bold px-1.5 py-0 rounded">A</span>
-                  <span className="font-bold text-[17px]">월 통신요금</span>
-                </div>
-                <span className="font-bold text-lg">{planPrice_Selective.toLocaleString()} 원</span>
-              </div>
-              <div className="flex justify-between text-gray-500 text-[15px] mb-1">
-                <span>{selectedPlan}</span>
-                <span>{originalPlanPrice.toLocaleString()} 원</span>
-              </div>
-              <div className="flex justify-between text-[#ec008c] font-bold text-[15px]">
-                <span>선택약정 할인</span>
-                <span>- {monthlyPlanDiscount.toLocaleString()} 원</span>
-              </div>
-            </div>
-
-            <hr className="border-black mb-2" />
-
-            {/* B 월 할부금 */}
-            <div className="mb-2">
-              <div className="flex justify-between items-end mb-2">
-                <div className="flex items-center gap-1.5">
-                  <span className="bg-[#ec008c] text-white text-sm font-bold px-1.5 py-0 rounded">B</span>
-                  <span className="font-bold text-[17px]">월 할부금({installMonths === 0 ? '일시불' : installMonths + '개월'})</span>
-                </div>
-                <span className="font-bold text-lg">{monthlyDevice_Selective.toLocaleString()} 원</span>
-              </div>
-              <div className="flex justify-between text-gray-500 text-[15px] mb-1">
-                <span>출고가</span>
-                <span>{devicePrice.toLocaleString()} 원</span>
-              </div>
-              {/* 더블 스토리지 할인 항목 */}
-              {isPreorderDevice && (
-                <div className="flex justify-between text-[#ec008c] font-bold text-[15px] mb-1">
-                  <span>더블 스토리지 할인</span>
-                  <span>- {doubleStorageDiscount.toLocaleString()} 원</span>
-                </div>
-              )}
-              {selectiveAdditionalSupport > 0 && (
-                <div className="flex justify-between text-[#ec008c] font-bold text-[15px] mb-2">
-                  <span>삼성닷컴 추가지원금</span>
-                  <span>- {selectiveAdditionalSupport.toLocaleString()} 원</span>
-                </div>
-              )}
-
-              <hr className="border-dashed border-gray-300 my-2" />
-
-              <div className="flex justify-between text-blue-600 font-bold text-[15px] mb-1">
-                <span>기기값(할부원금)</span>
-                <span className="flex items-center"><span className="text-red-600 font-black text-lg mr-1 leading-none">➔</span> {principal_Selective.toLocaleString()} 원</span>
-              </div>
-              {installMonths > 0 && (
-                <div className="flex justify-between text-gray-500 text-[15px]">
-                  <span>할부이자 (연 5.9%) <span className="text-[13px] ml-1 tracking-tight">(총 {totalInterest_Selective.toLocaleString()}원)</span></span>
-                  <span>{monthlyInterest_Selective.toLocaleString()} 원</span>
-                </div>
-              )}
-            </div>
-
-            <hr className="border-black border-t-[2px] mb-2" />
-
-            {/* A + B 월납부금 */}
-<div className="mt-1 flex justify-between items-end mb-2">  {/* 👈 1. 한 줄로 만들고 양끝으로 벌림 */}
-              <div className="flex items-center gap-1.5">  {/* 👈 2. mb-2 삭제 */}
-                <span className="bg-[#ec008c] text-white text-sm font-bold px-1.5 py-0 rounded">A + B</span>
-                <span className="font-bold text-[17px]">월 납부 예상금액</span>
-              </div>
-              <div className="text-right">  {/* 👈 3. mt-2 삭제 */}
-                <span className="font-extrabold text-3xl tracking-tight">{totalMonthly_Selective.toLocaleString()}</span>
-                <span className="font-bold text-xl ml-1">원</span>
-              </div>
-            </div>
-
-{/* ⭐️ 총 유지비용 (메인화면 - 선택약정) ⭐️ */}
-            <div className="mt-auto pt-3">
-              <div className="pt-3 border-t-2 border-dashed border-red-200">
-                <div className="flex justify-between items-center text-red-600">
-                  <span className="font-bold text-[17px]">총 유지비용</span>
-                  <span className="font-extrabold text-xl">{total24_Selective.toLocaleString()}원</span>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* ⭐️ 메인 화면 유리한 약정 뱃지 ⭐️ */}
           {diffMain > 0 && (
             <div className="hidden md:flex absolute -bottom-8 left-1/2 -translate-x-1/2 bg-white border-2 border-blue-500 text-blue-600 font-extrabold text-[15px] px-5 py-1 rounded-full shadow-[0_4px_12px_rgba(0,0,0,0.15)] z-20 items-center justify-center whitespace-nowrap">
               요금제 24개월 유지 시 총 비용 : {winnerMain} {diffMain.toLocaleString()}원 더 유리함
             </div>
           )}
-
         </div>
       </div>
       
-      {/* 완전히 독립적으로 작동하는 유지 비용 팝업 (초기값으로 메인 화면의 데이터를 넘겨줌) */}
       {showMaintenancePopup && (
         <MaintenanceCostPopup 
           onClose={() => setShowMaintenancePopup(false)} 
@@ -2099,7 +1513,7 @@ style={d.isHighlight ? { fontWeight: 'bold', color: '#1D4ED8' } : d.isGreen ? { 
           policyData={policyData}
           initialData={{
             selectedDevice, selectedPlan, installMonths, commonSupport,
-            additionalSupport, selectiveAdditionalSupport, additionalEdited,
+            additionalSupport, selectiveAdditionalSupport, additionalEdited: true,
             contractType, joinType, isGalcams
           }}
         />
@@ -2112,33 +1526,26 @@ function App() {
   const [operator, setOperator] = useState('KT');
   const [trackingNumber, setTrackingNumber] = useState('');
   const [showPopup, setShowPopup] = useState(false);
-  const [addressSearchTerm, setAddressSearchTerm] = useState(''); // 🌟 추가: 주소 검색어 상태
+  const [addressSearchTerm, setAddressSearchTerm] = useState(''); 
   const [showRequestFormPopup, setShowRequestFormPopup] = useState(false);
   const [showDeviceColorPopup, setShowDeviceColorPopup] = useState(false);
   const [showPlanSummaryPopup, setShowPlanSummaryPopup] = useState(false);
   const [showNoticePopup, setShowNoticePopup] = useState(true);
   const [showMaintenancePopup, setShowMaintenancePopup] = useState(false);
-  const [showStorePopup, setShowStorePopup] = useState(false); // 매장 찾기 팝업 상태
+  const [showStorePopup, setShowStorePopup] = useState(false); 
 
-// 💡 [여기서부터 복사] 기존 정책 데이터를 가져옵니다.
   const [policyData, setPolicyData] = useState(POLICY);
-
-// 🌟🌟 [여기에 1줄 추가!] 로딩 상태를 만듭니다 🌟🌟
   const [isLoading, setIsLoading] = useState(true);
 
-// ==============================================================================
-// 🌟 [추가된 코드] 구글 스프레드시트 실시간 연동 (페이지 열릴 때 자동 실행) 🌟
-// ==============================================================================
   useEffect(() => {
-        const fileUrl = `./policy.xlsx?t=${new Date().getTime()}`;
+    const fileUrl = `./policy.xlsx?t=${new Date().getTime()}`;
 
     fetch(fileUrl)
       .then(response => response.arrayBuffer())
       .then(data => {
         const wb = XLSX.read(data, { type: 'array' });
-        let updatedPolicy = JSON.parse(JSON.stringify(POLICY)); // 원본 데이터 복사
+        let updatedPolicy = JSON.parse(JSON.stringify(POLICY)); 
 
-        // KT 공통지원금 시트 연동
         if (wb.Sheets['KT_공통지원금']) {
           const ktData = XLSX.utils.sheet_to_json(wb.Sheets['KT_공통지원금']);
           ktData.forEach(row => {
@@ -2152,7 +1559,6 @@ function App() {
           });
         }
 
-        // U+ 공통지원금 시트 연동
         if (wb.Sheets['U_공통지원금']) {
           const uData = XLSX.utils.sheet_to_json(wb.Sheets['U_공통지원금']);
           uData.forEach(row => {
@@ -2165,9 +1571,7 @@ function App() {
             }
           });
         }
-// ==============================================================================
-// 🌟🌟 [여기서부터 끼워 넣으세요!] 추가지원금 시트 연동 시작 🌟🌟
-// ==============================================================================
+
         if (wb.Sheets['추가지원금']) {
           const extraData = XLSX.utils.sheet_to_json(wb.Sheets['추가지원금']);
           extraData.forEach(row => {
@@ -2176,26 +1580,20 @@ function App() {
               if (!updatedPolicy.DEVICES[modelName].EXTRA) updatedPolicy.DEVICES[modelName].EXTRA = {};
               const extra = updatedPolicy.DEVICES[modelName].EXTRA;
               
-              // 💡 단말기 이름을 보고 코드가 알아서 요금제 기준을 똑똑하게 변경
               let ktTier = 'OVER_90K';    
               let uHighTier = 'OVER_95K'; 
               let uLowTier = 'OVER_61K';  
 
-              if (modelName.includes('A36')) {
+              if (modelName.includes('A36') || modelName.includes('A37')) {
                 ktTier = 'OVER_61K';
                 uHighTier = 'OVER_61K'; 
                 uLowTier = 'OVER_61K';
-              } else if (modelName.includes('A37')) {
-              ktTier = 'OVER_61K';
-              uHighTier = 'OVER_61K'; 
-              uLowTier = 'OVER_61K';
               } else if (modelName.includes('A17')) {
                 ktTier = 'OVER_33K';
                 uHighTier = 'OVER_33K'; 
                 uLowTier = 'OVER_33K';
               }
               
-              // 💡 영어 이름표(Key)와 한글 이름표 매칭
               if(row['KT기변_닷컴'] !== undefined) extra.KT_CHANGE_DOTCOM = { [ktTier]: { common: row['KT기변_닷컴'], selective: row['KT기변_닷컴'] } };
               if(row['KT기변_갤캠'] !== undefined) extra.KT_CHANGE_GALCAMS = { [ktTier]: { common: row['KT기변_갤캠'], selective: row['KT기변_갤캠'] } };
               if(row['KT번이_닷컴'] !== undefined) extra.KT_MNP_DOTCOM = { [ktTier]: { common: row['KT번이_닷컴'], selective: row['KT번이_닷컴'] } };
@@ -2220,62 +1618,44 @@ function App() {
             }
           });
         }
-// ==============================================================================
-// 🌟🌟 [여기까지 복사] 🌟🌟
-// ==============================================================================
+
         setPolicyData(updatedPolicy);
-
-// 🌟🌟 [여기에 1줄 추가!] 데이터를 다 덮어씌웠으니 로딩을 끝냅니다 🌟🌟
         setIsLoading(false);
-
         console.log('구글 시트 연동 완료!');
       })
       .catch(error => {
         console.error('구글 시트 데이터를 불러오는데 실패했습니다:', error);
-
-// 🌟🌟 [여기에 1줄 추가!] 에러가 나도 화면은 띄워야 하니 로딩을 끝냅니다 🌟🌟
         setIsLoading(false); 
       });
   }, []);
-// ==============================================================================
 
   const handleTrackingSearch = () => { if (!trackingNumber || !/^\d+$/.test(trackingNumber)) return alert('송장번호를 입력해주세요.'); window.open(`https://trace.cjlogistics.com/next/tracking.html?wblNo=${trackingNumber}`, 'cjTrackingPopup', 'width=1600,height=900,scrollbars=yes,resizable=yes'); setTrackingNumber(''); };
-  // 🌟🌟 [새로운 기능] 모델명 역검색 함수 🌟🌟
+  
   const handleModelSearch = () => { 
-    // 입력한 값에서 공백을 없애고 전부 대문자로 변환 (대소문자 구분 없이 검색되게)
     const searchTerm = addressSearchTerm.replace(/\s+/g, '').toUpperCase(); 
     if (!searchTerm) return alert('검색할 모델명을 입력해주세요. (예: SM-S948...)'); 
 
     let foundResults = [];
 
-    // DEVICE_COLORS_MAP을 전부 뒤져서 일치하는 모델명 찾기
     Object.entries(DEVICE_COLORS_MAP).forEach(([deviceName, colors]) => {
       colors.forEach(colorInfo => {
         if (colorInfo.copyText.toUpperCase() === searchTerm) {
-          // 용량은 deviceName(예: S26 Ultra 512G) 안에 이미 포함되어 있습니다!
           foundResults.push(`[${deviceName}] - ${colorInfo.name}`);
         }
       });
     });
 
-    // 검색 결과 알림창 띄우기
     if (foundResults.length > 0) {
       alert(`✨ 검색 결과 ✨\n\n${foundResults.join('\n')}`);
     } else {
       alert('❌ 일치하는 단말기/색상 정보가 없습니다.');
     }
-    
-    // 검색 후 입력창 비워주기
     setAddressSearchTerm(''); 
   };
 
-  
   const plans = useMemo(()=> operator==='KT'?PLAN_LIST_KT:PLAN_LIST_U, [operator]);
   const features = useMemo(()=> operator==='KT'?PLAN_FEATURES_KT:PLAN_FEATURES_U, [operator]);
 
-// ==============================================================================
-// 🌟🌟 [여기에 통째로 추가!] 로딩 중일 때 보여줄 깔끔한 대기 화면 🌟🌟
-// ==============================================================================
   if (isLoading) {
     return (
       <div className="flex flex-col items-center justify-center h-screen bg-gray-50">
@@ -2284,7 +1664,6 @@ function App() {
       </div>
     );
   }
-// ==============================================================================
 
   return (
     <div>
@@ -2306,31 +1685,21 @@ function App() {
         </div>
         
         <div className="flex items-center ml-auto gap-2 shrink-0">
-          
-          {/* 🌟🌟 [여기에 추가!] 네이버 주소/플레이스 검색창 🌟🌟 */}
-          {/* 🌟🌟 [완벽 해결!] 다른 칸 안 밀리고 위로 덮으며 늘어나는 주소 검색창 🌟🌟 */}
-          {/* 🌟🌟 단말기 모델명 검색창 🌟🌟 */}
           <div className="relative w-32 h-[36px]">
             <input 
               type="text" 
               value={addressSearchTerm} 
               onChange={(e) => setAddressSearchTerm(e.target.value)} 
-              onKeyDown={(e) => e.key === 'Enter' && handleModelSearch()} // 👈 엔터 치면 새 함수 실행
+              onKeyDown={(e) => e.key === 'Enter' && handleModelSearch()} 
               placeholder="모델명 검색" 
               className="absolute top-0 left-0 border p-2 rounded w-32 focus:w-80 h-[36px] text-sm text-center focus:text-left placeholder-gray-700 border-green-400 focus:border-green-500 focus:outline-none focus:shadow-xl transition-all duration-300 z-10 focus:z-50 bg-white" 
               onFocus={(e) => e.target.placeholder = ''} 
               onBlur={(e) => e.target.placeholder = '모델명 검색'} 
             />
           </div>
-
-
-
-
-          {/* 기존 송장번호 검색 */}
           <input type="text" value={trackingNumber} onChange={(e) => setTrackingNumber(e.target.value.replace(/\D/g, ''))} onKeyDown={(e) => e.key === 'Enter' && handleTrackingSearch()} placeholder="송장번호 검색" className="border p-2 rounded w-36 h-[36px] text-sm text-center placeholder-gray-700" onFocus={(e) => e.target.placeholder = ''} onBlur={(e) => e.target.placeholder = '대한통운 송장번호'} />
         </div>
       </div>
-
 
       <Calculator 
         plans={plans} features={features} operator={operator} policyData={policyData}
@@ -2351,4 +1720,3 @@ ReactDOM.createRoot(document.getElementById('root')).render(<App/>);
 </script>
 </body>
 </html>
-
