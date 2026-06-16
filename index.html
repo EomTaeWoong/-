@@ -1288,7 +1288,7 @@ function Calculator({
   const devicePrice = useMemo(()=> DEVICE_LIST.find(d=>d.name===selectedDevice)?.price || 0, [selectedDevice]);
   const monthlyPlanDiscount = useMemo(() => Math.round(originalPlanPrice * 0.25), [originalPlanPrice]);
   const totalPlanDiscount = useMemo(() => monthlyPlanDiscount * 24, [monthlyPlanDiscount]);
-  const featureText = useMemo(()=> features[normalizePlanKey(selectedPlan)] || '', [selectedPlan, features]);
+  const featureText = useMemo(()=> features[selectedPlan] || features[normalizePlanKey(selectedPlan)] || '', [selectedPlan, features]);
 
   const totalDiscount_Public = commonSupport + additionalSupport;
   const principal_Public = Math.max(0, devicePrice - totalDiscount_Public - doubleStorageDiscount);
