@@ -1288,7 +1288,26 @@ function Calculator({
   const devicePrice = useMemo(()=> DEVICE_LIST.find(d=>d.name===selectedDevice)?.price || 0, [selectedDevice]);
   const monthlyPlanDiscount = useMemo(() => Math.round(originalPlanPrice * 0.25), [originalPlanPrice]);
   const totalPlanDiscount = useMemo(() => monthlyPlanDiscount * 24, [monthlyPlanDiscount]);
-  const featureText = useMemo(()=> features[selectedPlan] || features[normalizePlanKey(selectedPlan)] || '', [selectedPlan, features]);
+const featureText = useMemo(() => {
+  if (!selectedPlan) return '';
+  if (features[selectedPlan]) return features[selectedPlan];
+  
+  // 띄어쓰기와 '(가입중단)' 글자만 무시하고 핵심 이름으로 똑똑하게 매칭
+  const normalizeStr = (str) => {
+    let s = (str || '').replace(/\s+/g, '').replace(/\(가입중단\)/g, '');
+    if (s === '스페셜A') return '데이터스페셜A';
+    if (s === '스페셜B') return '데이터스페셜B';
+    return s;
+  };
+  
+  const targetKey = normalizeStr(selectedPlan);
+  for (const key in features) {
+    if (normalizeStr(key) === targetKey) {
+      return features[key];
+    }
+  }
+  return '';
+}, [selectedPlan, features]);
 
   const totalDiscount_Public = commonSupport + additionalSupport;
   const principal_Public = Math.max(0, devicePrice - totalDiscount_Public - doubleStorageDiscount);
