@@ -1541,6 +1541,69 @@ function App() {
   const [policyData, setPolicyData] = useState(POLICY);
   const [isLoading, setIsLoading] = useState(true);
 
+const fileInputRef = React.useRef(null);
+
+  const handleFileUpload = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    
+    reader.onload = (event) => {
+      const text = event.target.result;
+      const delimiter = text.includes('\t') ? '\t' : ',';
+      const lines = text.split(/\r?\n/).filter(line => line.trim() !== '');
+      
+      if (lines.length < 2) return alert('처리할 데이터가 없습니다.');
+
+      const headers = lines[0].split(delimiter).map(h => h.trim().replace(/"/g, ''));
+      
+      const colIdx = {
+        name: headers.indexOf('고객명'),
+        phone: headers.indexOf('전화번호'),
+        device: headers.indexOf('단말기'),
+        plan: headers.indexOf('요금제'),
+        joinType: headers.indexOf('가입유형'),
+        usim: headers.indexOf('유심여부')
+      };
+
+      const resultLines = [];
+
+      for (let i = 1; i < lines.length; i++) {
+        const row = lines[i].split(delimiter).map(item => item.replace(/"/g, '').trim());
+        
+        const name = colIdx.name !== -1 ? row[colIdx.name] : '';
+        const phone = colIdx.phone !== -1 ? row[colIdx.phone] : '';
+        const device = colIdx.device !== -1 ? row[colIdx.device] : '';
+        const plan = colIdx.plan !== -1 ? row[colIdx.plan] : '';
+        
+        let joinType = colIdx.joinType !== -1 ? row[colIdx.joinType] : '';
+        if (joinType === '기기변경') joinType = '기변';
+        if (joinType === '번호이동') joinType = '번이';
+        if (joinType === '신규가입') joinType = '신규';
+
+        let usim = colIdx.usim !== -1 ? row[colIdx.usim].replace(/\s+/g, '') : '';
+
+        resultLines.push(`[개통] ${name} / ${phone} / ${device} / ${plan} / ${joinType} / ${usim}`);
+      }
+
+      const outputText = resultLines.join('\n');
+      const blob = new Blob([outputText], { type: 'text/plain;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `개꿀_정리본.txt`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      
+      e.target.value = null; 
+    };
+
+    reader.readAsText(file, 'utf-8'); 
+  };
+
   useEffect(() => {
     const fileUrl = `./policy.xlsx?t=${new Date().getTime()}`;
 
@@ -1671,39 +1734,39 @@ function App() {
 
   return (
     <div>
-      <div className="py-1.5 px-3 mb-1 max-w-4xl mx-auto flex flex-wrap gap-2 items-center border-b border-gray-100">
-        <button className={`px-4 py-2 rounded text-sm font-bold shrink-0 ${operator === 'KT' ? 'bg-blue-600 text-white shadow' : 'bg-white border'}`} onClick={() => setOperator('KT')}>KT</button>
-        <button className={`px-4 py-2 rounded text-sm font-bold shrink-0 ${operator === 'U' ? 'bg-green-600 text-white shadow' : 'bg-white border'}`} onClick={() => setOperator('U')}>U+</button>
-        
-        {operator === 'KT' && <a href="https://shop.kt.com/smart/supportAmtList.do" target="_blank" className="ml-2 bg-blue-500 text-white px-3 py-2 rounded hover:bg-blue-600 text-sm whitespace-nowrap shrink-0">KT 지원금</a>}
-        {operator === 'U' && <a href="https://www.lguplus.com/mobile/financing-model" target="_blank" className="ml-2 bg-green-500 text-white px-3 py-2 rounded hover:bg-green-600 text-sm whitespace-nowrap shrink-0">U+ 지원금</a>}
+      <div className="py-1.5 px-3 mb-1 max-w-4xl mx-auto flex flex-nowrap overflow-x-auto hide-scroll-bar gap-1.5 items-center border-b border-gray-100">
+  <button className={`px-4 py-2 rounded text-sm font-bold shrink-0 ${operator === 'KT' ? 'bg-blue-600 text-white shadow' : 'bg-white border'}`} onClick={() => setOperator('KT')}>KT</button>
+  <button className={`px-4 py-2 rounded text-sm font-bold shrink-0 ${operator === 'U' ? 'bg-green-600 text-white shadow' : 'bg-white border'}`} onClick={() => setOperator('U')}>U+</button>
+  
+  {operator === 'KT' && <a href="https://shop.kt.com/smart/supportAmtList.do" target="_blank" className="bg-blue-500 text-white px-3 py-2 rounded hover:bg-blue-600 text-sm whitespace-nowrap shrink-0">KT 지원금</a>}
+  {operator === 'U' && <a href="https://www.lguplus.com/mobile/financing-model" target="_blank" className="bg-green-500 text-white px-3 py-2 rounded hover:bg-green-600 text-sm whitespace-nowrap shrink-0">U+ 지원금</a>}
 
-        <div className="flex items-center ml-2 shrink-0">
-          <a href="https://www.samsung.com/sec/smartphones/all-smartphones/?carrier-phone" target="_blank" className="bg-gray-800 text-white px-3 py-2 rounded hover:bg-gray-900 text-sm whitespace-nowrap">삼성닷컴</a>
-        </div>
-        
-        <div className="flex items-center ml-2 gap-2 shrink-0">
-          <button onClick={() => setShowMaintenancePopup(true)} className="bg-indigo-600 text-white w-[84px] h-[36px] flex items-center justify-center rounded hover:bg-indigo-700 text-sm font-medium shadow whitespace-nowrap">6개월 유지</button>
-          <button onClick={() => setShowStorePopup(true)} className="bg-emerald-600 text-white px-3 py-2 rounded hover:bg-emerald-700 text-sm whitespace-nowrap">MVNO</button>
-          <button onClick={() => setShowPopup(true)} className="bg-gray-600 text-white px-3 py-2 rounded hover:bg-gray-700 text-sm whitespace-nowrap">전화번호</button>
-        </div>
-        
-        <div className="flex items-center ml-auto gap-2 shrink-0">
-          <div className="relative w-32 h-[36px]">
-            <input 
-              type="text" 
-              value={addressSearchTerm} 
-              onChange={(e) => setAddressSearchTerm(e.target.value)} 
-              onKeyDown={(e) => e.key === 'Enter' && handleModelSearch()} 
-              placeholder="모델명 검색" 
-              className="absolute top-0 left-0 border p-2 rounded w-32 focus:w-80 h-[36px] text-sm text-center focus:text-left placeholder-gray-700 border-green-400 focus:border-green-500 focus:outline-none focus:shadow-xl transition-all duration-300 z-10 focus:z-50 bg-white" 
-              onFocus={(e) => e.target.placeholder = ''} 
-              onBlur={(e) => e.target.placeholder = '모델명 검색'} 
-            />
-          </div>
-          <input type="text" value={trackingNumber} onChange={(e) => setTrackingNumber(e.target.value.replace(/\D/g, ''))} onKeyDown={(e) => e.key === 'Enter' && handleTrackingSearch()} placeholder="송장번호 검색" className="border p-2 rounded w-36 h-[36px] text-sm text-center placeholder-gray-700" onFocus={(e) => e.target.placeholder = ''} onBlur={(e) => e.target.placeholder = '대한통운 송장번호'} />
-        </div>
-      </div>
+  <a href="https://www.samsung.com/sec/smartphones/all-smartphones/?carrier-phone" target="_blank" className="bg-gray-800 text-white px-3 py-2 rounded hover:bg-gray-900 text-sm whitespace-nowrap shrink-0">닷컴</a>
+  <button onClick={() => setShowMaintenancePopup(true)} className="bg-indigo-600 text-white px-3 h-[36px] flex items-center justify-center rounded hover:bg-indigo-700 text-sm font-medium shadow whitespace-nowrap shrink-0">유지비</button>
+  <button onClick={() => setShowStorePopup(true)} className="bg-emerald-600 text-white px-3 py-2 rounded hover:bg-emerald-700 text-sm whitespace-nowrap shrink-0">MVNO</button>
+  <button onClick={() => setShowPopup(true)} className="bg-gray-600 text-white px-3 py-2 rounded hover:bg-gray-700 text-sm whitespace-nowrap shrink-0">전화번호</button>
+  
+  {/* 개꿀 버튼 */}
+  <button onClick={() => fileInputRef.current.click()} className="bg-amber-500 text-white px-3 py-2 rounded hover:bg-amber-600 text-sm font-bold whitespace-nowrap shrink-0">개꿀</button>
+  
+  <div className="flex items-center ml-auto gap-1.5 shrink-0">
+
+    {/* 외곽 div와 내부 input의 w-28을 둘 다 w-40으로 늘려줍니다 */}
+<div className="relative w-40 h-[36px]">
+  <input 
+    type="text" 
+    value={addressSearchTerm} 
+    onChange={(e) => setAddressSearchTerm(e.target.value)} 
+    onKeyDown={(e) => e.key === 'Enter' && handleModelSearch()} 
+    placeholder="모델명 검색" 
+    className="absolute top-0 left-0 border p-2 rounded w-40 focus:w-72 h-[36px] text-sm text-center focus:text-left placeholder-gray-700 border-green-400 focus:border-green-500 focus:outline-none focus:shadow-xl transition-all duration-300 z-10 focus:z-50 bg-white" 
+    onFocus={(e) => e.target.placeholder = ''} 
+    onBlur={(e) => e.target.placeholder = '모델명 검색'} 
+  />
+</div>
+    <input type="text" value={trackingNumber} onChange={(e) => setTrackingNumber(e.target.value.replace(/\D/g, ''))} onKeyDown={(e) => e.key === 'Enter' && handleTrackingSearch()} placeholder="송장번호 검색" className="border p-2 rounded w-32 h-[36px] text-sm text-center placeholder-gray-700 shrink-0" onFocus={(e) => e.target.placeholder = ''} onBlur={(e) => e.target.placeholder = '대한통운 송장번호'} />
+  </div>
+</div>
 
       <Calculator 
         plans={plans} features={features} operator={operator} policyData={policyData}
@@ -1716,6 +1779,10 @@ function App() {
       {showPlanSummaryPopup && <PlanSummaryPopup operator={operator} onClose={() => setShowPlanSummaryPopup(false)} />}
       {showNoticePopup && <NoticePopup onClose={() => setShowNoticePopup(false)} />}
       {showStorePopup && <StoreMapPopup onClose={() => setShowStorePopup(false)} />}
+
+<input type="file" accept=".csv, .txt, .crdownload" ref={fileInputRef} onChange={handleFileUpload} style={{ display: 'none' }} />
+
+
     </div>
   );
 }
