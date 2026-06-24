@@ -1554,12 +1554,10 @@ function App() {
             if (timeGroups[timeKey]) {
                 const getVal = (regex) => (record.match(regex) || [])[1] || '';
                 
-                const rawType = getVal(/((?:SKT|KT|U\+|SK|LG)[,\s]+(?:공시지원|선택약정|자급제)?[,\s]*(?:기변|번이|신규|기기변경|번호이동))/);
+                const rawType = getVal(/((?:SKT|KT|U\+|SK|LG)[,\s\t]+(?:공시지원|선택약정|자급제)?[,\s\t]*(?:기변|번이|신규|기기변경|번호이동))/);
                 const cat = getVal(/(택배|BOPIS|스마트픽|픽업|매장방문)/);
                 
-                // 💡 [수정됨] 이름과 확인번호(핸드폰 번호)를 동시에 추출!
-                // 이름 뒤에 따라오는 '010-XXXX-XXXX' 형식을 확인번호로 칼같이 잡아냅니다.
-                let namePhoneMatch = record.match(/([가-힣]{2,4})[,\s]+(?:[가-힣]{2,4}[,\s]+)?(010-\d{3,4}-\d{4})/);
+                let namePhoneMatch = record.match(/([가-힣]{2,4})[,\s\t]+(?:[가-힣]{2,4}[,\s\t]+)?(010-\d{3,4}-\d{4})/);
                 const name = namePhoneMatch ? namePhoneMatch[1] : '';
                 const confirm = namePhoneMatch ? namePhoneMatch[2] : '';
 
@@ -1569,24 +1567,24 @@ function App() {
                 const rawModel = getVal(/(SM-[A-Z0-9]+|iPhone\s*[A-Za-z0-9\s]+)/i);
                 const plan = getVal(/(\d{1,2}_[가-힣A-Za-z0-9_]+|[가-힣A-Za-z0-9_]*플랜[가-힣A-Za-z0-9_]*)/);
                 
-                let instMatch = record.match(/(?:,|\s|^)([1-9]\d{4,7}|0)(?:,|\s)+(?:24|30|36|일시불)?(?:,|\s)+(?:[A-Za-z가-힣0-9_]*플랜|\d{1,2}_)/);
+                let instMatch = record.match(/(?:[,\s\t]|^)([1-9]\d{4,7}|0)(?:[,\s\t])+(?:24|30|36|일시불)?(?:[,\s\t])+(?:[A-Za-z가-힣0-9_]*플랜|\d{1,2}_)/);
                 const inst = instMatch ? instMatch[1] : '0';
 
-                let usimMatch = record.match(/(?:,|^|\s)(Y|N)(?:,|\s|$)/i);
+                let usimMatch = record.match(/(?:[,\s\t]|^)(Y|N)(?:[,\s\t]|$)/i);
                 let usim = usimMatch ? usimMatch[1].toUpperCase() : '';
                 if (usim !== 'Y' && usim !== 'N') usim = '';
 
-                // 주소
+                // 🚨 🚨 🚨 불필요한 내용 난입의 주범이었던 주소 추출 부분 완벽 수정! 🚨 🚨 🚨
+                // 콤마(,), 탭(\t), 줄바꿈(\n) 중 하나라도 나오면 바로 끊어버립니다. (메모 쓸어담기 원천 차단!)
                 let addr = '';
-                let addrM1 = record.match(/\b(\d{5})\b[,\s]*"([^"]*)"/);
-                let addrM2 = record.match(/\b(\d{5})\b[,\s]*([가-힣][^,]*)/);
+                let addrM1 = record.match(/\b(\d{5})\b[,\s\t]*"([^"]*)"/);
+                let addrM2 = record.match(/\b(\d{5})\b[,\s\t]*([^,\t\n]+)/);
                 if (addrM1) {
                     addr = `${addrM1[1]} ${addrM1[2].trim()}`;
                 } else if (addrM2) {
                     addr = `${addrM2[1]} ${addrM2[2].trim()}`;
                 }
 
-                // 유형 쪼개기
                 let changeType = '기타';
                 if (rawType.includes('기변') || rawType.includes('기기변경')) changeType = '기변';
                 else if (rawType.includes('번이') || rawType.includes('번호이동')) changeType = '번이';
@@ -1597,7 +1595,6 @@ function App() {
                 else if (rawType.includes('선택') || rawType.includes('선약')) discountType = '선약';
                 else if (rawType.includes('자급')) discountType = '자급';
 
-                // 모델명 변환
                 let mappedModel = rawModel; 
                 if (rawModel) {
                     const searchModel = rawModel.replace(/\s+/g, '').toUpperCase();
@@ -1641,6 +1638,8 @@ function App() {
       }
     };
   };
+
+            
                      
 
 
