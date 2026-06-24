@@ -1552,39 +1552,48 @@ function App() {
             let timeKey = timeStr.includes('09') ? '09시 ~ 13시' : timeStr.includes('13') ? '13시 ~ 15시' : '15시 ~ 17시';
             
             if (timeGroups[timeKey]) {
-                const getVal = (regex) => (record.match(regex) || [])[1] || '';
+                // 💡 [핵심] 파일이 HTML 표 형식이든 뭐든, 열(Column)을 탭(\t)으로 완벽하게 분리합니다.
+                let normRecord = record.replace(/<\/(td|th)>/gi, '\t').replace(/<[^>]+>/g, '').trim();
+
+                const getVal = (regex) => (normRecord.match(regex) || [])[1] || '';
                 
                 const rawType = getVal(/((?:SKT|KT|U\+|SK|LG)[,\s\t]+(?:공시지원|선택약정|자급제)?[,\s\t]*(?:기변|번이|신규|기기변경|번호이동))/);
                 const cat = getVal(/(택배|BOPIS|스마트픽|픽업|매장방문)/);
                 
-                let namePhoneMatch = record.match(/([가-힣]{2,4})[,\s\t]+(?:[가-힣]{2,4}[,\s\t]+)?(010-\d{3,4}-\d{4})/);
+                let namePhoneMatch = normRecord.match(/([가-힣]{2,4})[,\s\t]+(?:[가-힣]{2,4}[,\s\t]+)?(010-\d{3,4}-\d{4})/);
                 const name = namePhoneMatch ? namePhoneMatch[1] : '';
-                const confirm = namePhoneMatch ? namePhoneMatch[2] : '';
+                const confirm = namePhoneMatch ? namePhoneMatch[2] : ''; // 확인번호(핸드폰)
 
-                let dotcomMatches = record.match(/(임시저장|개통완료|개통대기|서식지접수|닷컴개통\d*)/g);
-                const dotcom = dotcomMatches ? Array.from(new Set(dotcomMatches)).join(', ') : '';
+                // 💡 [수정 1] MRS상태는 버리고, 가장 마지막에 있는 '닷컴상태'만 추출합니다.
+                let statusMatches = normRecord.match(/(임시저장|개통완료|개통대기|서식지접수|접수완료|해피콜|결제대기|결제완료|상품준비중|배송준비중|배송중|배송완료|닷컴개통\d*|취소완료|교환접수|반품접수|반품완료|정상)/g);
+                const dotcom = statusMatches ? statusMatches[statusMatches.length - 1] : '';
 
                 const rawModel = getVal(/(SM-[A-Z0-9]+|iPhone\s*[A-Za-z0-9\s]+)/i);
                 const plan = getVal(/(\d{1,2}_[가-힣A-Za-z0-9_]+|[가-힣A-Za-z0-9_]*플랜[가-힣A-Za-z0-9_]*)/);
                 
-                let instMatch = record.match(/(?:[,\s\t]|^)([1-9]\d{4,7}|0)(?:[,\s\t])+(?:24|30|36|일시불)?(?:[,\s\t])+(?:[A-Za-z가-힣0-9_]*플랜|\d{1,2}_)/);
+                let instMatch = normRecord.match(/(?:[,\s\t]|^)([1-9]\d{4,7}|0)(?:[,\s\t])+(?:24|30|36|일시불)?(?:[,\s\t])+(?:[A-Za-z가-힣0-9_]*플랜|\d{1,2}_)/);
                 const inst = instMatch ? instMatch[1] : '0';
 
-                let usimMatch = record.match(/(?:[,\s\t]|^)(Y|N)(?:[,\s\t]|$)/i);
+                let usimMatch = normRecord.match(/(?:[,\s\t]|^)(Y|N)(?:[,\s\t]|$)/i);
                 let usim = usimMatch ? usimMatch[1].toUpperCase() : '';
                 if (usim !== 'Y' && usim !== 'N') usim = '';
 
-                // 🚨 🚨 🚨 불필요한 내용 난입의 주범이었던 주소 추출 부분 완벽 수정! 🚨 🚨 🚨
-                // 콤마(,), 탭(\t), 줄바꿈(\n) 중 하나라도 나오면 바로 끊어버립니다. (메모 쓸어담기 원천 차단!)
+                // 💡 [수정 2] 주소가 '상담원'이나 'MRS상태'를 먹어버리지 못하게 탭(\t)에서 무조건 차단!
                 let addr = '';
-                let addrM1 = record.match(/\b(\d{5})\b[,\s\t]*"([^"]*)"/);
-                let addrM2 = record.match(/\b(\d{5})\b[,\s\t]*([^,\t\n]+)/);
+                let addrM1 = normRecord.match(/\b(\d{5})\b[,\s\t]*"([^"]*)"/);
+                // 탭이나 줄바꿈을 만나면 스톱 (옆 칸 침범 절대 불가)
+                let addrM2 = normRecord.match(/\b(\d{5})\b[,\s\t]*([^\t\n]+)/); 
                 if (addrM1) {
                     addr = `${addrM1[1]} ${addrM1[2].trim()}`;
                 } else if (addrM2) {
                     addr = `${addrM2[1]} ${addrM2[2].trim()}`;
                 }
+                
+                // 혹시라도 공백으로 연결된 찌꺼기가 남았다면 2차 강제 차단
+                addr = addr.replace(/\s+(임시저장|개통완료|개통대기|서식지접수|접수완료|해피콜|결제대기|결제완료|상품준비중|배송준비중|배송중|배송완료|닷컴개통\d*|취소완료|교환접수|반품접수|반품완료|정상|완료|MRS상태|상담원).*$/, '').trim();
+                addr = addr.replace(/\s+[가-힣]{2,4}$/, '').trim(); // 끝에 붙은 상담원 이름 컷
 
+                // 유형 쪼개기
                 let changeType = '기타';
                 if (rawType.includes('기변') || rawType.includes('기기변경')) changeType = '기변';
                 else if (rawType.includes('번이') || rawType.includes('번호이동')) changeType = '번이';
@@ -1595,6 +1604,7 @@ function App() {
                 else if (rawType.includes('선택') || rawType.includes('선약')) discountType = '선약';
                 else if (rawType.includes('자급')) discountType = '자급';
 
+                // 모델명 매핑
                 let mappedModel = rawModel; 
                 if (rawModel) {
                     const searchModel = rawModel.replace(/\s+/g, '').toUpperCase();
@@ -1611,6 +1621,7 @@ function App() {
                     }
                 }
 
+                // 결과 조립 (dotcom 변수가 닷컴상태입니다!)
                 const info = `${changeType} / ${cat} / ${name} / ${confirm}, ${dotcom}\n\n${mappedModel}\n${plan} / ${discountType} / ${inst}\n${usim}\n${addr}`;
                 timeGroups[timeKey].push(info.replace(/\n{3,}/g, '\n\n'));
             }
@@ -1638,6 +1649,7 @@ function App() {
       }
     };
   };
+       
 
             
                      
