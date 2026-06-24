@@ -1526,6 +1526,7 @@ const featureText = useMemo(() => {
   );
 }
 
+
 function App() {
   const [operator, setOperator] = useState('KT');
   const [trackingNumber, setTrackingNumber] = useState('');
@@ -1541,7 +1542,8 @@ function App() {
   const [policyData, setPolicyData] = useState(POLICY);
   const [isLoading, setIsLoading] = useState(true);
 
-  const fileInputRef = useRef(null);
+  // 👇 개꿀 자동화 파일 처리 기능 👇
+  const fileInputRef = React.useRef(null);
 
   const handleFileUpload = (e) => {
     const file = e.target.files[0];
@@ -1559,23 +1561,17 @@ function App() {
       const headers = lines[0].split(delimiter).map(h => h.trim().replace(/"/g, ''));
       
       const colIdx = {
-        category: headers.indexOf('구분'),
         time: headers.indexOf('상담희망일'),
-        store: headers.indexOf('매장'),
         buyer: headers.indexOf('구매자명'),
         receiver: headers.indexOf('인수자명'),
-        confirmNo: headers.indexOf('확인번호'),
         type: headers.indexOf('유형'),
-        dotcom: headers.indexOf('닷컴상태'),
-        paper: headers.indexOf('서식지접수'),
         model: headers.indexOf('모델명'),
-        usimModel: headers.indexOf('유심모델'),
-        installment: headers.indexOf('할부금'),
         plan: headers.indexOf('요금제')
       };
 
       const val = (row, key) => colIdx[key] !== -1 && row[colIdx[key]] ? row[colIdx[key]] : '';
 
+      // 원하시는 3개의 고정 시간대
       const fixedTimeSlots = [
         '09시 ~ 13시',
         '13시 ~ 15시',
@@ -1595,34 +1591,24 @@ function App() {
         
         let timeKey = timeMatch ? timeMatch[0].replace(/\s*~\s*/, ' ~ ') : ''; 
         
-        if (!timeKey) timeKey = '시간 미지정';
-
-        if (!timeGroups[timeKey]) timeGroups[timeKey] = [];
-
-        const receiver = val(row, 'receiver') || val(row, 'buyer'); 
-        const model = val(row, 'model');
-        const plan = val(row, 'plan');
-        const type = val(row, 'type');
-        
-        const info = `${receiver} / ${model} / ${plan} / ${type}`;
-
-        timeGroups[timeKey].push(info);
-      }
-
-      const sortedTimes = [
-        ...fixedTimeSlots,
-        ...Object.keys(timeGroups).filter(k => !fixedTimeSlots.includes(k) && k !== '시간 미지정'),
-      ];
-      if (timeGroups['시간 미지정'] && timeGroups['시간 미지정'].length > 0) {
-        sortedTimes.push('시간 미지정');
+        // ✨ 고정 시간대 3개에 딱 맞는 데이터만 분류합니다 (시간 미지정은 자동 삭제)
+        if (fixedTimeSlots.includes(timeKey)) {
+          const receiver = val(row, 'receiver') || val(row, 'buyer'); 
+          const model = val(row, 'model');
+          const plan = val(row, 'plan');
+          const type = val(row, 'type');
+          
+          const info = `${receiver} / ${model} / ${plan} / ${type}`;
+          timeGroups[timeKey].push(info);
+        }
       }
 
       let finalOutput = '';
 
-      sortedTimes.forEach((time, index) => {
+      fixedTimeSlots.forEach((time, index) => {
         finalOutput += `[${time}]\n\n`; 
 
-        if (timeGroups[time] && timeGroups[time].length > 0) {
+        if (timeGroups[time].length > 0) {
           const items = timeGroups[time].map((info, idx) => `${idx + 1}. ${info}`);
           finalOutput += items.join('\n\n\n');
           finalOutput += '\n\n'; 
@@ -1630,7 +1616,7 @@ function App() {
           finalOutput += '\n'; 
         }
 
-        if (index < sortedTimes.length - 1) {
+        if (index < fixedTimeSlots.length - 1) {
           finalOutput += `===============================\n`;
         }
       });
@@ -1648,7 +1634,8 @@ function App() {
       e.target.value = null; 
     };
 
-    reader.readAsText(file, 'utf-8'); 
+    // ✨ 전산망 파일 한국어 깨짐을 해결하는 핵심 코드 (euc-kr) ✨
+    reader.readAsText(file, 'euc-kr'); 
   };
 
   useEffect(() => {
@@ -1827,6 +1814,8 @@ function App() {
     </div>
   );
 }
+
+
 
 ReactDOM.createRoot(document.getElementById('root')).render(<App/>);
 </script>
