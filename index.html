@@ -1550,23 +1550,28 @@ function App() {
     
     reader.onload = (event) => {
       const text = event.target.result;
+      
       const delimiter = text.includes('\t') ? '\t' : ',';
       const lines = text.split(/\r?\n/).filter(line => line.trim() !== '');
       
       if (lines.length < 2) return alert('처리할 데이터가 없습니다.');
 
-      const headers = lines[0].split(delimiter).map(h => h.trim().replace(/"/g, ''));
+      // 🚨 무적 스캐너 1: 쓰레기 데이터를 무시하고 '진짜 항목 이름표'가 있는 줄을 스스로 찾아냅니다!
+      let headerIdx = lines.findIndex(line => line.replace(/\s/g, '').includes('상담희망일') || line.replace(/\s/g, '').includes('구매자명'));
+      if (headerIdx === -1) headerIdx = 0; 
+
+      // 무적 스캐너 2: 띄어쓰기가 섞여 있어도 글자를 100% 인식하게 압축합니다.
+      const headers = lines[headerIdx].split(delimiter).map(h => h.trim().replace(/"/g, '').replace(/\s/g, ''));
       
-      // ✨ '상담희망일'이든 '상담희망일시'든 무조건 찾아내도록 스마트 스캔 적용 ✨
       const colIdx = {
         time: headers.findIndex(h => h.includes('상담희망일')),
         buyer: headers.findIndex(h => h.includes('구매자명')),
-        receiver: headers.findIndex(h => h.includes('인수자명')),
+        receiver: headers.findIndex(h => h.includes('인수자명') || h.includes('자명')),
+        confirmNo: headers.findIndex(h => h.includes('확인번호')),
         type: headers.findIndex(h => h.includes('유형')),
         model: headers.findIndex(h => h.includes('모델명')),
         plan: headers.findIndex(h => h.includes('요금제')),
-        confirmNo: headers.findIndex(h => h.includes('확인번호')),
-         category: headers.findIndex(h => h.includes('구분')),
+        category: headers.findIndex(h => h.includes('구분')),
         store: headers.findIndex(h => h.includes('매장')),
         dotcom: headers.findIndex(h => h.includes('닷컴상태')),
         address: headers.findIndex(h => h.includes('주소') || h.includes('배송')), // 주소 또는 배송지
@@ -1576,25 +1581,18 @@ function App() {
 
       const val = (row, key) => colIdx[key] !== -1 && row[colIdx[key]] ? row[colIdx[key]] : '';
 
-      const fixedTimeSlots = [
-        '09시 ~ 13시',
-        '13시 ~ 15시',
-        '15시 ~ 17시'
-      ] 
-
+      const fixedTimeSlots = ['09시 ~ 13시', '13시 ~ 15시', '15시 ~ 17시'];
       const timeGroups = {};
-      fixedTimeSlots.forEach(slot => {
-        timeGroups[slot] = [];
-      });
+      fixedTimeSlots.forEach(slot => { timeGroups[slot] = []; });
 
-      for (let i = 1; i < lines.length; i++) {
+      // 진짜 데이터가 있는 줄부터 스캔 시작
+      for (let i = headerIdx + 1; i < lines.length; i++) {
         const row = lines[i].split(delimiter).map(item => item.replace(/"/g, '').trim());
         
         let rawTime = val(row, 'time'); 
         
-        // ✨ '09:00' 포맷이든 '09시' 포맷이든 상관없이 찰떡같이 분류 ✨
         let timeKey = '';
-        if (rawTime.includes('09:00') || rawTime.includes('09시')) timeKey = '09시 ~ 13시';
+        if (rawTime.includes('09:00') || rawTime.includes('09시') || rawTime.includes('9:')) timeKey = '09시 ~ 13시';
         else if (rawTime.includes('13:00') || rawTime.includes('13시')) timeKey = '13시 ~ 15시';
         else if (rawTime.includes('15:00') || rawTime.includes('15시')) timeKey = '15시 ~ 17시';
 
@@ -1611,9 +1609,8 @@ function App() {
           const usimModel = val(row, 'usimModel');
           const installment = val(row, 'installment');
           
-          // 👇 메모장에 찍힐 최종 모양 ( \n 은 줄바꿈(엔터)을 의미합니다! ) 👇
+          // 👇 원하시는 엔터(\n) 양식이 완벽하게 적용된 출력 포맷 👇
           const info = `${type} / ${category} / ${receiver} / ${confirmNo}, ${dotcom}\n\n${model}\n${plan} / ${type} / ${installment}\n${usimModel}\n${address}`;
-
           
           timeGroups[timeKey].push(info);
         }
@@ -1626,6 +1623,7 @@ function App() {
 
         if (timeGroups[time].length > 0) {
           const items = timeGroups[time].map((info, idx) => `${idx + 1}. ${info}`);
+          // 간격은 시원하게 엔터 3번 띄웁니다!
           finalOutput += items.join('\n\n\n');
           finalOutput += '\n\n'; 
         } else {
@@ -1650,9 +1648,9 @@ function App() {
       e.target.value = null; 
     };
 
-    // 사진에서 확인한 대로 완벽한 한국어(ANSI) 해독 모드로 원복
     reader.readAsText(file, 'euc-kr'); 
   };
+
 
   useEffect(() => {
     const fileUrl = `./policy.xlsx?t=${new Date().getTime()}`;
