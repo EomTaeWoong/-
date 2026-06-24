@@ -1541,7 +1541,7 @@ function App() {
   const [policyData, setPolicyData] = useState(POLICY);
   const [isLoading, setIsLoading] = useState(true);
 
-const fileInputRef = React.useRef(null);
+  const fileInputRef = React.useRef(null);
 
   const handleFileUpload = (e) => {
     const file = e.target.files[0];
@@ -1558,41 +1558,83 @@ const fileInputRef = React.useRef(null);
 
       const headers = lines[0].split(delimiter).map(h => h.trim().replace(/"/g, ''));
       
+      // 1. 말씀해주신 13개 항목의 위치 찾기
       const colIdx = {
-        name: headers.indexOf('고객명'),
-        phone: headers.indexOf('전화번호'),
-        device: headers.indexOf('단말기'),
-        plan: headers.indexOf('요금제'),
-        joinType: headers.indexOf('가입유형'),
-        usim: headers.indexOf('유심여부')
+        category: headers.indexOf('구분'),
+        time: headers.indexOf('상담희망일'),
+        store: headers.indexOf('매장'),
+        buyer: headers.indexOf('구매자명'),
+        receiver: headers.indexOf('인수자명'),
+        confirmNo: headers.indexOf('확인번호'),
+        type: headers.indexOf('유형'),
+        dotcom: headers.indexOf('닷컴상태'),
+        paper: headers.indexOf('서식지접수'),
+        model: headers.indexOf('모델명'),
+        usimModel: headers.indexOf('유심모델'),
+        installment: headers.indexOf('할부금'),
+        plan: headers.indexOf('요금제')
       };
 
-      const resultLines = [];
+      // 안전하게 데이터 꺼내는 함수
+      const val = (row, key) => colIdx[key] !== -1 && row[colIdx[key]] ? row[colIdx[key]] : '';
+
+      // 2. 시간대별로 묶어줄 상자 준비
+      const timeGroups = {};
 
       for (let i = 1; i < lines.length; i++) {
         const row = lines[i].split(delimiter).map(item => item.replace(/"/g, '').trim());
         
-        const name = colIdx.name !== -1 ? row[colIdx.name] : '';
-        const phone = colIdx.phone !== -1 ? row[colIdx.phone] : '';
-        const device = colIdx.device !== -1 ? row[colIdx.device] : '';
-        const plan = colIdx.plan !== -1 ? row[colIdx.plan] : '';
+        // 시간에서 날짜 지우고 '00시 ~ 00시' 부분만 추출
+        let rawTime = val(row, 'time');
+        let timeMatch = rawTime.match(/\d{1,2}시\s*~\s*\d{1,2}시/);
+        let timeKey = timeMatch ? timeMatch[0] : rawTime; 
         
-        let joinType = colIdx.joinType !== -1 ? row[colIdx.joinType] : '';
-        if (joinType === '기기변경') joinType = '기변';
-        if (joinType === '번호이동') joinType = '번이';
-        if (joinType === '신규가입') joinType = '신규';
+        if (!timeKey) timeKey = '시간 미지정';
 
-        let usim = colIdx.usim !== -1 ? row[colIdx.usim].replace(/\s+/g, '') : '';
+        // 해당 시간대 상자가 없으면 새로 만들기
+        if (!timeGroups[timeKey]) timeGroups[timeKey] = [];
 
-        resultLines.push(`[개통] ${name} / ${phone} / ${device} / ${plan} / ${joinType} / ${usim}`);
+        // 👇 '...' 에 들어갈 세부 내용 조합 (임시로 제가 항목들을 섞어두었습니다. 원하시는 대로 수정 가능합니다!) 👇
+        const receiver = val(row, 'receiver') || val(row, 'buyer'); // 인수자가 없으면 구매자 이름으로
+        const model = val(row, 'model');
+        const plan = val(row, 'plan');
+        const type = val(row, 'type');
+        
+        // 1. 홍길동 뒤에 붙을 '...' 내용을 여기서 자유롭게 조합하세요
+        const info = `${receiver} / ${model} / ${plan} / ${type}`;
+
+        timeGroups[timeKey].push(info);
       }
 
-      const outputText = resultLines.join('\n');
-      const blob = new Blob([outputText], { type: 'text/plain;charset=utf-8' });
+      // 시간대 순서대로 정렬 (예: 09시 -> 13시 -> 15시)
+      const sortedTimes = Object.keys(timeGroups).sort();
+      let finalOutput = '';
+
+      // 3. 텍스트 예쁘게 조립하기
+      sortedTimes.forEach((time, index) => {
+        finalOutput += `[${time}]\n\n`; // 시간대 타이틀 적고 엔터 2번
+
+        if (timeGroups[time].length > 0) {
+          // 번호 매기기 (1. 홍길동 / 2. 둘리 ...)
+          const items = timeGroups[time].map((info, idx) => `${idx + 1}. ${info}`);
+          
+          // 엔터 3번(\n\n\n)으로 간격 벌리기
+          finalOutput += items.join('\n\n\n');
+          finalOutput += '\n\n'; // 마지막 사람 뒤에도 여백 주기
+        }
+
+        // 마지막 덩어리가 아니면 구분선 추가
+        if (index < sortedTimes.length - 1) {
+          finalOutput += `===============================\n`;
+        }
+      });
+
+      // 4. '정리.txt' 파일로 다운로드 실행
+      const blob = new Blob([finalOutput], { type: 'text/plain;charset=utf-8' });
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `정리.txt`;
+      a.download = `정리.txt`; 
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
@@ -1601,8 +1643,10 @@ const fileInputRef = React.useRef(null);
       e.target.value = null; 
     };
 
+    // 만약 글자가 깨지면 'utf-8'을 'euc-kr'로 바꿔주세요
     reader.readAsText(file, 'utf-8'); 
   };
+
 
   useEffect(() => {
     const fileUrl = `./policy.xlsx?t=${new Date().getTime()}`;
