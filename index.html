@@ -1547,50 +1547,59 @@ function App() {
 
   const fileInputRef = React.useRef(null);
 
-  const handleFileUpload = (e) => {
+
+    const handleFileUpload = (e) => {
     const file = e.target.files[0];
     if (!file) return;
 
-    if (file.name.toLowerCase().endsWith('.crdownload')) {
-        alert("⚠️ 다운로드 중인 파일입니다. 완료 후 다시 올려주세요.");
-        e.target.value = null;
-        return;
-    }
-
     const reader = new FileReader();
+    
+    // CSV 전용 해독기: 한글 깨짐 방지를 위해 EUC-KR로 읽기
+    reader.readAsText(file, 'euc-kr');
+
     reader.onload = (event) => {
-      // 🚨 [핵심 수정] 엑셀 번역기(XLSX)가 로딩되었는지 먼저 확인합니다.
-      if (typeof XLSX === 'undefined') {
-          return alert("⚠️ 엑셀 번역기(XLSX)가 아직 로딩되지 않았습니다. 잠시만 기다렸다 다시 시도해주세요!");
-      }
-
       try {
-        const buffer = event.target.result;
-        const workbook = XLSX.read(buffer, { type: 'array' });
-        const worksheet = workbook.Sheets[workbook.SheetNames[0]];
-        const json = XLSX.utils.sheet_to_json(worksheet, { defval: "" });
+        const text = event.target.result;
+        const lines = text.split(/\r?\n/);
+        if (lines.length < 2) return alert("데이터가 없습니다.");
 
-        if (json.length === 0) return alert("파일에 데이터가 없습니다.");
+        // 첫 번째 줄에서 헤더(항목명) 위치 찾기
+        const headers = lines[0].split(',').map(h => h.trim());
+        const getIdx = (name) => headers.findIndex(h => h.includes(name));
+        
+        const col = {
+            time: getIdx('상담희망일시'),
+            cat: getIdx('구분'),
+            recv: getIdx('인수자명'),
+            buy: getIdx('구매자명'),
+            no: getIdx('확인번호'),
+            type: getIdx('유형'),
+            dot: getIdx('닷컴상태'),
+            model: getIdx('모델명'),
+            plan: getIdx('요금제'),
+            inst: getIdx('할부금'),
+            usim: getIdx('유심모델'),
+            addr: getIdx('주소')
+        };
 
         const fixedTimeSlots = ['09시 ~ 13시', '13시 ~ 15시', '15시 ~ 17시'];
         const timeGroups = { '09시 ~ 13시': [], '13시 ~ 15시': [], '15시 ~ 17시': [] };
 
-        json.forEach(row => {
-            // 엑셀 헤더명을 정확히 매칭 (앞뒤 공백 제거)
-            const rawTime = String(row['상담희망일시'] || row['상담희망일'] || '');
-            
-            let timeKey = '';
-            if (rawTime.includes('09:00') || rawTime.includes('09시')) timeKey = '09시 ~ 13시';
-            else if (rawTime.includes('13:00') || rawTime.includes('13시')) timeKey = '13시 ~ 15시';
-            else if (rawTime.includes('15:00') || rawTime.includes('15시')) timeKey = '15시 ~ 17시';
+        lines.slice(1).forEach(line => {
+            const cols = line.split(',');
+            if (cols.length < 5) return;
 
+            const rawTime = cols[col.time] || '';
+            let timeKey = rawTime.includes('09') ? '09시 ~ 13시' : rawTime.includes('13') ? '13시 ~ 15시' : rawTime.includes('15') ? '15시 ~ 17시' : '';
+            
             if (timeGroups[timeKey]) {
-                const info = `${row['유형']} / ${row['구분']} / ${row['인수자명'] || row['구매자명']} / ${row['확인번호']}, ${row['닷컴상태'] || row['MRS상태'] || ''}\n\n${row['모델명']}\n${row['요금제']} / ${row['유형']} / ${row['할부금']}\n${row['유심모델']}\n${row['주소'] || row['배송지'] || ''}`;
-                timeGroups[timeKey].push(info.replace(/\n{3,}/g, '\n\n'));
+                const receiver = cols[col.recv] || cols[col.buy] || '';
+                const info = `${cols[col.type]} / ${cols[col.cat]} / ${receiver} / ${cols[col.no]}, ${cols[col.dot]}\n\n${cols[col.model]}\n${cols[col.plan]} / ${cols[col.type]} / ${cols[col.inst]}\n${cols[col.usim]}\n${cols[col.addr]}`;
+                timeGroups[timeKey].push(info);
             }
         });
 
-        // 결과 생성
+        // 결과 생성 및 다운로드
         let finalOutput = '';
         fixedTimeSlots.forEach((time, index) => {
             finalOutput += `[${time}]\n\n`;
@@ -1613,11 +1622,12 @@ function App() {
         URL.revokeObjectURL(url);
         e.target.value = null;
       } catch (err) {
-        alert("엑셀 데이터 추출 오류: " + err.message);
+        alert("CSV 처리 오류: " + err.message);
       }
     };
-    reader.readAsArrayBuffer(file);
   };
+
+
 
 
 
