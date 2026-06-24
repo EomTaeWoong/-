@@ -1611,8 +1611,9 @@ function App() {
           const usimModel = val(row, 'usimModel');
           const installment = val(row, 'installment');
           
-          // 👇 메모장에 찍힐 최종 모양 (순서나 기호는 원하시는 대로 자유롭게 수정하세요!) 👇
-          const info = `[${category}] ${receiver} / ${confirmNo} / ${store} / ${dotcom} / ${model} / ${plan} / ${type} / ${usimModel} / ${installment} / ${address}`;
+          // 👇 메모장에 찍힐 최종 모양 ( \n 은 줄바꿈(엔터)을 의미합니다! ) 👇
+          const info = `${type} / ${category} / ${receiver} / ${confirmNo}, ${dotcom}\n\n${model}\n${plan} / ${type} / ${installment}\n${usimModel}\n${address}`;
+
           
           timeGroups[timeKey].push(info);
         }
