@@ -1550,21 +1550,20 @@ function App() {
     if (!file) return;
 
     const reader = new FileReader();
+    // 외부 도구(XLSX) 없이 순수 텍스트(CSV/TXT)로 읽습니다.
     reader.readAsText(file, 'euc-kr'); 
 
     reader.onload = (event) => {
       try {
         const text = event.target.result;
+        // 텍스트를 한 줄씩 나눕니다.
         const lines = text.split(/\r?\n/).filter(line => line.trim() !== '');
-        if (lines.length < 2) return alert("파일에 데이터가 없습니다.");
+        if (lines.length < 2) return alert("데이터가 없습니다.");
 
-        // 🚨 [핵심] 콤마(,)인지 탭(Tab)인지 자동으로 찾아냅니다!
-        const delimiter = lines[0].includes('\t') ? '\t' : ',';
-        const headers = lines[0].split(delimiter).map(h => h.trim().replace(/"/g, ''));
+        // 콤마(,)로 나눕니다. (CSV 데이터)
+        const headers = lines[0].split(',').map(h => h.trim().replace(/"/g, ''));
         
-        // 디버깅용: 어떤 항목을 찾았는지 알려줍니다.
-        console.log("인식된 항목 목록:", headers);
-        
+        // 항목 위치를 찾습니다.
         const getIdx = (name) => headers.findIndex(h => h.includes(name));
         const idx = {
             time: getIdx('상담희망일시'),
@@ -1582,8 +1581,9 @@ function App() {
 
         const timeGroups = { '09시 ~ 13시': [], '13시 ~ 15시': [], '15시 ~ 17시': [] };
 
+        // 데이터를 한 줄씩 읽습니다.
         lines.slice(1).forEach(line => {
-            const cols = line.split(delimiter).map(c => c.trim().replace(/"/g, ''));
+            const cols = line.split(',').map(c => c.trim().replace(/"/g, ''));
             const rawTime = cols[idx.time] || '';
             
             let timeKey = '';
@@ -1597,7 +1597,7 @@ function App() {
             }
         });
 
-        // 결과 저장
+        // 결과 저장 및 다운로드
         let finalOutput = '';
         ['09시 ~ 13시', '13시 ~ 15시', '15시 ~ 17시'].forEach((time, i, arr) => {
             finalOutput += `[${time}]\n\n` + (timeGroups[time].length > 0 ? timeGroups[time].map((info, idx) => `${idx + 1}. ${info}`).join('\n\n\n') + '\n\n' : '\n');
@@ -1616,10 +1616,11 @@ function App() {
         e.target.value = null;
 
       } catch (err) {
-        alert("오류 발생: " + err.message);
+        alert("처리 오류: " + err.message);
       }
     };
   };
+
         
 
  
