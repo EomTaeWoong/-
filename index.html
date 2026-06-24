@@ -1565,7 +1565,13 @@ function App() {
         type: headers.findIndex(h => h.includes('유형')),
         model: headers.findIndex(h => h.includes('모델명')),
         plan: headers.findIndex(h => h.includes('요금제')),
-        confirmNo: headers.findIndex(h => h.includes('확인번호'))
+        confirmNo: headers.findIndex(h => h.includes('확인번호')),
+         category: headers.findIndex(h => h.includes('구분')),
+        store: headers.findIndex(h => h.includes('매장')),
+        dotcom: headers.findIndex(h => h.includes('닷컴상태')),
+        address: headers.findIndex(h => h.includes('주소') || h.includes('배송')), // 주소 또는 배송지
+        usimModel: headers.findIndex(h => h.includes('유심모델')),
+        installment: headers.findIndex(h => h.includes('할부금'))
       };
 
       const val = (row, key) => colIdx[key] !== -1 && row[colIdx[key]] ? row[colIdx[key]] : '';
@@ -1597,8 +1603,16 @@ function App() {
           const model = val(row, 'model');
           const plan = val(row, 'plan');
           const type = val(row, 'type');
+          const category = val(row, 'category');
+          const store = val(row, 'store');
+          const dotcom = val(row, 'dotcom');
+          const address = val(row, 'address');
+          const usimModel = val(row, 'usimModel');
+          const installment = val(row, 'installment');
           
-          const info = `${receiver} / ${confirmNo} / ${model} / ${plan} / ${type}`;
+          // 👇 메모장에 찍힐 최종 모양 (순서나 기호는 원하시는 대로 자유롭게 수정하세요!) 👇
+          const info = `[${category}] ${receiver} / ${confirmNo} / ${store} / ${dotcom} / ${model} / ${plan} / ${type} / ${usimModel} / ${installment} / ${address}`;
+          
           timeGroups[timeKey].push(info);
         }
       }
