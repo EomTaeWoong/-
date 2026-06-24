@@ -1612,24 +1612,103 @@ function App() {
 
       // 3. 텍스트 예쁘게 조립하기
       sortedTimes.forEach((time, index) => {
-        finalOutput += `[${time}]\n\n`; // 시간대 타이틀 적고 엔터 2번
+  const fileInputRef = React.useRef(null);
 
-        if (timeGroups[time].length > 0) {
-          // 번호 매기기 (1. 홍길동 / 2. 둘리 ...)
+  const handleFileUpload = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    
+    reader.onload = (event) => {
+      const text = event.target.result;
+      const delimiter = text.includes('\t') ? '\t' : ',';
+      const lines = text.split(/\r?\n/).filter(line => line.trim() !== '');
+      
+      if (lines.length < 2) return alert('처리할 데이터가 없습니다.');
+
+      const headers = lines[0].split(delimiter).map(h => h.trim().replace(/"/g, ''));
+      
+      const colIdx = {
+        category: headers.indexOf('구분'),
+        time: headers.indexOf('상담희망일'),
+        store: headers.indexOf('매장'),
+        buyer: headers.indexOf('구매자명'),
+        receiver: headers.indexOf('인수자명'),
+        confirmNo: headers.indexOf('확인번호'),
+        type: headers.indexOf('유형'),
+        dotcom: headers.indexOf('닷컴상태'),
+        paper: headers.indexOf('서식지접수'),
+        model: headers.indexOf('모델명'),
+        usimModel: headers.indexOf('유심모델'),
+        installment: headers.indexOf('할부금'),
+        plan: headers.indexOf('요금제')
+      };
+
+      const val = (row, key) => colIdx[key] !== -1 && row[colIdx[key]] ? row[colIdx[key]] : '';
+
+      // 👇 원하시는 3개의 고정 시간대만 깔끔하게 세팅해 두었습니다! 👇
+      const fixedTimeSlots = [
+        '09시 ~ 13시',
+        '13시 ~ 15시',
+        '15시 ~ 17시'
+      ];
+
+      const timeGroups = {};
+      fixedTimeSlots.forEach(slot => {
+        timeGroups[slot] = [];
+      });
+
+      for (let i = 1; i < lines.length; i++) {
+        const row = lines[i].split(delimiter).map(item => item.replace(/"/g, '').trim());
+        
+        let rawTime = val(row, 'time');
+        let timeMatch = rawTime.match(/\d{1,2}시\s*~\s*\d{1,2}시/);
+        
+        let timeKey = timeMatch ? timeMatch[0].replace(/\s*~\s*/, ' ~ ') : ''; 
+        
+        if (!timeKey) timeKey = '시간 미지정';
+
+        if (!timeGroups[timeKey]) timeGroups[timeKey] = [];
+
+        const receiver = val(row, 'receiver') || val(row, 'buyer'); 
+        const model = val(row, 'model');
+        const plan = val(row, 'plan');
+        const type = val(row, 'type');
+        
+        // 데이터 조립 (나중에 원하시는 항목으로 자유롭게 수정하시면 됩니다)
+        const info = `${receiver} / ${model} / ${plan} / ${type}`;
+
+        timeGroups[timeKey].push(info);
+      }
+
+      // 정렬 (고정 시간대 3개가 무조건 먼저 나옵니다)
+      const sortedTimes = [
+        ...fixedTimeSlots,
+        ...Object.keys(timeGroups).filter(k => !fixedTimeSlots.includes(k) && k !== '시간 미지정'),
+      ];
+      if (timeGroups['시간 미지정'] && timeGroups['시간 미지정'].length > 0) {
+        sortedTimes.push('시간 미지정');
+      }
+
+      let finalOutput = '';
+
+      sortedTimes.forEach((time, index) => {
+        finalOutput += `[${time}]\n\n`; 
+
+        if (timeGroups[time] && timeGroups[time].length > 0) {
           const items = timeGroups[time].map((info, idx) => `${idx + 1}. ${info}`);
-          
-          // 엔터 3번(\n\n\n)으로 간격 벌리기
           finalOutput += items.join('\n\n\n');
-          finalOutput += '\n\n'; // 마지막 사람 뒤에도 여백 주기
+          finalOutput += '\n\n'; 
+        } else {
+          finalOutput += '\n'; 
         }
 
-        // 마지막 덩어리가 아니면 구분선 추가
         if (index < sortedTimes.length - 1) {
           finalOutput += `===============================\n`;
         }
       });
 
-      // 4. '정리.txt' 파일로 다운로드 실행
       const blob = new Blob([finalOutput], { type: 'text/plain;charset=utf-8' });
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
@@ -1643,9 +1722,9 @@ function App() {
       e.target.value = null; 
     };
 
-    // 만약 글자가 깨지면 'utf-8'을 'euc-kr'로 바꿔주세요
     reader.readAsText(file, 'utf-8'); 
   };
+
 
 
   useEffect(() => {
