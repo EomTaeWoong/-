@@ -1551,169 +1551,74 @@ function App() {
     const file = e.target.files[0];
     if (!file) return;
 
-    if (file.name.toLowerCase().endsWith('.crdownload')) {
-        alert("⚠️ [업로드 실패]\n다운로드가 끝나지 않은 '.crdownload' 상태입니다.\n크롬에서 다운로드가 완료된 후 다시 올려주세요!");
-        e.target.value = null;
-        return;
-    }
-
     const reader = new FileReader();
-    
     reader.onload = (event) => {
       try {
-        const buffer = event.target.result;
-        if (buffer.byteLength === 0) {
-            return alert("⚠️ 파일 크기가 0바이트입니다! 내용이 비어있습니다.");
-        }
+        const data = new Uint8Array(event.target.result);
+        const workbook = XLSX.read(data, { type: 'array' });
+        const worksheet = workbook.Sheets[workbook.SheetNames[0]];
+        const json = XLSX.utils.sheet_to_json(worksheet, { defval: "" });
 
-        let extractedData = [];
+        if (json.length === 0) return alert("파일에 데이터가 없습니다.");
+
         const fixedTimeSlots = ['09시 ~ 13시', '13시 ~ 15시', '15시 ~ 17시'];
-        const timeGroups = {};
-        fixedTimeSlots.forEach(slot => { timeGroups[slot] = []; });
+        const timeGroups = { '09시 ~ 13시': [], '13시 ~ 15시': [], '15시 ~ 17시': [] };
 
-        const fileName = file.name.toLowerCase();
-
-        // 🟢 1. 엑셀 파일 (.xlsx, .xls, .csv) 전용 처리 (표 칸에 맞춰 100% 정확하게 추출)
-        if (fileName.endsWith('.xlsx') || fileName.endsWith('.xls') || fileName.endsWith('.csv')) {
-            // HTML에 세팅해둔 XLSX 라이브러리를 사용해 엑셀 표를 그대로 읽어옵니다.
-            const workbook = XLSX.read(buffer, { type: 'array' });
-            const firstSheetName = workbook.SheetNames[0];
-            const worksheet = workbook.Sheets[firstSheetName];
+        json.forEach(row => {
+            // 🚨 항목 이름을 엑셀 파일과 정확히 일치시켰습니다!
+            const rawTime = String(row['상담희망일시'] || row['상담희망일'] || '');
             
-            // 엑셀의 열 이름(헤더)을 기준으로 데이터를 예쁜 JSON 형태로 바꿉니다.
-            const json = XLSX.utils.sheet_to_json(worksheet, { defval: "" });
+            let timeKey = '';
+            if (rawTime.includes('09:00') || rawTime.includes('09시')) timeKey = '09시 ~ 13시';
+            else if (rawTime.includes('13:00') || rawTime.includes('13시')) timeKey = '13시 ~ 15시';
+            else if (rawTime.includes('15:00') || rawTime.includes('15시')) timeKey = '15시 ~ 17시';
 
-            if (json.length === 0) {
-                return alert("엑셀 파일에 처리할 데이터가 없습니다.");
-            }
-
-            json.forEach(row => {
-                // 엑셀의 '상담희망일시' 칸 값을 읽어옵니다.
-                const rawTime = String(row['상담희망일시'] || row['상담희망일'] || '');
-                if (!rawTime) return;
-
-                let timeKey = '';
-                if (rawTime.includes('09:00') || rawTime.includes('09시')) timeKey = '09시 ~ 13시';
-                else if (rawTime.includes('13:00') || rawTime.includes('13시')) timeKey = '13시 ~ 15시';
-                else if (rawTime.includes('15:00') || rawTime.includes('15시')) timeKey = '15시 ~ 17시';
-
-                if (!timeKey) return;
-
-                // 엑셀의 각 항목(열) 이름과 똑같이 적어서 데이터를 오차 없이 가져옵니다!
+            if (timeGroups[timeKey]) {
                 const category = row['구분'] || '';
                 const receiver = row['인수자명'] || row['구매자명'] || '';
                 const confirmNo = row['확인번호'] || '';
                 const type = row['유형'] || '';
-                const dotcom = row['닷컴상태'] || row['MRS상태'] || ''; 
+                const dotcom = row['닷컴상태'] || '';
                 const model = row['모델명'] || '';
                 const plan = row['요금제'] || '';
                 const installment = row['할부금'] || '0';
                 const usimModel = row['유심모델'] || '';
-                const address = row['주소'] || row['배송지'] || '';
+                const address = row['주소'] || '';
 
-                let finalConfirmNo = confirmNo ? `${confirmNo}, ` : '';
-                let finalDotcom = dotcom ? dotcom : '';
-
-                const info = `${type} / ${category} / ${receiver} / ${finalConfirmNo}${finalDotcom}\n\n${model}\n${plan} / ${type} / ${installment}\n${usimModel}\n${address}`;
+                const info = `${type} / ${category} / ${receiver} / ${confirmNo}, ${dotcom}\n\n${model}\n${plan} / ${type} / ${installment}\n${usimModel}\n${address}`;
                 timeGroups[timeKey].push(info.replace(/\n{3,}/g, '\n\n'));
-            });
-
-        } else {
-            // 🟡 2. 혹시나 기존 TXT 파일을 올릴 경우를 대비한 텍스트 처리 로직
-            const uint8Array = new Uint8Array(buffer);
-            let text = '';
-            if (uint8Array.length >= 2 && uint8Array[0] === 0xFF && uint8Array[1] === 0xFE) text = new TextDecoder('utf-16le').decode(uint8Array);
-            else if (uint8Array.length >= 2 && uint8Array[0] === 0xFE && uint8Array[1] === 0xFF) text = new TextDecoder('utf-16be').decode(uint8Array);
-            else if (uint8Array.length >= 3 && uint8Array[0] === 0xEF && uint8Array[1] === 0xBB && uint8Array[2] === 0xBF) text = new TextDecoder('utf-8').decode(uint8Array);
-            else {
-                try { text = new TextDecoder('utf-8', { fatal: true }).decode(uint8Array); } 
-                catch (err) { text = new TextDecoder('euc-kr').decode(uint8Array); }
             }
+        });
 
-            let cleanText = text.replace(/[\r\n\t]+/g, ' ');
-            let chunks = cleanText.split(/(?=\b202\d{10,12}\b)/);
-            if (chunks.length <= 1) chunks = cleanText.split(/(?=\b\d{12,14}\b)/);
-
-            let validRecords = chunks.filter(chunk => /(09:00\s*~\s*13:00|13:00\s*~\s*15:00|15:00\s*~\s*17:00|09시\s*~\s*13시|13시\s*~\s*15시|15시\s*~\s*17시)/.test(chunk));
-
-            if (validRecords.length === 0) {
-                alert("❌ 텍스트에서 데이터를 찾을 수 없습니다!\n엑셀(.xlsx) 파일 형태로 다운로드 받아 올려주세요.");
-                e.target.value = null;
-                return;
-            }
-
-            validRecords.forEach(record => {
-                let timeMatch = record.match(/(09:00\s*~\s*13:00|13:00\s*~\s*15:00|15:00\s*~\s*17:00|09시\s*~\s*13시|13시\s*~\s*15시|15시\s*~\s*17시)/);
-                if (!timeMatch) return;
-                
-                let timeStr = timeMatch[1].replace(/\s/g, '');
-                let timeKey = '';
-                if (timeStr.includes('09:00') || timeStr.includes('09시')) timeKey = '09시 ~ 13시';
-                else if (timeStr.includes('13:00') || timeStr.includes('13시')) timeKey = '13시 ~ 15시';
-                else if (timeStr.includes('15:00') || timeStr.includes('15시')) timeKey = '15시 ~ 17시';
-
-                let category = record.match(/(?:^|\s)(택배|BOPIS|스마트픽|픽업|매장방문)(?=\s|$)/)?.[1] || '';
-                let receiver = record.match(/([가-힣]{2,4})\s+(?:[가-힣]{2,4}\s+)?010-\d{3,4}-\d{4}/)?.[1] || '';
-                let confirmNoMatch = record.match(/(?:^|\s)([A-Z]+\d+[A-Z0-9]*|\d+[A-Z]+[A-Z0-9]*)(?=\s|$)/g);
-                let confirmNo = confirmNoMatch ? confirmNoMatch.map(s => s.trim()).find(c => !c.startsWith('KR') && !c.startsWith('SM-') && c !== 'BOPIS' && c.length >= 4 && c.length <= 10) || '' : '';
-                let type = record.match(/(SKT|KT|U\+|SK|LG)\s+(?:공시지원|선택약정|자급제)?\s*(기변|번이|신규|기기변경|번호이동)/)?.[0].replace(/\s+/g, ' ') || '';
-                let dotcomMatches = record.match(/(임시저장|개통완료|개통대기|서식지접수|닷컴개통\d*)/g);
-                let dotcom = dotcomMatches ? Array.from(new Set(dotcomMatches)).join(', ') : '';
-                let model = record.match(/(?:^|\s)(SM-[A-Z0-9]+|iPhone\s*[A-Za-z0-9\s]+)(?=\s|$)/i)?.[1].replace(/\s+/g, '') || '';
-                let plan = record.match(/(?:^|\s)(\d{1,2}_[가-힣A-Za-z0-9_]+|[가-힣A-Za-z0-9_]*플랜[가-힣A-Za-z0-9_]*)(?=\s|$)/)?.[1] || '';
-                let installment = record.match(/(?:^|\s)(0|[1-9]\d{4,7})\s+(?:24|30|36|일시불)?\s+(?:[A-Za-z가-힣0-9_]*플랜|\d{1,2}_)/)?.[1] || '0';
-                let usimMatch = record.match(/(?:^|\s)(Y|N)\s+(?:SM-|iPhone)/i) || record.match(/(?:^|\s)(Y|N)(?:SM-|iPhone)/i);
-                let usimModel = usimMatch ? usimMatch[1].toUpperCase() : '';
-
-                let address = '';
-                let zipIdx = record.search(/\b\d{5}\s*[가-힣]+/);
-                if (zipIdx !== -1) {
-                    let sub = record.substring(zipIdx);
-                    let cutMatch = sub.match(/\s+(0|[1-9]\d{4,7})\s*(24|30|36|일시불)?\s*([가-힣A-Za-z0-9_]*플랜|\d{1,2}_)/);
-                    address = cutMatch ? sub.substring(0, cutMatch.index).trim() : sub.substring(0, Math.min(sub.length, 60)).trim(); 
-                }
-
-                let finalConfirmNo = confirmNo ? `${confirmNo}, ` : '';
-                const info = `${type} / ${category} / ${receiver} / ${finalConfirmNo}${dotcom}\n\n${model}\n${plan} / ${type} / ${installment}\n${usimModel}\n${address}`;
-                timeGroups[timeKey].push(info.replace(/\n{3,}/g, '\n\n'));
-            });
-        }
-
-        // 3. 파일 다운로드 공통 처리
         let finalOutput = '';
         fixedTimeSlots.forEach((time, index) => {
-            finalOutput += `[${time}]\n\n`; 
+            finalOutput += `[${time}]\n\n`;
             if (timeGroups[time].length > 0) {
-                const items = timeGroups[time].map((info, idx) => `${idx + 1}. ${info}`);
-                finalOutput += items.join('\n\n\n');
-                finalOutput += '\n\n'; 
+                finalOutput += timeGroups[time].map((info, idx) => `${idx + 1}. ${info}`).join('\n\n\n') + '\n\n';
             } else {
-                finalOutput += '\n'; 
+                finalOutput += '\n';
             }
-            if (index < fixedTimeSlots.length - 1) {
-                finalOutput += `===============================\n`;
-            }
+            if (index < fixedTimeSlots.length - 1) finalOutput += `===============================\n`;
         });
 
         const blob = new Blob([finalOutput], { type: 'text/plain;charset=utf-8' });
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
-        a.download = `정리.txt`; 
+        a.download = `정리.txt`;
         document.body.appendChild(a);
         a.click();
         document.body.removeChild(a);
         URL.revokeObjectURL(url);
-        
-        e.target.value = null; 
-
-      } catch (error) {
-          alert('오류 발생: 엑셀 데이터를 처리할 수 없습니다. (' + error.message + ')');
+        e.target.value = null;
+      } catch (err) {
+        alert("엑셀 처리 중 오류: " + err.message);
       }
     };
-
-    reader.readAsArrayBuffer(file); 
+    reader.readAsArrayBuffer(file);
   };
+
+
 
 
 
