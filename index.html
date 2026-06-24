@@ -1533,49 +1533,58 @@ function App() {
     if (!file) return;
 
     const reader = new FileReader();
-    // 무조건 텍스트로 읽습니다 (어떤 확장자든 상관없음)
     reader.readAsText(file, 'euc-kr'); 
 
     reader.onload = (event) => {
       try {
         const text = event.target.result;
+        const lines = text.split(/\r?\n/).filter(line => line.trim() !== '');
+        if (lines.length < 2) return alert("데이터가 없습니다.");
+
+        let headerIdx = 0;
+        for (let i = 0; i < Math.min(lines.length, 5); i++) {
+            if (lines[i].includes('상담희망일시')) { headerIdx = i; break; }
+        }
+
+        const delimiter = lines[headerIdx].includes('\t') ? '\t' : ',';
+        const headers = lines[headerIdx].split(delimiter).map(h => h.trim().replace(/"/g, ''));
         
-        // 🚨 핵심: 엑셀/CSV 구분 안 함. '202...'로 시작하는 접수번호를 찾아 사람별로 뭉텅이로 자름
-        // 이 방식이 예전에 사용자님이 성공하셨던 그 방식입니다.
-        const records = text.split(/(?=202\d{10})/); 
-        
+        const getIdx = (name) => headers.findIndex(h => h.includes(name));
+        const idx = {
+            time: getIdx('상담희망일시'), cat: getIdx('구분'),
+            recv: getIdx('인수자명') > -1 ? getIdx('인수자명') : getIdx('구매자명'),
+            no: getIdx('확인번호'), type: getIdx('유형'),
+            dot: getIdx('닷컴상태') > -1 ? getIdx('닷컴상태') : getIdx('MRS상태'),
+            model: getIdx('모델명'), plan: getIdx('요금제'),
+            inst: getIdx('할부금'), usim: getIdx('유심모델'),
+            addr: getIdx('주소') > -1 ? getIdx('주소') : getIdx('배송지')
+        };
+
         const timeGroups = { '09시 ~ 13시': [], '13시 ~ 15시': [], '15시 ~ 17시': [] };
 
-        records.forEach(record => {
-            if (!record.includes('202')) return;
-
-            let timeMatch = record.match(/(09:00\s*~\s*13:00|13:00\s*~\s*15:00|15:00\s*~\s*17:00|09시\s*~\s*13시|13시\s*~\s*15시|15시\s*~\s*17시)/);
-            if (!timeMatch) return;
-            
-            let timeStr = timeMatch[1].replace(/\s/g, '');
-            let timeKey = timeStr.includes('09') ? '09시 ~ 13시' : timeStr.includes('13') ? '13시 ~ 15시' : '15시 ~ 17시';
+        lines.slice(headerIdx + 1).forEach(line => {
+            const cols = line.split(delimiter).map(c => c.trim().replace(/"/g, ''));
+            const rawTime = cols[idx.time] || '';
+            let timeKey = rawTime.includes('09') ? '09시 ~ 13시' : rawTime.includes('13') ? '13시 ~ 15시' : rawTime.includes('15') ? '15시 ~ 17시' : '';
             
             if (timeGroups[timeKey]) {
-                // 패턴으로 데이터 찾기
-                const getVal = (regex) => (record.match(regex) || [])[1] || '';
-                
-                const type = getVal(/(SKT|KT|U\+|SK|LG)\s+(?:공시지원|선택약정|자급제)?\s*(?:기변|번이|신규|기기변경|번호이동)/);
-                const cat = getVal(/(택배|BOPIS|스마트픽|픽업|매장방문)/);
-                const name = getVal(/([가-힣]{2,4})\s+(?:[가-힣]{2,4}\s+)?010-\d{3,4}-\d{4}/);
-                const confirm = getVal(/(\d{4,12})/);
-                const dotcom = getVal(/(임시저장|개통완료|개통대기|서식지접수|닷컴개통\d*)/);
-                const model = getVal(/(SM-[A-Z0-9]+|iPhone\s*[A-Za-z0-9\s]+)/i);
-                const plan = getVal(/(\d{1,2}_[가-힣A-Za-z0-9_]+|[가-힣A-Za-z0-9_]*플랜[가-힣A-Za-z0-9_]*)/);
-                const inst = getVal(/(0|[1-9]\d{4,7})/);
-                const usim = getVal(/(Y|N)(?=\s*(?:SM-|iPhone))/i);
-                const addr = getVal(/(\d{5}\s*[가-힣].+)/);
+                // 🚨 유형 쪼개기 로직
+                const rawType = cols[idx.type] || '';
+                let changeType = '기타';
+                if (rawType.includes('기변') || rawType.includes('기기변경')) changeType = '기변';
+                else if (rawType.includes('번이') || rawType.includes('번호이동')) changeType = '번이';
+                else if (rawType.includes('신규')) changeType = '신규';
 
-                const info = `${type} / ${cat} / ${name} / ${confirm}, ${dotcom}\n\n${model}\n${plan} / ${type} / ${inst}\n${usim}\n${addr}`;
+                let discountType = '기타';
+                if (rawType.includes('공시')) discountType = '공시';
+                else if (rawType.includes('선택') || rawType.includes('선약')) discountType = '선약';
+                else if (rawType.includes('자급')) discountType = '자급';
+
+                const info = `${changeType} / ${cols[idx.cat]} / ${cols[idx.recv]} / ${cols[idx.no]}, ${cols[idx.dot]}\n\n${cols[idx.model]}\n${cols[idx.plan]} / ${discountType} / ${cols[idx.inst]}\n${cols[idx.usim]}\n${cols[idx.addr]}`;
                 timeGroups[timeKey].push(info.replace(/\n{3,}/g, '\n\n'));
             }
         });
 
-        // 텍스트로 저장
         let finalOutput = '';
         ['09시 ~ 13시', '13시 ~ 15시', '15시 ~ 17시'].forEach((time, i, arr) => {
             finalOutput += `[${time}]\n\n` + (timeGroups[time].length > 0 ? timeGroups[time].map((info, idx) => `${idx + 1}. ${info}`).join('\n\n\n') + '\n\n' : '\n');
@@ -1585,19 +1594,14 @@ function App() {
         const blob = new Blob([finalOutput], { type: 'text/plain;charset=utf-8' });
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
-        a.href = url;
-        a.download = `정리.txt`;
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
+        a.href = url; a.download = `정리.txt`;
+        document.body.appendChild(a); a.click(); document.body.removeChild(a);
         URL.revokeObjectURL(url);
         e.target.value = null;
-
-      } catch (err) {
-        alert("처리에 실패했습니다. 파일 내용을 확인해주세요.");
-      }
+      } catch (err) { alert("오류: " + err.message); }
     };
   };
+
 
   
   const [operator, setOperator] = useState('KT');
