@@ -1527,6 +1527,61 @@ function Calculator({
 }
 
 function App() {
+
+      const handleFileUpload = (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.readAsText(file, 'euc-kr'); 
+
+      reader.onload = (event) => {
+        try {
+          const text = event.target.result;
+          const lines = text.split(/\r?\n/).filter(line => line.trim() !== '');
+          const delimiter = lines[0].includes('\t') ? '\t' : ',';
+          const headers = lines[0].split(delimiter).map(h => h.trim().replace(/"/g, ''));
+          
+          const getIdx = (name) => headers.findIndex(h => h.includes(name));
+          const idx = {
+              time: getIdx('상담희망일시'), cat: getIdx('구분'),
+              recv: getIdx('인수자명') > -1 ? getIdx('인수자명') : getIdx('구매자명'),
+              no: getIdx('확인번호'), type: getIdx('유형'),
+              dot: getIdx('닷컴상태') > -1 ? getIdx('닷컴상태') : getIdx('MRS상태'),
+              model: getIdx('모델명'), plan: getIdx('요금제'),
+              inst: getIdx('할부금'), usim: getIdx('유심모델'),
+              addr: getIdx('주소') > -1 ? getIdx('주소') : getIdx('배송지')
+          };
+
+          const timeGroups = { '09시 ~ 13시': [], '13시 ~ 15시': [], '15시 ~ 17시': [] };
+
+          lines.slice(1).forEach(line => {
+              const cols = line.split(delimiter).map(c => c.trim().replace(/"/g, ''));
+              const rawTime = cols[idx.time] || '';
+              let timeKey = rawTime.includes('09') ? '09시 ~ 13시' : rawTime.includes('13') ? '13시 ~ 15시' : rawTime.includes('15') ? '15시 ~ 17시' : '';
+              if (timeGroups[timeKey]) {
+                  const info = `${cols[idx.type]} / ${cols[idx.cat]} / ${cols[idx.recv]} / ${cols[idx.no]}, ${cols[idx.dot]}\n\n${cols[idx.model]}\n${cols[idx.plan]} / ${cols[idx.type]} / ${cols[idx.inst]}\n${cols[idx.usim]}\n${cols[idx.addr]}`;
+                  timeGroups[timeKey].push(info.replace(/\n{3,}/g, '\n\n'));
+              }
+          });
+
+          let finalOutput = '';
+          ['09시 ~ 13시', '13시 ~ 15시', '15시 ~ 17시'].forEach((time, i, arr) => {
+              finalOutput += `[${time}]\n\n` + (timeGroups[time].length > 0 ? timeGroups[time].map((info, idx) => `${idx + 1}. ${info}`).join('\n\n\n') + '\n\n' : '\n');
+              if (i < arr.length - 1) finalOutput += '===============================\n';
+          });
+
+          const blob = new Blob([finalOutput], { type: 'text/plain;charset=utf-8' });
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url; a.download = `정리.txt`;
+          document.body.appendChild(a); a.click(); document.body.removeChild(a);
+          URL.revokeObjectURL(url);
+          e.target.value = null;
+        } catch (err) { alert("오류: " + err.message); }
+      };
+    };
+  
   const [operator, setOperator] = useState('KT');
   const [trackingNumber, setTrackingNumber] = useState('');
   const [showPopup, setShowPopup] = useState(false);
@@ -1539,93 +1594,10 @@ function App() {
   const [showStorePopup, setShowStorePopup] = useState(false); 
 
   const [policyData, setPolicyData] = useState(POLICY);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(true)
 
+  const fileInputRef = React.useRef(null);     
 
-  const fileInputRef = React.useRef(null);
-
-
-  const handleFileUpload = (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
-
-    const reader = new FileReader();
-    reader.readAsText(file, 'euc-kr'); 
-
-    reader.onload = (event) => {
-      try {
-        const text = event.target.result;
-        const lines = text.split(/\r?\n/).filter(line => line.trim() !== '');
-        if (lines.length < 2) return alert("데이터가 없습니다.");
-
-        // 🚨 [스마트 스캐너] 파일의 첫 5줄을 훑어서 '상담희망일시'가 포함된 줄을 제목줄로 자동 인식합니다!
-        let headerIdx = 0;
-        for (let i = 0; i < Math.min(lines.length, 5); i++) {
-            if (lines[i].includes('상담희망일시')) {
-                headerIdx = i;
-                break;
-            }
-        }
-
-        const delimiter = lines[headerIdx].includes('\t') ? '\t' : ',';
-        const headers = lines[headerIdx].split(delimiter).map(h => h.trim().replace(/"/g, ''));
-        
-        const getIdx = (name) => headers.findIndex(h => h.includes(name));
-        const idx = {
-            time: getIdx('상담희망일시'),
-            cat: getIdx('구분'),
-            recv: getIdx('인수자명') > -1 ? getIdx('인수자명') : getIdx('구매자명'),
-            no: getIdx('확인번호'),
-            type: getIdx('유형'),
-            dot: getIdx('닷컴상태') > -1 ? getIdx('닷컴상태') : getIdx('MRS상태'),
-            model: getIdx('모델명'),
-            plan: getIdx('요금제'),
-            inst: getIdx('할부금'),
-            usim: getIdx('유심모델'),
-            addr: getIdx('주소') > -1 ? getIdx('주소') : getIdx('배송지')
-        };
-
-        const timeGroups = { '09시 ~ 13시': [], '13시 ~ 15시': [], '15시 ~ 17시': [] };
-
-        // 제목줄 다음부터 데이터를 읽습니다.
-        lines.slice(headerIdx + 1).forEach(line => {
-            const cols = line.split(delimiter).map(c => c.trim().replace(/"/g, ''));
-            const rawTime = cols[idx.time] || '';
-            
-            let timeKey = '';
-            if (rawTime.includes('09')) timeKey = '09시 ~ 13시';
-            else if (rawTime.includes('13')) timeKey = '13시 ~ 15시';
-            else if (rawTime.includes('15')) timeKey = '15시 ~ 17시';
-            
-            if (timeGroups[timeKey]) {
-                const info = `${cols[idx.type]} / ${cols[idx.cat]} / ${cols[idx.recv]} / ${cols[idx.no]}, ${cols[idx.dot]}\n\n${cols[idx.model]}\n${cols[idx.plan]} / ${cols[idx.type]} / ${cols[idx.inst]}\n${cols[idx.usim]}\n${cols[idx.addr]}`;
-                timeGroups[timeKey].push(info.replace(/\n{3,}/g, '\n\n'));
-            }
-        });
-
-        // 텍스트 저장
-        let finalOutput = '';
-        ['09시 ~ 13시', '13시 ~ 15시', '15시 ~ 17시'].forEach((time, i, arr) => {
-            finalOutput += `[${time}]\n\n` + (timeGroups[time].length > 0 ? timeGroups[time].map((info, idx) => `${idx + 1}. ${info}`).join('\n\n\n') + '\n\n' : '\n');
-            if (i < arr.length - 1) finalOutput += '===============================\n';
-        });
-
-        const blob = new Blob([finalOutput], { type: 'text/plain;charset=utf-8' });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `정리.txt`;
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        URL.revokeObjectURL(url);
-        e.target.value = null;
-
-      } catch (err) {
-        alert("처리 오류: " + err.message);
-      }
-    };
-  };
             
 
         
