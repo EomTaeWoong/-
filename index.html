@@ -1506,26 +1506,6 @@ const featureText = useMemo(() => {
             </div>
           )}
         </div>
-      </div>
-      
-      {showMaintenancePopup && (
-        <MaintenanceCostPopup 
-          onClose={() => setShowMaintenancePopup(false)} 
-          operator={operator}
-          plans={plans}
-          features={features}
-          policyData={policyData}
-          initialData={{
-            selectedDevice, selectedPlan, installMonths, commonSupport,
-            additionalSupport, selectiveAdditionalSupport, additionalEdited: true,
-            contractType, joinType, isGalcams
-          }}
-        />
-      )}
-    </div>
-  );
-}
-
 
 function App() {
   const [operator, setOperator] = useState('KT');
@@ -1542,7 +1522,7 @@ function App() {
   const [policyData, setPolicyData] = useState(POLICY);
   const [isLoading, setIsLoading] = useState(true);
 
-  // 👇 개꿀 자동화 파일 처리 기능 👇
+  // 👇 개꿀 자동화: HTML 가짜 엑셀 파일 해독 로직 추가 👇
   const fileInputRef = React.useRef(null);
 
   const handleFileUpload = (e) => {
@@ -1553,58 +1533,97 @@ function App() {
     
     reader.onload = (event) => {
       const text = event.target.result;
-      const delimiter = text.includes('\t') ? '\t' : ',';
-      const lines = text.split(/\r?\n/).filter(line => line.trim() !== '');
-      
-      if (lines.length < 2) return alert('처리할 데이터가 없습니다.');
+      let extractedData = [];
 
-      const headers = lines[0].split(delimiter).map(h => h.trim().replace(/"/g, ''));
-      
-      const colIdx = {
-        time: headers.indexOf('상담희망일'),
-        buyer: headers.indexOf('구매자명'),
-        receiver: headers.indexOf('인수자명'),
-        type: headers.indexOf('유형'),
-        model: headers.indexOf('모델명'),
-        plan: headers.indexOf('요금제')
-      };
+      // ✨ 사내망 가짜 엑셀(HTML) 데이터를 자바스크립트로 읽어내는 마법의 로직 ✨
+      const parser = new DOMParser();
+      const doc = parser.parseFromString(text, 'text/html');
+      const rows = Array.from(doc.querySelectorAll('tr'));
 
-      const val = (row, key) => colIdx[key] !== -1 && row[colIdx[key]] ? row[colIdx[key]] : '';
+      if (rows.length > 1) {
+        // 1. HTML 표 형식일 때 (올려주신 사진의 형태)
+        const headerRow = rows[0];
+        const headers = Array.from(headerRow.querySelectorAll('th, td')).map(cell => cell.textContent.trim());
 
-      // 원하시는 3개의 고정 시간대
+        const colIdx = {
+          time: headers.indexOf('상담희망일'),
+          buyer: headers.indexOf('구매자명'),
+          receiver: headers.indexOf('인수자명'),
+          type: headers.indexOf('유형'),
+          model: headers.indexOf('모델명'),
+          plan: headers.indexOf('요금제')
+        };
+
+        const val = (rowCells, key) => colIdx[key] !== -1 && rowCells[colIdx[key]] ? rowCells[colIdx[key]].textContent.trim() : '';
+
+        for (let i = 1; i < rows.length; i++) {
+          const rowCells = Array.from(rows[i].querySelectorAll('td'));
+          if (rowCells.length === 0) continue;
+          extractedData.push({
+            time: val(rowCells, 'time'),
+            buyer: val(rowCells, 'buyer'),
+            receiver: val(rowCells, 'receiver'),
+            type: val(rowCells, 'type'),
+            model: val(rowCells, 'model'),
+            plan: val(rowCells, 'plan')
+          });
+        }
+      } else {
+        // 2. 일반 CSV 파일일 때 (혹시 다른 형태의 파일이 올라올 경우를 대비)
+        const delimiter = text.includes('\t') ? '\t' : ',';
+        const lines = text.split(/\r?\n/).filter(line => line.trim() !== '');
+        
+        if (lines.length < 2) return alert('처리할 데이터가 없습니다.');
+
+        const headers = lines[0].split(delimiter).map(h => h.trim().replace(/"/g, ''));
+        const colIdx = {
+          time: headers.indexOf('상담희망일'),
+          buyer: headers.indexOf('구매자명'),
+          receiver: headers.indexOf('인수자명'),
+          type: headers.indexOf('유형'),
+          model: headers.indexOf('모델명'),
+          plan: headers.indexOf('요금제')
+        };
+        const val = (row, key) => colIdx[key] !== -1 && row[colIdx[key]] ? row[colIdx[key]] : '';
+
+        for (let i = 1; i < lines.length; i++) {
+          const row = lines[i].split(delimiter).map(item => item.replace(/"/g, '').trim());
+          extractedData.push({
+            time: val(row, 'time'),
+            buyer: val(row, 'buyer'),
+            receiver: val(row, 'receiver'),
+            type: val(row, 'type'),
+            model: val(row, 'model'),
+            plan: val(row, 'plan')
+          });
+        }
+      }
+
+      // 원하시는 3개의 고정 시간대 껍데기 세팅
       const fixedTimeSlots = [
         '09시 ~ 13시',
         '13시 ~ 15시',
         '15시 ~ 17시'
       ];
-
       const timeGroups = {};
-      fixedTimeSlots.forEach(slot => {
-        timeGroups[slot] = [];
-      });
+      fixedTimeSlots.forEach(slot => { timeGroups[slot] = []; });
 
-      for (let i = 1; i < lines.length; i++) {
-        const row = lines[i].split(delimiter).map(item => item.replace(/"/g, '').trim());
-        
-        let rawTime = val(row, 'time');
+      // 뽑아낸 데이터 조립하기
+      extractedData.forEach(data => {
+        let rawTime = data.time || '';
         let timeMatch = rawTime.match(/\d{1,2}시\s*~\s*\d{1,2}시/);
-        
         let timeKey = timeMatch ? timeMatch[0].replace(/\s*~\s*/, ' ~ ') : ''; 
         
-        // ✨ 고정 시간대 3개에 딱 맞는 데이터만 분류합니다 (시간 미지정은 자동 삭제)
+        // 딱 3개의 고정 시간대에 해당하는 데이터만 넣기
         if (fixedTimeSlots.includes(timeKey)) {
-          const receiver = val(row, 'receiver') || val(row, 'buyer'); 
-          const model = val(row, 'model');
-          const plan = val(row, 'plan');
-          const type = val(row, 'type');
-          
-          const info = `${receiver} / ${model} / ${plan} / ${type}`;
+          const receiver = data.receiver || data.buyer; 
+          const info = `${receiver} / ${data.model} / ${data.plan} / ${data.type}`;
           timeGroups[timeKey].push(info);
         }
-      }
+      });
 
+      // 최종 메모장 텍스트 만들기
       let finalOutput = '';
-
       fixedTimeSlots.forEach((time, index) => {
         finalOutput += `[${time}]\n\n`; 
 
@@ -1634,8 +1653,8 @@ function App() {
       e.target.value = null; 
     };
 
-    // ✨ 전산망 파일 한국어 깨짐을 해결하는 핵심 코드 (euc-kr) ✨
-    reader.readAsText(file, 'euc-kr'); 
+    // 사진에서 확인한 대로 인코딩을 원래 utf-8 로 다시 원복!
+    reader.readAsText(file, 'utf-8'); 
   };
 
   useEffect(() => {
@@ -1810,17 +1829,12 @@ function App() {
       {showNoticePopup && <NoticePopup onClose={() => setShowNoticePopup(false)} />}
       {showStorePopup && <StoreMapPopup onClose={() => setShowStorePopup(false)} />}
 
-      <input type="file" accept=".csv, .txt, .crdownload" ref={fileInputRef} onChange={handleFileUpload} style={{ display: 'none' }} />
+      <input type="file" accept=".csv, .txt, .crdownload, .xls, .xlsx" ref={fileInputRef} onChange={handleFileUpload} style={{ display: 'none' }} />
     </div>
   );
 }
-
-
 
 ReactDOM.createRoot(document.getElementById('root')).render(<App/>);
 </script>
 </body>
 </html>
-
-
-
