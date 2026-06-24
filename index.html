@@ -8,6 +8,7 @@
   <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
   <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
   <script src="https://unpkg.com/@babel/standalone@7.23.10/babel.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 
   
   <style>
@@ -1528,7 +1529,7 @@ function Calculator({
 
 function App() {
 
-  const handleFileUpload = (e) => {
+const handleFileUpload = (e) => {
     const file = e.target.files[0];
     if (!file) return;
 
@@ -1539,8 +1540,28 @@ function App() {
       try {
         const text = event.target.result;
         
+        let storeIdx = -1;
+        let dotcomIdx = -1; 
+        let usimIdx = -1;
+        
+        let delimiter = text.includes('\t') ? '\t' : ',';
+        const linesForIdx = text.split(/\r?\n/);
+        for (let i = 0; i < Math.min(linesForIdx.length, 10); i++) {
+            if (linesForIdx[i].includes('구분') || linesForIdx[i].includes('상담희망일시')) {
+                const headers = linesForIdx[i].split(delimiter).map(h => h.trim().replace(/"/g, ''));
+                storeIdx = headers.findIndex(h => h === '매장' || h === '매장명' || h.includes('매장'));
+                dotcomIdx = headers.findIndex(h => h.includes('닷컴상태'));
+                usimIdx = headers.findIndex(h => h.includes('유심모델'));
+                break;
+            }
+        }
+
         const records = text.split(/(?=202\d{10})/); 
         const timeGroups = { '09시 ~ 13시': [], '13시 ~ 15시': [], '15시 ~ 17시': [] };
+
+        const allKnownPlans = [...PLAN_LIST_KT, ...PLAN_LIST_U]
+          .map(p => p.name.replace(/\s*\(가입\s*중단\)/g, '').trim())
+          .sort((a, b) => b.length - a.length);
 
         records.forEach(record => {
             if (!record.includes('202')) return;
@@ -1554,57 +1575,37 @@ function App() {
             if (timeGroups[timeKey]) {
                 const getVal = (regex) => (record.match(regex) || [])[1] || '';
                 
-                // 💡 [해결 1] '퀵배송' 추가 완료!
-                const cat = getVal(/(택배|BOPIS|스마트픽|픽업|매장방문|퀵배송)/);
+                let cat = getVal(/(택배|BOPIS|스마트픽|픽업|매장방문|퀵배송)/);
                 
-                let namePhoneMatch = record.match(/([가-힣]{2,4})[,\s]+(?:[가-힣]{2,4}[,\s]+)?(010-\d{3,4}-\d{4})/);
+                let storeName = '';
+                if (storeIdx !== -1) {
+                    const cols = record.split(delimiter);
+                    if (cols.length > storeIdx) {
+                        storeName = cols[storeIdx].trim().replace(/"/g, '').split(/\r?\n/)[0].trim();
+                    }
+                }
+                if (!storeName || storeName.includes('09') || storeName.includes('13') || storeName.includes('15')) {
+                    let timeMatchForStore = record.match(/(?:09:00\s*~\s*13:00|13:00\s*~\s*15:00|15:00\s*~\s*17:00|09시\s*~\s*13시|13시\s*~\s*15시|15시\s*~\s*17시)[ ]*,?[ ]*\t?[ ]*([^\t\n,]+)/);
+                    if (timeMatchForStore) { storeName = timeMatchForStore[1].trim(); }
+                }
+                storeName = storeName.replace(/(09:00\s*~\s*13:00|13:00\s*~\s*15:00|15:00\s*~\s*17:00|09시\s*~\s*13시|13시\s*~\s*15시|15시\s*~\s*17시)/g, '').trim();
+                if ((cat === 'BOPIS' || cat === '퀵배송') && storeName) { cat = `${cat}(${storeName})`; }
+
+                let namePhoneMatch = record.match(/(?:[가-힣]{2,5}[,\s\t]+)?([가-힣]{2,5})[,\s\t]+(010-\d{3,4}-\d{4})/);
                 const name = namePhoneMatch ? namePhoneMatch[1] : '';
                 const confirm = namePhoneMatch ? namePhoneMatch[2] : ''; 
 
-                let dotcomMatches = record.match(/(임시저장|개통완료|개통대기|서식지접수|접수완료|해피콜|결제대기|결제완료|상품준비중|배송준비중|배송중|배송완료|닷컴개통\d*|취소완료|교환접수|반품접수|반품완료|정상)/g);
-                const dotcom = dotcomMatches ? dotcomMatches[dotcomMatches.length - 1] : '';
+                let dotcom = '';
+                if (dotcomIdx !== -1) {
+                    const cols = record.split(delimiter);
+                    if (cols.length > dotcomIdx) { dotcom = cols[dotcomIdx].trim().replace(/"/g, '').split(/\r?\n/)[0].trim(); }
+                }
+                if (!dotcom || dotcom.length > 20 || dotcom.includes('202') || dotcom.includes('010')) {
+                    let dotcomMatches = record.match(/(임시저장|개통완료|개통대기|서식지접수|접수완료|해피콜|결제대기|결제완료|상품준비중|배송준비중|배송중|배송완료|닷컴개통\d*|취소완료|교환접수|반품접수|반품완료|정상)/g);
+                    dotcom = dotcomMatches ? dotcomMatches[dotcomMatches.length - 1] : '';
+                }
 
                 const rawModel = getVal(/(SM-[A-Z0-9]+|iPhone\s*[A-Za-z0-9\s]+)/i);
-
-                // 💡 [해결 2] 요금제: 영문, 숫자, 언더바(_), 괄호, 공백 모두 쓸어 담습니다!
-                let planMatch = record.match(/((?:5G|LTE|3G|Y[가-힣a-zA-Z]*|초이스|베이직|데이터|속걱데|추걱데|시니어|키즈|슬림|순|요금제|\d{2,3}_)[A-Za-z0-9가-힣_.()+\-]*(?:[_\s]+[A-Za-z0-9가-힣_.()+\-]+)*|[A-Za-z0-9가-힣_.()+\-]*플랜(?:[_\s]+[A-Za-z0-9가-힣_.()+\-]+)*)/i);
-                let plan = planMatch ? planMatch[1] : '';
-                // 쓸어 담은 요금제 이름 끝에 다른 항목(기변, 택배 등)이 붙었다면 칼같이 잘라냅니다.
-                plan = plan.replace(/\s*(기기변경|기변|번호이동|번이|이동|통신사이동|신규가입|신규|공시지원|공시|단말할인|선택약정|선약|요금할인|자급제|자급|택배|BOPIS|스마트픽|픽업|매장방문|퀵배송).*$/, '');
-                plan = plan.replace(/\s*\(가입 중단\)/g, '').trim();
-                
-                let instMatch = record.match(/(?:,|\s|^)([1-9]\d{4,7}|0)(?:,|\s)+(?:24|30|36|일시불)?(?:,|\s)+(?:[A-Za-z가-힣0-9_]*플랜|\d{1,2}_)/);
-                const inst = instMatch ? instMatch[1] : '0';
-
-                let usimMatch = record.match(/(?:,|^|\s)(Y|N)(?:,|\s|$)/i);
-                let usim = usimMatch ? usimMatch[1].toUpperCase() : '';
-                if (usim !== 'Y' && usim !== 'N') usim = '';
-
-                // 주소 추출 (우편번호 제외)
-                let addr = '';
-                let addrM1 = record.match(/\b(\d{5})\b[,\s]*"([^"]*)"/);
-                let addrM2 = record.match(/\b(\d{5})\b[,\s]*([^\t\n]+)/);
-                if (addrM1) {
-                    addr = addrM1[2].trim(); 
-                } else if (addrM2) {
-                    addr = addrM2[2].trim(); 
-                }
-                addr = addr.replace(/\s*(?:MRS상태|상담원|임시저장|개통완료|개통대기|서식지접수|접수완료|해피콜|결제대기|결제완료|상품준비중|배송준비중|배송중|배송완료|닷컴개통\d*|취소완료|교환접수|반품접수|반품완료|정상).*$/, '').trim();
-                addr = addr.replace(/,+$/, '').trim();
-
-                // 💡 [해결 3] '이동'이 무조건 나오도록 띄어쓰기 및 동의어(MNP 등) 완벽 추가
-                let changeType = '기타';
-                if (record.match(/(기기\s*변경|기변|보상\s*기변)/)) changeType = '기변';
-                else if (record.match(/(번호\s*이동|번이|이동|통신사\s*이동|MNP)/i)) changeType = '이동'; 
-                else if (record.match(/(신규\s*가입|신규|에이징)/)) changeType = '신규';
-
-                // 💡 [해결 4] '공시지원', '선택약정'이 무조건 나오도록 띄어쓰기 및 동의어(단말할인 등) 완벽 추가
-                let discountType = '기타';
-                if (record.match(/(공시\s*지원|공시|단말\s*할인|지원금)/)) discountType = '공시지원';
-                else if (record.match(/(선택\s*약정|선약|요금\s*할인)/)) discountType = '선택약정';
-                else if (record.match(/(자급제|자급)/)) discountType = '자급';
-
-                // 모델명 -> 단말기명/색상 매핑
                 let mappedModel = rawModel; 
                 if (rawModel) {
                     const searchModel = rawModel.replace(/\s+/g, '').toUpperCase();
@@ -1621,13 +1622,54 @@ function App() {
                     }
                 }
 
-                // 결과 조립
-                const info = `${changeType} / ${cat} / ${name} / ${confirm}, ${dotcom}\n\n${mappedModel}\n${plan} / ${discountType} / ${inst}\n${usim}\n${addr}`;
+                let plan = '';
+                for (const pName of allKnownPlans) { if (record.includes(pName)) { plan = pName; break; } }
+                if (!plan) {
+                    let planMatch = record.match(/(?:^|\t|\s|,)(5G[X]?\s*[^\t,]+|LTE\s*[^\t,]+|3G\s*[^\t,]+|Y[가-힣a-zA-Z0-9_]+\s*[^\t,]*|(?:(?:유튜브|디즈니\+|티빙\/지니|티빙|지니|넷플릭스|밀리|밀리의\s*서재|우주패스|바이브|OTT|삼성초이스)\s*)*(?:초이스|베이직|스페셜|프리미엄|에센셜|레귤러|플러스|시그니처|프라임|플래티넘|퍼펙트|컴팩트|맥스|다이렉트)[^\t,]*|데이터[A-Za-z0-9가-힣_]+\s*[^\t,]*|속걱데[^\t,]*|추걱데[^\t,]*|시니어[^\t,]*|키즈[^\t,]*|슬림[^\t,]*|순\s+[^\t,]+|\d{2,3}_[^\t,]+|[A-Za-z0-9가-힣_]+플랜[^\t,]*)/i);
+                    plan = planMatch ? planMatch[1].trim() : '';
+                    plan = plan.replace(/[\s/|,]+(주소지|문의|연락|전원|개통|취소|보류|변경|고객|상담|부재|메모|약정|할부|유심|단말기|기변|기기변경|이동|번호이동|통신사이동|신규|신규가입|에이징|번이|선약|선택약정|요금할인|공시|공시지원|지원금|단말할인|자급제|자급|택배|픽업|방문|스마트픽|BOPIS|퀵배송|S2[0-9]|Z\s*Fold|Z\s*Flip|아이폰|iPhone).*$/i, '').trim();
+                    plan = plan.replace(/[\s/|,]+(26플러스|26\+|256G?|512G?|1TB|바이올렛|블랙|화이트|그레이|블루|옐로우|크림|민트|티타늄).*$/i, '').trim();
+                    plan = plan.replace(/[\s/|,]+(현완|현금|완납|선납|지원|청구|요금).*$/i, '').trim(); 
+                }
+                plan = plan.replace(/\s*\(가입\s*중단\)/g, '').trim();
+
+                let instMatch = record.match(/(?:\t|\s|^)([1-9]\d{4,7}|0)(?=\t|\s|$)/g);
+                let inst = (instMatch && instMatch.map(s => s.trim()).filter(s => !s.startsWith('2025') && !s.startsWith('2026')).pop() !== '0') ? '할부24' : '카드결제';
+
+                let rawUsim = '';
+                if (usimIdx !== -1) {
+                    const cols = record.split(delimiter);
+                    if (cols.length > usimIdx) { rawUsim = cols[usimIdx].trim().replace(/"/g, '').split(/\r?\n/)[0].trim(); }
+                }
+                let usim = (!rawUsim || rawUsim === '-' || rawUsim.toUpperCase() === 'N' || rawUsim === '없음') ? '기존유심 / 보험 및 부가서비스 미가입' : '유심구매 / 보험 및 부가서비스 미가입';
+
+                let addr = '';
+                let addrM1 = record.match(/\b(\d{5})\b[,\s\t]*"([^"]*)"/);
+                let addrM2 = record.match(/\b(\d{5})\b[,\s\t]*([^\t\n]+)/);
+                if (addrM1) { addr = addrM1[2].trim(); } 
+                else if (addrM2) { addr = addrM2[2].trim(); }
+                addr = addr.replace(/\s*(?:MRS상태|상담원|임시저장|개통완료|개통대기|서식지접수|접수완료|해피콜|결제대기|결제완료|상품준비중|배송준비중|배송중|배송완료|닷컴개통\d*|취소완료|교환접수|반품접수|반품완료|정상).*$/, '').trim();
+                addr = addr.replace(/,+$/, '').trim();
+
+                // 💡 주소 교체 적용
+                if (addr.includes("강남구 강남대로 358") || addr.includes("삼성전자판매 온라인영업그룹")) { addr = "3일 내 픽업 불가 시 택배 수령 주소  "; }
+
+                let changeType = '기타';
+                if (record.match(/(기기\s*변경|기변|보상\s*기변)/)) changeType = '기변';
+                else if (record.match(/(번호\s*이동|번이|이동|통신사\s*이동|MNP)/i)) changeType = '이동'; 
+                else if (record.match(/(신규\s*가입|신규|에이징)/)) changeType = '신규';
+
+                let discountType = '기타';
+                if (record.match(/(공시\s*지원|공시|단말\s*할인|지원금)/)) discountType = '공시지원';
+                else if (record.match(/(선택\s*약정|선약|요금\s*할인)/)) discountType = '선택약정';
+                else if (record.match(/(자급제|자급)/)) discountType = '자급';
+
+                let dotcomStr = dotcom ? ` ${dotcom}` : ''; 
+                const info = `${changeType} / ${cat} / ${name} / ${confirm}${dotcomStr}\n\n${mappedModel}\n${plan} / ${discountType} / ${inst}\n${usim}\n${addr}`;
                 timeGroups[timeKey].push(info.replace(/\n{3,}/g, '\n\n'));
             }
         });
 
-        // 텍스트 출력 생성
         let finalOutput = '';
         ['09시 ~ 13시', '13시 ~ 15시', '15시 ~ 17시'].forEach((time, i, arr) => {
             finalOutput += `[${time}]\n\n` + (timeGroups[time].length > 0 ? timeGroups[time].map((info, idx) => `${idx + 1}. ${info}`).join('\n\n\n') + '\n\n' : '\n');
@@ -1650,7 +1692,6 @@ function App() {
       }
     };
   };
-            
 
 
           
