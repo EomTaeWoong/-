@@ -1548,58 +1548,67 @@ function App() {
   const fileInputRef = React.useRef(null);
 
 
-    const handleFileUpload = (e) => {
+  const handleFileUpload = (e) => {
     const file = e.target.files[0];
     if (!file) return;
 
     const reader = new FileReader();
-    
-    // CSV 전용 해독기: 한글 깨짐 방지를 위해 EUC-KR로 읽기
+    // 한글 깨짐 방지를 위해 euc-kr(ANSI)로 읽습니다.
     reader.readAsText(file, 'euc-kr');
 
     reader.onload = (event) => {
       try {
-        const text = event.target.result;
-        const lines = text.split(/\r?\n/);
-        if (lines.length < 2) return alert("데이터가 없습니다.");
+        let text = event.target.result;
+        // BOM 제거 (보이지 않는 첫 글자 제거)
+        text = text.replace(/^\uFEFF/, '');
+        
+        const lines = text.split(/\r?\n/).filter(line => line.trim() !== '');
+        if (lines.length < 2) return alert("데이터가 파일에 없습니다.");
 
-        // 첫 번째 줄에서 헤더(항목명) 위치 찾기
-        const headers = lines[0].split(',').map(h => h.trim());
+        // 🚨 모든 공백을 제거한 뒤 비교해서, 이름이 미세하게 달라도 찾을 수 있게 합니다.
+        const headerRow = lines[0].replace(/\s+/g, '');
+        const headers = headerRow.split(',');
+        
         const getIdx = (name) => headers.findIndex(h => h.includes(name));
         
+        // CSV 내부 항목 매핑 (헤더이름 공백제거 버전)
         const col = {
             time: getIdx('상담희망일시'),
             cat: getIdx('구분'),
-            recv: getIdx('인수자명'),
-            buy: getIdx('구매자명'),
+            recv: getIdx('인수자명') > -1 ? getIdx('인수자명') : getIdx('구매자명'),
             no: getIdx('확인번호'),
             type: getIdx('유형'),
-            dot: getIdx('닷컴상태'),
+            dot: getIdx('닷컴상태') > -1 ? getIdx('닷컴상태') : getIdx('MRS상태'),
             model: getIdx('모델명'),
             plan: getIdx('요금제'),
             inst: getIdx('할부금'),
             usim: getIdx('유심모델'),
-            addr: getIdx('주소')
+            addr: getIdx('주소') > -1 ? getIdx('주소') : getIdx('배송지')
         };
+
+        // 데이터가 아예 안 잡히면 알림창으로 이유를 알려줌
+        if (col.time === -1) {
+            alert("❌ CSV 헤더를 찾을 수 없습니다.\n파일의 첫 번째 줄이 '상담희망일시' 등을 포함하는지 확인해주세요.\n읽은 헤더: " + headerRow);
+            return;
+        }
 
         const fixedTimeSlots = ['09시 ~ 13시', '13시 ~ 15시', '15시 ~ 17시'];
         const timeGroups = { '09시 ~ 13시': [], '13시 ~ 15시': [], '15시 ~ 17시': [] };
 
-        lines.slice(1).forEach(line => {
-            const cols = line.split(',');
+        lines.slice(1).forEach((line, index) => {
+            const cols = line.split(',').map(c => c.trim());
             if (cols.length < 5) return;
 
             const rawTime = cols[col.time] || '';
             let timeKey = rawTime.includes('09') ? '09시 ~ 13시' : rawTime.includes('13') ? '13시 ~ 15시' : rawTime.includes('15') ? '15시 ~ 17시' : '';
             
             if (timeGroups[timeKey]) {
-                const receiver = cols[col.recv] || cols[col.buy] || '';
-                const info = `${cols[col.type]} / ${cols[col.cat]} / ${receiver} / ${cols[col.no]}, ${cols[col.dot]}\n\n${cols[col.model]}\n${cols[col.plan]} / ${cols[col.type]} / ${cols[col.inst]}\n${cols[col.usim]}\n${cols[col.addr]}`;
+                const info = `${cols[col.type]} / ${cols[col.cat]} / ${cols[col.recv]} / ${cols[col.no]}, ${cols[col.dot]}\n\n${cols[col.model]}\n${cols[col.plan]} / ${cols[col.type]} / ${cols[col.inst]}\n${cols[col.usim]}\n${cols[col.addr]}`;
                 timeGroups[timeKey].push(info);
             }
         });
 
-        // 결과 생성 및 다운로드
+        // 텍스트 저장
         let finalOutput = '';
         fixedTimeSlots.forEach((time, index) => {
             finalOutput += `[${time}]\n\n`;
@@ -1608,7 +1617,7 @@ function App() {
             } else {
                 finalOutput += '\n';
             }
-            if (index < fixedTimeSlots.length - 1) finalOutput += `===============================\n`;
+            if (index < fixedTimeSlots.length - 1) finalOutput += '===============================\n';
         });
 
         const blob = new Blob([finalOutput], { type: 'text/plain;charset=utf-8' });
@@ -1622,10 +1631,11 @@ function App() {
         URL.revokeObjectURL(url);
         e.target.value = null;
       } catch (err) {
-        alert("CSV 처리 오류: " + err.message);
+        alert("데이터 처리 중 오류 발생: " + err.message);
       }
     };
   };
+
 
 
 
