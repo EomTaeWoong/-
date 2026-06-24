@@ -1551,11 +1551,22 @@ function App() {
     const file = e.target.files[0];
     if (!file) return;
 
+    if (file.name.toLowerCase().endsWith('.crdownload')) {
+        alert("⚠️ 다운로드 중인 파일입니다. 완료 후 다시 올려주세요.");
+        e.target.value = null;
+        return;
+    }
+
     const reader = new FileReader();
     reader.onload = (event) => {
+      // 🚨 [핵심 수정] 엑셀 번역기(XLSX)가 로딩되었는지 먼저 확인합니다.
+      if (typeof XLSX === 'undefined') {
+          return alert("⚠️ 엑셀 번역기(XLSX)가 아직 로딩되지 않았습니다. 잠시만 기다렸다 다시 시도해주세요!");
+      }
+
       try {
-        const data = new Uint8Array(event.target.result);
-        const workbook = XLSX.read(data, { type: 'array' });
+        const buffer = event.target.result;
+        const workbook = XLSX.read(buffer, { type: 'array' });
         const worksheet = workbook.Sheets[workbook.SheetNames[0]];
         const json = XLSX.utils.sheet_to_json(worksheet, { defval: "" });
 
@@ -1565,7 +1576,7 @@ function App() {
         const timeGroups = { '09시 ~ 13시': [], '13시 ~ 15시': [], '15시 ~ 17시': [] };
 
         json.forEach(row => {
-            // 🚨 항목 이름을 엑셀 파일과 정확히 일치시켰습니다!
+            // 엑셀 헤더명을 정확히 매칭 (앞뒤 공백 제거)
             const rawTime = String(row['상담희망일시'] || row['상담희망일'] || '');
             
             let timeKey = '';
@@ -1574,22 +1585,12 @@ function App() {
             else if (rawTime.includes('15:00') || rawTime.includes('15시')) timeKey = '15시 ~ 17시';
 
             if (timeGroups[timeKey]) {
-                const category = row['구분'] || '';
-                const receiver = row['인수자명'] || row['구매자명'] || '';
-                const confirmNo = row['확인번호'] || '';
-                const type = row['유형'] || '';
-                const dotcom = row['닷컴상태'] || '';
-                const model = row['모델명'] || '';
-                const plan = row['요금제'] || '';
-                const installment = row['할부금'] || '0';
-                const usimModel = row['유심모델'] || '';
-                const address = row['주소'] || '';
-
-                const info = `${type} / ${category} / ${receiver} / ${confirmNo}, ${dotcom}\n\n${model}\n${plan} / ${type} / ${installment}\n${usimModel}\n${address}`;
+                const info = `${row['유형']} / ${row['구분']} / ${row['인수자명'] || row['구매자명']} / ${row['확인번호']}, ${row['닷컴상태'] || row['MRS상태'] || ''}\n\n${row['모델명']}\n${row['요금제']} / ${row['유형']} / ${row['할부금']}\n${row['유심모델']}\n${row['주소'] || row['배송지'] || ''}`;
                 timeGroups[timeKey].push(info.replace(/\n{3,}/g, '\n\n'));
             }
         });
 
+        // 결과 생성
         let finalOutput = '';
         fixedTimeSlots.forEach((time, index) => {
             finalOutput += `[${time}]\n\n`;
@@ -1612,11 +1613,12 @@ function App() {
         URL.revokeObjectURL(url);
         e.target.value = null;
       } catch (err) {
-        alert("엑셀 처리 중 오류: " + err.message);
+        alert("엑셀 데이터 추출 오류: " + err.message);
       }
     };
     reader.readAsArrayBuffer(file);
   };
+
 
 
 
