@@ -1554,7 +1554,7 @@ function App() {
         const uint8Array = new Uint8Array(buffer);
         let text = '';
 
-        // 1. 인코딩 100% 자동 판별
+        // 1. 외계어/인코딩 무조건 100% 자동 판별
         if (uint8Array.length >= 2 && uint8Array[0] === 0xFF && uint8Array[1] === 0xFE) {
           text = new TextDecoder('utf-16le').decode(uint8Array);
         } else if (uint8Array.length >= 2 && uint8Array[0] === 0xFE && uint8Array[1] === 0xFF) {
@@ -1568,20 +1568,23 @@ function App() {
             text = new TextDecoder('euc-kr').decode(uint8Array);
           }
         }
+
+        // 🚨 핵심 해결책: 파일 안의 모든 줄바꿈과 탭을 하나의 띄어쓰기로 뭉쳐버립니다.
+        // 이렇게 하면 줄이 어떻게 찢어져 있든 무조건 읽어낼 수 있습니다!
+        let cleanText = text.replace(/[\r\n\t]+/g, ' ');
+
+        // 202... 로 시작하는 13자리 접수번호를 기준으로 사람을 뭉텅이로 잘라냅니다.
+        const records = cleanText.split(/(?=202\d{10}\s)/);
         
         let extractedData = [];
         const fixedTimeSlots = ['09시 ~ 13시', '13시 ~ 15시', '15시 ~ 17시'];
         const timeGroups = {};
         fixedTimeSlots.forEach(slot => { timeGroups[slot] = []; });
 
-        // 🚨 핵심 해결책: 에러가 잦은 정규식을 버리고, 
-        // 13자리 접수번호(202XXXXX...)를 기준으로 사람을 뭉텅이로 잘라냅니다.
-        const chunks = text.split(/(?=\b20\d{11}\b)/);
+        records.forEach(record => {
+          if (!/202\d{10}/.test(record)) return; // 빈 껍데기는 무시
 
-        chunks.forEach(record => {
-          // 접수번호가 포함되지 않은 껍데기(헤더 등)는 안전하게 무시
-          if (!/\b20\d{11}\b/.test(record)) return;
-
+          // 시간대 추출
           let timeMatch = record.match(/(09:00\s*~\s*13:00|13:00\s*~\s*15:00|15:00\s*~\s*17:00|09시\s*~\s*13시|13시\s*~\s*15시|15시\s*~\s*17시)/);
           if (!timeMatch) return;
           
@@ -1593,7 +1596,9 @@ function App() {
 
           if (!timeKey) return;
 
+          // 각 항목을 텍스트 모양(패턴)으로 추적해서 쏙쏙 뽑아냅니다.
           let category = record.match(/\b(택배|BOPIS|스마트픽|픽업|매장방문)\b/)?.[1] || '';
+          
           let phoneMatch = record.match(/([가-힣]{2,4})\s+(?:[가-힣]{2,4}\s+)?010-\d{3,4}-\d{4}/);
           let receiver = phoneMatch ? phoneMatch[1] : '';
 
@@ -1619,17 +1624,28 @@ function App() {
           let instMatch = record.match(/\b(0|[1-9]\d{4,7})\s*(?:24|30|36|일시불)?\s*(?:[A-Za-z가-힣0-9_]*플랜|\d{1,2}_)/);
           let installment = instMatch ? instMatch[1] : '0';
 
-          let usimMatch = record.match(/\b(Y|N)\b\s*(?:SM-|iPhone)/i);
+          // 유심모델 (Y 또는 N)
+          let usimMatch = record.match(/\b(Y|N)\s+(?:SM-|iPhone)/i) || record.match(/\b(Y|N)(?:SM-|iPhone)/i);
           let usimModel = usimMatch ? usimMatch[1].toUpperCase() : '';
 
-          let addrMatch = record.match(/\b\d{5}\s*[가-힣]+[^\n\r]+/);
-          let address = addrMatch ? addrMatch[0].replace(/\s+(0|[1-9]\d{4,7})\s*$/, '').trim() : '';
+          // 주소 (우편번호 5자리부터 요금제/할부금 직전까지 추출)
+          let address = '';
+          let zipMatch = record.match(/\b\d{5}\s*[가-힣]+/);
+          if (zipMatch) {
+              let addrStart = zipMatch.index;
+              let addrEnd = record.length;
+              let instPlanMatch = record.substring(addrStart).match(/\s+(0|[1-9]\d{4,7})\s*(?:24|30|36|일시불)?\s*(?:[A-Za-z가-힣0-9_]*플랜|\d{1,2}_)/);
+              if (instPlanMatch) addrEnd = addrStart + instPlanMatch.index;
+              address = record.substring(addrStart, addrEnd).trim();
+          }
 
+          // 👇 원하시는 엔터 양식 완벽 적용 👇
           const info = `${type} / ${category} / ${receiver} / ${confirmNo}, ${dotcom}\n\n${model}\n${plan} / ${type} / ${installment}\n${usimModel}\n${address}`;
           
           timeGroups[timeKey].push(info);
         });
 
+        // 텍스트 파일 조립 및 다운로드
         let finalOutput = '';
         fixedTimeSlots.forEach((time, index) => {
           finalOutput += `[${time}]\n\n`; 
@@ -1657,12 +1673,13 @@ function App() {
         
         e.target.value = null; 
       } catch (error) {
-        alert('파일을 처리하는 중 오류가 발생했습니다: ' + error.message);
+        alert('파일을 처리하는 중 오류가 발생했습니다. 다시 시도해주세요.');
       }
     };
 
     reader.readAsArrayBuffer(file); 
   };
+
 
         
 
