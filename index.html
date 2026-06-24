@@ -8,7 +8,11 @@
   <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
   <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
   <script src="https://unpkg.com/@babel/standalone@7.23.10/babel.min.js"></script>
+  
   <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+  <script src="https://unpkg.com/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+
   <style>
     /* 팝업 및 드롭다운 스크롤바 커스텀 */
     ::-webkit-scrollbar { width: 8px; height: 8px; }
@@ -17,7 +21,8 @@
     
     /* 가로 스크롤바 (입력칸 영역) 커스텀 */
     .hide-scroll-bar::-webkit-scrollbar { height: 6px; }
-    .hide-scroll-bar::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 4px; }
+    .hide-scroll-bar::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 3px; }
+    .hide-scroll-bar::-webkit-scrollbar-track { background: transparent; }
   </style>
 </head>
 <body class="bg-slate-50">
