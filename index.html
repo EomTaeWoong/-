@@ -1554,7 +1554,7 @@ function App() {
             if (timeGroups[timeKey]) {
                 const getVal = (regex) => (record.match(regex) || [])[1] || '';
                 
-                // 💡 [수정 1] 구분 항목에 '퀵배송' 추가 완벽 대응!
+                // 💡 [해결 1] '퀵배송' 추가 완료!
                 const cat = getVal(/(택배|BOPIS|스마트픽|픽업|매장방문|퀵배송)/);
                 
                 let namePhoneMatch = record.match(/([가-힣]{2,4})[,\s]+(?:[가-힣]{2,4}[,\s]+)?(010-\d{3,4}-\d{4})/);
@@ -1566,9 +1566,12 @@ function App() {
 
                 const rawModel = getVal(/(SM-[A-Z0-9]+|iPhone\s*[A-Za-z0-9\s]+)/i);
 
-                // 💡 [수정 2] 요금제가 모조리 안 나오는 현상 해결! (KT, U+의 모든 요금제 키워드 싹쓸이 정규식)
-                let planMatch = record.match(/((?:초이스|베이직|데이터ON|5G\s*Y|LTE|Y군인|Y데이터ON|Y주니어|플러스플랜|데이터플랜|속걱데|추걱데|시니어|키즈|슬림)\s*[A-Za-z0-9가-힣.()+]+|\d{1,2}_[A-Za-z0-9가-힣.\s]+|[가-힣A-Za-z0-9_]*플랜[가-힣A-Za-z0-9_\s]*)/i);
-                const plan = planMatch ? planMatch[1].replace(/\s*\(가입 중단\)/g, '').trim() : '';
+                // 💡 [해결 2] 요금제: 영문, 숫자, 언더바(_), 괄호, 공백 모두 쓸어 담습니다!
+                let planMatch = record.match(/((?:5G|LTE|3G|Y[가-힣a-zA-Z]*|초이스|베이직|데이터|속걱데|추걱데|시니어|키즈|슬림|순|요금제|\d{2,3}_)[A-Za-z0-9가-힣_.()+\-]*(?:[_\s]+[A-Za-z0-9가-힣_.()+\-]+)*|[A-Za-z0-9가-힣_.()+\-]*플랜(?:[_\s]+[A-Za-z0-9가-힣_.()+\-]+)*)/i);
+                let plan = planMatch ? planMatch[1] : '';
+                // 쓸어 담은 요금제 이름 끝에 다른 항목(기변, 택배 등)이 붙었다면 칼같이 잘라냅니다.
+                plan = plan.replace(/\s*(기기변경|기변|번호이동|번이|이동|통신사이동|신규가입|신규|공시지원|공시|단말할인|선택약정|선약|요금할인|자급제|자급|택배|BOPIS|스마트픽|픽업|매장방문|퀵배송).*$/, '');
+                plan = plan.replace(/\s*\(가입 중단\)/g, '').trim();
                 
                 let instMatch = record.match(/(?:,|\s|^)([1-9]\d{4,7}|0)(?:,|\s)+(?:24|30|36|일시불)?(?:,|\s)+(?:[A-Za-z가-힣0-9_]*플랜|\d{1,2}_)/);
                 const inst = instMatch ? instMatch[1] : '0';
@@ -1589,15 +1592,16 @@ function App() {
                 addr = addr.replace(/\s*(?:MRS상태|상담원|임시저장|개통완료|개통대기|서식지접수|접수완료|해피콜|결제대기|결제완료|상품준비중|배송준비중|배송중|배송완료|닷컴개통\d*|취소완료|교환접수|반품접수|반품완료|정상).*$/, '').trim();
                 addr = addr.replace(/,+$/, '').trim();
 
-                // 💡 [수정 3 & 4] 복잡하게 연결된 글자 말고, 문서 전체에서 확실한 키워드만 잡아서 고정 출력!
+                // 💡 [해결 3] '이동'이 무조건 나오도록 띄어쓰기 및 동의어(MNP 등) 완벽 추가
                 let changeType = '기타';
-                if (record.match(/(기기변경|기변)/)) changeType = '기변';
-                else if (record.match(/(번호이동|번이|이동)/)) changeType = '이동'; // '이동'으로 고정
-                else if (record.match(/(신규)/)) changeType = '신규';
+                if (record.match(/(기기\s*변경|기변|보상\s*기변)/)) changeType = '기변';
+                else if (record.match(/(번호\s*이동|번이|이동|통신사\s*이동|MNP)/i)) changeType = '이동'; 
+                else if (record.match(/(신규\s*가입|신규|에이징)/)) changeType = '신규';
 
+                // 💡 [해결 4] '공시지원', '선택약정'이 무조건 나오도록 띄어쓰기 및 동의어(단말할인 등) 완벽 추가
                 let discountType = '기타';
-                if (record.match(/(공시지원|공시|단말할인)/)) discountType = '공시지원'; // '공시지원'으로 고정
-                else if (record.match(/(선택약정|선약|요금할인)/)) discountType = '선택약정'; // '선택약정'으로 고정
+                if (record.match(/(공시\s*지원|공시|단말\s*할인|지원금)/)) discountType = '공시지원';
+                else if (record.match(/(선택\s*약정|선약|요금\s*할인)/)) discountType = '선택약정';
                 else if (record.match(/(자급제|자급)/)) discountType = '자급';
 
                 // 모델명 -> 단말기명/색상 매핑
@@ -1646,6 +1650,7 @@ function App() {
       }
     };
   };
+            
 
 
           
