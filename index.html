@@ -1918,6 +1918,300 @@ return (
       <Calculator 
         plans={plans} features={features} operator={operator} policyData={policyData}
         setShowRequestFormPopup={setShowRequestFormPopup} setShowDeviceColorPopup={setShowDeviceColorPopup} setShowPlanSummaryPopup={setShowPlanSummaryPopup} 
+function App() {
+  // 1. 상태(State) 선언부
+  const [operator, setOperator] = useState('KT');
+  const [trackingNumber, setTrackingNumber] = useState('');
+  const [showPopup, setShowPopup] = useState(false);
+  const [addressSearchTerm, setAddressSearchTerm] = useState(''); 
+  const [showRequestFormPopup, setShowRequestFormPopup] = useState(false);
+  const [showDeviceColorPopup, setShowDeviceColorPopup] = useState(false);
+  const [showPlanSummaryPopup, setShowPlanSummaryPopup] = useState(false);
+  const [showNoticePopup, setShowNoticePopup] = useState(true);
+  const [showMaintenancePopup, setShowMaintenancePopup] = useState(false);
+  const [showStorePopup, setShowStorePopup] = useState(false); 
+
+  const [policyData, setPolicyData] = useState(POLICY);
+  const [isLoading, setIsLoading] = useState(true);
+
+  // 2. 파일 업로드 처리부 (개꿀 기능 - 고정 시간대 세팅 완료)
+  const fileInputRef = React.useRef(null);
+
+  const handleFileUpload = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    
+    reader.onload = (event) => {
+      const text = event.target.result;
+      const delimiter = text.includes('\t') ? '\t' : ',';
+      const lines = text.split(/\r?\n/).filter(line => line.trim() !== '');
+      
+      if (lines.length < 2) return alert('처리할 데이터가 없습니다.');
+
+      const headers = lines[0].split(delimiter).map(h => h.trim().replace(/"/g, ''));
+      
+      const colIdx = {
+        category: headers.indexOf('구분'),
+        time: headers.indexOf('상담희망일'),
+        store: headers.indexOf('매장'),
+        buyer: headers.indexOf('구매자명'),
+        receiver: headers.indexOf('인수자명'),
+        confirmNo: headers.indexOf('확인번호'),
+        type: headers.indexOf('유형'),
+        dotcom: headers.indexOf('닷컴상태'),
+        paper: headers.indexOf('서식지접수'),
+        model: headers.indexOf('모델명'),
+        usimModel: headers.indexOf('유심모델'),
+        installment: headers.indexOf('할부금'),
+        plan: headers.indexOf('요금제')
+      };
+
+      const val = (row, key) => colIdx[key] !== -1 && row[colIdx[key]] ? row[colIdx[key]] : '';
+
+      const fixedTimeSlots = [
+        '09시 ~ 13시',
+        '13시 ~ 15시',
+        '15시 ~ 17시'
+      ];
+
+      const timeGroups = {};
+      fixedTimeSlots.forEach(slot => {
+        timeGroups[slot] = [];
+      });
+
+      for (let i = 1; i < lines.length; i++) {
+        const row = lines[i].split(delimiter).map(item => item.replace(/"/g, '').trim());
+        
+        let rawTime = val(row, 'time');
+        let timeMatch = rawTime.match(/\d{1,2}시\s*~\s*\d{1,2}시/);
+        
+        let timeKey = timeMatch ? timeMatch[0].replace(/\s*~\s*/, ' ~ ') : ''; 
+        
+        if (!timeKey) timeKey = '시간 미지정';
+
+        if (!timeGroups[timeKey]) timeGroups[timeKey] = [];
+
+        const receiver = val(row, 'receiver') || val(row, 'buyer'); 
+        const model = val(row, 'model');
+        const plan = val(row, 'plan');
+        const type = val(row, 'type');
+        
+        const info = `${receiver} / ${model} / ${plan} / ${type}`;
+
+        timeGroups[timeKey].push(info);
+      }
+
+      const sortedTimes = [
+        ...fixedTimeSlots,
+        ...Object.keys(timeGroups).filter(k => !fixedTimeSlots.includes(k) && k !== '시간 미지정'),
+      ];
+      if (timeGroups['시간 미지정'] && timeGroups['시간 미지정'].length > 0) {
+        sortedTimes.push('시간 미지정');
+      }
+
+      let finalOutput = '';
+
+      sortedTimes.forEach((time, index) => {
+        finalOutput += `[${time}]\n\n`; 
+
+        if (timeGroups[time] && timeGroups[time].length > 0) {
+          const items = timeGroups[time].map((info, idx) => `${idx + 1}. ${info}`);
+          finalOutput += items.join('\n\n\n');
+          finalOutput += '\n\n'; 
+        } else {
+          finalOutput += '\n'; 
+        }
+
+        if (index < sortedTimes.length - 1) {
+          finalOutput += `===============================\n`;
+        }
+      });
+
+      const blob = new Blob([finalOutput], { type: 'text/plain;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `정리.txt`; 
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      
+      e.target.value = null; 
+    };
+
+    reader.readAsText(file, 'utf-8'); 
+  };
+
+  // 3. 기존 정책(엑셀) 연동 로직
+  useEffect(() => {
+    const fileUrl = `./policy.xlsx?t=${new Date().getTime()}`;
+
+    fetch(fileUrl)
+      .then(response => response.arrayBuffer())
+      .then(data => {
+        const wb = XLSX.read(data, { type: 'array' });
+        let updatedPolicy = JSON.parse(JSON.stringify(POLICY)); 
+
+        if (wb.Sheets['KT_공통지원금']) {
+          const ktData = XLSX.utils.sheet_to_json(wb.Sheets['KT_공통지원금']);
+          ktData.forEach(row => {
+            const modelName = row['모델명'];
+            if (updatedPolicy.DEVICES[modelName]) {
+              updatedPolicy.DEVICES[modelName].KT_COMMON = {};
+              Object.keys(row).forEach(key => {
+                if (key !== '모델명') updatedPolicy.DEVICES[modelName].KT_COMMON[key] = row[key];
+              });
+            }
+          });
+        }
+
+        if (wb.Sheets['U_공통지원금']) {
+          const uData = XLSX.utils.sheet_to_json(wb.Sheets['U_공통지원금']);
+          uData.forEach(row => {
+            const modelName = row['모델명'];
+            if (updatedPolicy.DEVICES[modelName]) {
+              updatedPolicy.DEVICES[modelName].U_COMMON = {};
+              Object.keys(row).forEach(key => {
+                if (key !== '모델명') updatedPolicy.DEVICES[modelName].U_COMMON[key] = row[key];
+              });
+            }
+          });
+        }
+
+        if (wb.Sheets['추가지원금']) {
+          const extraData = XLSX.utils.sheet_to_json(wb.Sheets['추가지원금']);
+          extraData.forEach(row => {
+            const modelName = row['모델명'];
+            if (updatedPolicy.DEVICES[modelName]) {
+              if (!updatedPolicy.DEVICES[modelName].EXTRA) updatedPolicy.DEVICES[modelName].EXTRA = {};
+              const extra = updatedPolicy.DEVICES[modelName].EXTRA;
+              
+              let ktTier = 'OVER_90K';    
+              let uHighTier = 'OVER_95K'; 
+              let uLowTier = 'OVER_61K';  
+
+              if (modelName.includes('A36') || modelName.includes('A37')) {
+                ktTier = 'OVER_61K';
+                uHighTier = 'OVER_61K'; 
+                uLowTier = 'OVER_61K';
+              } else if (modelName.includes('A17')) {
+                ktTier = 'OVER_33K';
+                uHighTier = 'OVER_33K'; 
+                uLowTier = 'OVER_33K';
+              }
+              
+              if(row['KT기변'] !== undefined) extra.KT_CHANGE_DOTCOM = { [ktTier]: { common: row['KT기변'], selective: row['KT기변'] } };
+              if(row['KT기변_갤'] !== undefined) extra.KT_CHANGE_GALCAMS = { [ktTier]: { common: row['KT기변_갤'], selective: row['KT기변_갤'] } };
+              if(row['KT번이'] !== undefined) extra.KT_MNP_DOTCOM = { [ktTier]: { common: row['KT번이'], selective: row['KT번이'] } };
+              if(row['KT번이_갤'] !== undefined) extra.KT_MNP_GALCAMS = { [ktTier]: { common: row['KT번이_갤'], selective: row['KT번이_갤'] } };
+              
+              const applyUPlus = (highVal, lowVal) => {
+                if (uHighTier === uLowTier) {
+                  const val = highVal !== undefined ? highVal : (lowVal !== undefined ? lowVal : 0);
+                  return { [uHighTier]: { common: val, selective: val } };
+                } else {
+                  return { 
+                    [uHighTier]: { common: highVal||0, selective: highVal||0 }, 
+                    [uLowTier]: { common: lowVal||0, selective: lowVal||0 } 
+                  };
+                }
+              };
+
+              if(row['U+기변(고)'] !== undefined || row['U+기변(저)'] !== undefined) extra.U_CHANGE_DOTCOM = applyUPlus(row['U+기변(고)'], row['U+기변(저)']);
+              if(row['U+기변_갤(고)'] !== undefined || row['U+기변_갤(저)'] !== undefined) extra.U_CHANGE_GALCAMS = applyUPlus(row['U+기변_갤(고)'], row['U+기변_갤(저)']);
+              if(row['U+번이(고)'] !== undefined || row['U+번이(저)'] !== undefined) extra.U_MNP_DOTCOM = applyUPlus(row['U+번이(고)'], row['U+번이(저)']);
+              if(row['U+번이_갤(고)'] !== undefined || row['U+번이_갤(저)'] !== undefined) extra.U_MNP_GALCAMS = applyUPlus(row['U+번이_갤(고)'], row['U+번이_갤(저)']);
+            }
+          });
+        }
+
+        setPolicyData(updatedPolicy);
+        setIsLoading(false);
+        console.log('구글 시트 연동 완료!');
+      })
+      .catch(error => {
+        console.error('구글 시트 데이터를 불러오는데 실패했습니다:', error);
+        setIsLoading(false); 
+      });
+  }, []);
+
+  const handleTrackingSearch = () => { if (!trackingNumber || !/^\d+$/.test(trackingNumber)) return alert('송장번호를 입력해주세요.'); window.open(`https://trace.cjlogistics.com/next/tracking.html?wblNo=${trackingNumber}`, 'cjTrackingPopup', 'width=1600,height=900,scrollbars=yes,resizable=yes'); setTrackingNumber(''); };
+  
+  const handleModelSearch = () => { 
+    const searchTerm = addressSearchTerm.replace(/\s+/g, '').toUpperCase(); 
+    if (!searchTerm) return alert('검색할 모델명을 입력해주세요. (예: SM-S948...)'); 
+
+    let foundResults = [];
+
+    Object.entries(DEVICE_COLORS_MAP).forEach(([deviceName, colors]) => {
+      colors.forEach(colorInfo => {
+        if (colorInfo.copyText.toUpperCase() === searchTerm) {
+          foundResults.push(`[${deviceName}] - ${colorInfo.name}`);
+        }
+      });
+    });
+
+    if (foundResults.length > 0) {
+      alert(`✨ 검색 결과 ✨\n\n${foundResults.join('\n')}`);
+    } else {
+      alert('❌ 일치하는 단말기/색상 정보가 없습니다.');
+    }
+    setAddressSearchTerm(''); 
+  };
+
+  const plans = useMemo(()=> operator==='KT'?PLAN_LIST_KT:PLAN_LIST_U, [operator]);
+  const features = useMemo(()=> operator==='KT'?PLAN_FEATURES_KT:PLAN_FEATURES_U, [operator]);
+
+  if (isLoading) {
+    return (
+      <div className="flex flex-col items-center justify-center h-screen bg-gray-50">
+        <div className="text-2xl font-bold text-indigo-600 mb-4">🔄 최신 정책 데이터를 불러오는 중입니다...</div>
+        <div className="text-gray-500">잠시만 기다려주세요.</div>
+      </div>
+    );
+  }
+
+  // 4. 화면 출력부
+  return (
+    <div className="font-sans text-gray-900 bg-gray-50 min-h-screen flex flex-col">
+      <div className="py-1.5 px-3 mb-1 max-w-4xl mx-auto flex flex-nowrap overflow-x-auto hide-scroll-bar gap-1.5 items-center border-b border-gray-100">
+        <button className={`px-4 py-2 rounded text-sm font-bold shrink-0 ${operator === 'KT' ? 'bg-blue-600 text-white shadow' : 'bg-white border'}`} onClick={() => setOperator('KT')}>KT</button>
+        <button className={`px-4 py-2 rounded text-sm font-bold shrink-0 ${operator === 'U' ? 'bg-green-600 text-white shadow' : 'bg-white border'}`} onClick={() => setOperator('U')}>U+</button>
+        
+        {operator === 'KT' && <a href="https://shop.kt.com/smart/supportAmtList.do" target="_blank" className="bg-blue-500 text-white px-3 py-2 rounded hover:bg-blue-600 text-sm whitespace-nowrap shrink-0">KT 지원금</a>}
+        {operator === 'U' && <a href="https://www.lguplus.com/mobile/financing-model" target="_blank" className="bg-green-500 text-white px-3 py-2 rounded hover:bg-green-600 text-sm whitespace-nowrap shrink-0">U+ 지원금</a>}
+
+        <a href="https://www.samsung.com/sec/smartphones/all-smartphones/?carrier-phone" target="_blank" className="bg-gray-800 text-white px-3 py-2 rounded hover:bg-gray-900 text-sm whitespace-nowrap shrink-0">닷컴</a>
+        <button onClick={() => setShowMaintenancePopup(true)} className="bg-indigo-600 text-white px-3 h-[36px] flex items-center justify-center rounded hover:bg-indigo-700 text-sm font-medium shadow whitespace-nowrap shrink-0">유지비</button>
+        <button onClick={() => setShowStorePopup(true)} className="bg-emerald-600 text-white px-3 py-2 rounded hover:bg-emerald-700 text-sm whitespace-nowrap shrink-0">MVNO</button>
+        <button onClick={() => setShowPopup(true)} className="bg-gray-600 text-white px-3 py-2 rounded hover:bg-gray-700 text-sm whitespace-nowrap shrink-0">전화번호</button>
+        
+        {/* 개꿀 버튼 */}
+        <button onClick={() => fileInputRef.current.click()} className="bg-amber-500 text-white px-3 py-2 rounded hover:bg-amber-600 text-sm font-bold whitespace-nowrap shrink-0">개꿀</button>
+        
+        <div className="flex items-center ml-auto gap-1.5 shrink-0">
+          <div className="relative w-40 h-[36px]">
+            <input 
+              type="text" 
+              value={addressSearchTerm} 
+              onChange={(e) => setAddressSearchTerm(e.target.value)} 
+              onKeyDown={(e) => e.key === 'Enter' && handleModelSearch()} 
+              placeholder="모델명 검색" 
+              className="absolute top-0 left-0 border p-2 rounded w-40 focus:w-72 h-[36px] text-sm text-center focus:text-left placeholder-gray-700 border-green-400 focus:border-green-500 focus:outline-none focus:shadow-xl transition-all duration-300 z-10 focus:z-50 bg-white" 
+              onFocus={(e) => e.target.placeholder = ''} 
+              onBlur={(e) => e.target.placeholder = '모델명 검색'} 
+            />
+          </div>
+          <input type="text" value={trackingNumber} onChange={(e) => setTrackingNumber(e.target.value.replace(/\D/g, ''))} onKeyDown={(e) => e.key === 'Enter' && handleTrackingSearch()} placeholder="송장번호 검색" className="border p-2 rounded w-32 h-[36px] text-sm text-center placeholder-gray-700 shrink-0" onFocus={(e) => e.target.placeholder = ''} onBlur={(e) => e.target.placeholder = '대한통운 송장번호'} />
+        </div>
+      </div>
+
+      <Calculator 
+        plans={plans} features={features} operator={operator} policyData={policyData}
+        setShowRequestFormPopup={setShowRequestFormPopup} setShowDeviceColorPopup={setShowDeviceColorPopup} setShowPlanSummaryPopup={setShowPlanSummaryPopup} 
         showMaintenancePopup={showMaintenancePopup} setShowMaintenancePopup={setShowMaintenancePopup} 
       />
       {showPopup && <CustomerServicePopup onClose={() => setShowPopup(false)} />}
@@ -1927,12 +2221,12 @@ return (
       {showNoticePopup && <NoticePopup onClose={() => setShowNoticePopup(false)} />}
       {showStorePopup && <StoreMapPopup onClose={() => setShowStorePopup(false)} />}
 
-<input type="file" accept=".csv, .txt, .crdownload" ref={fileInputRef} onChange={handleFileUpload} style={{ display: 'none' }} />
-
-
+      {/* 숨겨진 파일 업로드 인풋 */}
+      <input type="file" accept=".csv, .txt, .crdownload" ref={fileInputRef} onChange={handleFileUpload} style={{ display: 'none' }} />
     </div>
   );
 }
+
 
 ReactDOM.createRoot(document.getElementById('root')).render(<App/>);
 </script>
