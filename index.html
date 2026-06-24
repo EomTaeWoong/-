@@ -8,11 +8,8 @@
   <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
   <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
   <script src="https://unpkg.com/@babel/standalone@7.23.10/babel.min.js"></script>
-  
-  <script src="https://unpkg.com/xlsx/dist/xlsx.full.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
-  <script src="https://unpkg.com/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 
+  
   <style>
     /* 팝업 및 드롭다운 스크롤바 커스텀 */
     ::-webkit-scrollbar { width: 8px; height: 8px; }
@@ -1553,26 +1550,19 @@ function App() {
     if (!file) return;
 
     const reader = new FileReader();
-    // 한글 깨짐 방지를 위해 euc-kr(ANSI)로 읽습니다.
+    // 외부 도구 없이 브라우저 기본 기능으로 직접 읽습니다.
     reader.readAsText(file, 'euc-kr');
 
     reader.onload = (event) => {
       try {
-        let text = event.target.result;
-        // BOM 제거 (보이지 않는 첫 글자 제거)
-        text = text.replace(/^\uFEFF/, '');
-        
+        const text = event.target.result;
         const lines = text.split(/\r?\n/).filter(line => line.trim() !== '');
-        if (lines.length < 2) return alert("데이터가 파일에 없습니다.");
+        if (lines.length < 2) return alert("파일에 데이터가 없습니다.");
 
-        // 🚨 모든 공백을 제거한 뒤 비교해서, 이름이 미세하게 달라도 찾을 수 있게 합니다.
-        const headerRow = lines[0].replace(/\s+/g, '');
-        const headers = headerRow.split(',');
-        
+        // 첫 번째 줄 헤더 처리
+        const headers = lines[0].split(',').map(h => h.trim().replace(/"/g, ''));
         const getIdx = (name) => headers.findIndex(h => h.includes(name));
-        
-        // CSV 내부 항목 매핑 (헤더이름 공백제거 버전)
-        const col = {
+        const idx = {
             time: getIdx('상담희망일시'),
             cat: getIdx('구분'),
             recv: getIdx('인수자명') > -1 ? getIdx('인수자명') : getIdx('구매자명'),
@@ -1586,38 +1576,30 @@ function App() {
             addr: getIdx('주소') > -1 ? getIdx('주소') : getIdx('배송지')
         };
 
-        // 데이터가 아예 안 잡히면 알림창으로 이유를 알려줌
-        if (col.time === -1) {
-            alert("❌ CSV 헤더를 찾을 수 없습니다.\n파일의 첫 번째 줄이 '상담희망일시' 등을 포함하는지 확인해주세요.\n읽은 헤더: " + headerRow);
-            return;
-        }
-
-        const fixedTimeSlots = ['09시 ~ 13시', '13시 ~ 15시', '15시 ~ 17시'];
         const timeGroups = { '09시 ~ 13시': [], '13시 ~ 15시': [], '15시 ~ 17시': [] };
 
-        lines.slice(1).forEach((line, index) => {
-            const cols = line.split(',').map(c => c.trim());
-            if (cols.length < 5) return;
-
-            const rawTime = cols[col.time] || '';
-            let timeKey = rawTime.includes('09') ? '09시 ~ 13시' : rawTime.includes('13') ? '13시 ~ 15시' : rawTime.includes('15') ? '15시 ~ 17시' : '';
+        // 데이터 처리
+        lines.slice(1).forEach(line => {
+            // 콤마로 나눔
+            const cols = line.split(',').map(c => c.trim().replace(/"/g, ''));
+            const rawTime = cols[idx.time] || '';
+            
+            let timeKey = '';
+            if (rawTime.includes('09')) timeKey = '09시 ~ 13시';
+            else if (rawTime.includes('13')) timeKey = '13시 ~ 15시';
+            else if (rawTime.includes('15')) timeKey = '15시 ~ 17시';
             
             if (timeGroups[timeKey]) {
-                const info = `${cols[col.type]} / ${cols[col.cat]} / ${cols[col.recv]} / ${cols[col.no]}, ${cols[col.dot]}\n\n${cols[col.model]}\n${cols[col.plan]} / ${cols[col.type]} / ${cols[col.inst]}\n${cols[col.usim]}\n${cols[col.addr]}`;
-                timeGroups[timeKey].push(info);
+                const info = `${cols[idx.type]} / ${cols[idx.cat]} / ${cols[idx.recv]} / ${cols[idx.no]}, ${cols[idx.dot]}\n\n${cols[idx.model]}\n${cols[idx.plan]} / ${cols[idx.type]} / ${cols[idx.inst]}\n${cols[idx.usim]}\n${cols[idx.addr]}`;
+                timeGroups[timeKey].push(info.replace(/\n{3,}/g, '\n\n'));
             }
         });
 
-        // 텍스트 저장
+        // 텍스트 정리 파일 다운로드
         let finalOutput = '';
-        fixedTimeSlots.forEach((time, index) => {
-            finalOutput += `[${time}]\n\n`;
-            if (timeGroups[time].length > 0) {
-                finalOutput += timeGroups[time].map((info, idx) => `${idx + 1}. ${info}`).join('\n\n\n') + '\n\n';
-            } else {
-                finalOutput += '\n';
-            }
-            if (index < fixedTimeSlots.length - 1) finalOutput += '===============================\n';
+        ['09시 ~ 13시', '13시 ~ 15시', '15시 ~ 17시'].forEach((time, i, arr) => {
+            finalOutput += `[${time}]\n\n` + (timeGroups[time].length > 0 ? timeGroups[time].map((info, idx) => `${idx + 1}. ${info}`).join('\n\n\n') + '\n\n' : '\n');
+            if (i < arr.length - 1) finalOutput += '===============================\n';
         });
 
         const blob = new Blob([finalOutput], { type: 'text/plain;charset=utf-8' });
@@ -1630,11 +1612,13 @@ function App() {
         document.body.removeChild(a);
         URL.revokeObjectURL(url);
         e.target.value = null;
+
       } catch (err) {
-        alert("데이터 처리 중 오류 발생: " + err.message);
+        alert("처리 오류: " + err.message);
       }
     };
   };
+
 
 
 
