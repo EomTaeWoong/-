@@ -1542,36 +1542,74 @@ function App() {
 
   const fileInputRef = React.useRef(null);
 
-
-
   const handleFileUpload = (e) => {
     const file = e.target.files[0];
     if (!file) return;
+
+    // 🚨 1. crdownload 파일 원천 차단 (가장 큰 에러 원인!)
+    if (file.name.toLowerCase().endsWith('.crdownload')) {
+        alert("⚠️ [업로드 실패]\n현재 선택하신 파일은 다운로드가 끝나지 않은 '.crdownload' 상태입니다.\n크롬에서 다운로드가 100% 완료된 후 정상적인 텍스트 파일을 다시 올려주세요!");
+        e.target.value = null;
+        return;
+    }
 
     const reader = new FileReader();
     
     reader.onload = (event) => {
       try {
-        let text = event.target.result;
-        if (!text) return alert('파일을 읽을 수 없습니다.');
-        
-        // 1. 모든 줄바꿈, 탭을 하나의 공백으로 치환 (한 사람의 정보가 찢어져 있어도 하나로 뭉침)
-        let cleanText = text.replace(/[\r\n\t]+/g, ' ');
-        
-        // 2. 접수번호(202...로 시작하는 13자리)를 기준으로 각 사람의 데이터를 통째로 잘라냄
-        const records = cleanText.match(/20\d{11}[\s\S]*?(?=20\d{11}|$)/g);
-        
-        if (!records || records.length === 0) {
-            return alert('데이터를 찾을 수 없습니다. (접수번호를 인식하지 못함)');
+        const buffer = event.target.result;
+        if (buffer.byteLength === 0) {
+            return alert("⚠️ 파일 크기가 0바이트입니다! 내용이 비어있거나 읽을 수 없는 파일입니다.");
         }
 
-        let extractedData = [];
+        const uint8Array = new Uint8Array(buffer);
+        let text = '';
+
+        // 2. 인코딩 100% 자동 판별 (어떤 외계어든 완벽 해독)
+        if (uint8Array.length >= 2 && uint8Array[0] === 0xFF && uint8Array[1] === 0xFE) {
+          text = new TextDecoder('utf-16le').decode(uint8Array);
+        } else if (uint8Array.length >= 2 && uint8Array[0] === 0xFE && uint8Array[1] === 0xFF) {
+          text = new TextDecoder('utf-16be').decode(uint8Array);
+        } else if (uint8Array.length >= 3 && uint8Array[0] === 0xEF && uint8Array[1] === 0xBB && uint8Array[2] === 0xBF) {
+          text = new TextDecoder('utf-8').decode(uint8Array);
+        } else {
+          try {
+            text = new TextDecoder('utf-8', { fatal: true }).decode(uint8Array);
+          } catch (err) {
+            text = new TextDecoder('euc-kr').decode(uint8Array);
+          }
+        }
+
+        // 모든 줄바꿈을 공백으로 합쳐서 하나로 뭉침
+        let cleanText = text.replace(/[\r\n\t]+/g, ' ');
+
+        // 3. 사람별로 자르기 (202... 로 시작하는 접수번호 기준)
+        let chunks = cleanText.split(/(?=\b202\d{10,12}\b)/);
+        
+        // 만약 접수번호 패턴이 다를 경우를 대비한 2차 스캔
+        if (chunks.length <= 1) {
+            chunks = cleanText.split(/(?=\b\d{12,14}\b)/);
+        }
+
+        // 시간대가 포함된 진짜 데이터만 걸러내기
+        let validRecords = chunks.filter(chunk => /(09:00\s*~\s*13:00|13:00\s*~\s*15:00|15:00\s*~\s*17:00|09시\s*~\s*13시|13시\s*~\s*15시|15시\s*~\s*17시)/.test(chunk));
+
+        // 🚨 에러 원인 분석기 🚨 (화면에 뭐가 문제인지 정확히 띄워줍니다)
+        if (validRecords.length === 0) {
+            alert("❌ 데이터를 찾을 수 없습니다!\n\n" + 
+                  "[스캔 결과]\n" +
+                  "- 파일 글자수: " + text.length + "자\n" +
+                  "- 읽어들인 내용 일부: " + cleanText.substring(0, 150) + "\n\n" +
+                  "※ 내용이 깨져보인다면 파일 양식이 다르거나 암호화된 것입니다.");
+            e.target.value = null;
+            return;
+        }
+
         const fixedTimeSlots = ['09시 ~ 13시', '13시 ~ 15시', '15시 ~ 17시'];
         const timeGroups = {};
         fixedTimeSlots.forEach(slot => { timeGroups[slot] = []; });
 
-        // 3. 잘라낸 사람별 정보에서 모양(패턴)만 보고 알맹이 쏙쏙 빼오기
-        records.forEach(record => {
+        validRecords.forEach(record => {
             let timeMatch = record.match(/(09:00\s*~\s*13:00|13:00\s*~\s*15:00|15:00\s*~\s*17:00|09시\s*~\s*13시|13시\s*~\s*15시|15시\s*~\s*17시)/);
             if (!timeMatch) return;
             
@@ -1580,8 +1618,6 @@ function App() {
             if (timeStr.includes('09:00') || timeStr.includes('09시')) timeKey = '09시 ~ 13시';
             else if (timeStr.includes('13:00') || timeStr.includes('13시')) timeKey = '13시 ~ 15시';
             else if (timeStr.includes('15:00') || timeStr.includes('15시')) timeKey = '15시 ~ 17시';
-
-            if (!timeKey) return;
 
             let categoryMatch = record.match(/(?:^|\s)(택배|BOPIS|스마트픽|픽업|매장방문)(?=\s|$)/);
             let category = categoryMatch ? categoryMatch[1] : '';
@@ -1614,19 +1650,25 @@ function App() {
             let usimMatch = record.match(/(?:^|\s)(Y|N)\s+(?:SM-|iPhone)/i) || record.match(/(?:^|\s)(Y|N)(?:SM-|iPhone)/i);
             let usimModel = usimMatch ? usimMatch[1].toUpperCase() : '';
 
-            // 주소 (우편번호 5자리부터 요금제/할부금 직전까지 추출)
             let address = '';
-            let zipMatch = record.match(/(\d{5}\s*[가-힣].+?)(?=\s+(?:0|[1-9]\d{3,7})\s*(?:24|30|36|일시불)?\s*(?:[가-힣A-Za-z0-9_]*플랜|\d{1,2}_))/);
-            if (zipMatch) {
-                address = zipMatch[1].trim();
+            let zipIdx = record.search(/\b\d{5}\s*[가-힣]+/);
+            if (zipIdx !== -1) {
+                let sub = record.substring(zipIdx);
+                let cutMatch = sub.match(/\s+(0|[1-9]\d{4,7})\s*(24|30|36|일시불)?\s*([가-힣A-Za-z0-9_]*플랜|\d{1,2}_)/);
+                if (cutMatch) {
+                    address = sub.substring(0, cutMatch.index).trim();
+                } else {
+                    address = sub.substring(0, Math.min(sub.length, 60)).trim(); 
+                }
             }
 
-            // 👇 원하시는 엔터 양식 완벽하게 조립 👇
-            const info = `${type} / ${category} / ${receiver} / ${confirmNo}, ${dotcom}\n\n${model}\n${plan} / ${type} / ${installment}\n${usimModel}\n${address}`;
-            timeGroups[timeKey].push(info);
+            let finalConfirmNo = confirmNo ? `${confirmNo}, ` : '';
+            let finalDotcom = dotcom ? dotcom : '';
+
+            const info = `${type} / ${category} / ${receiver} / ${finalConfirmNo}${finalDotcom}\n\n${model}\n${plan} / ${type} / ${installment}\n${usimModel}\n${address}`;
+            timeGroups[timeKey].push(info.replace(/\n{3,}/g, '\n\n'));
         });
 
-        // 4. 최종 다운로드 텍스트 만들기
         let finalOutput = '';
         fixedTimeSlots.forEach((time, index) => {
             finalOutput += `[${time}]\n\n`; 
@@ -1659,9 +1701,9 @@ function App() {
       }
     };
 
-    // 🚨 핵심 해결책: 파일을 가장 안전하고 확실한 한국어(ANSI) 해독 모드로 읽습니다!
-    reader.readAsText(file, 'euc-kr'); 
+    reader.readAsArrayBuffer(file); 
   };
+
 
         
 
