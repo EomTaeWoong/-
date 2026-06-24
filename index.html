@@ -1564,7 +1564,8 @@ function App() {
         receiver: headers.findIndex(h => h.includes('인수자명')),
         type: headers.findIndex(h => h.includes('유형')),
         model: headers.findIndex(h => h.includes('모델명')),
-        plan: headers.findIndex(h => h.includes('요금제'))
+        plan: headers.findIndex(h => h.includes('요금제')),
+        confirmNo: headers.findIndex(h => h.includes('확인번호'))
       };
 
       const val = (row, key) => colIdx[key] !== -1 && row[colIdx[key]] ? row[colIdx[key]] : '';
@@ -1597,7 +1598,7 @@ function App() {
           const plan = val(row, 'plan');
           const type = val(row, 'type');
           
-          const info = `${receiver} / ${model} / ${plan} / ${type}`;
+          const info = `${receiver} / ${confirmNo} / ${model} / ${plan} / ${type}`;
           timeGroups[timeKey].push(info);
         }
       }
