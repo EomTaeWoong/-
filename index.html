@@ -1672,8 +1672,20 @@ function App() {
                     plan = '요금제 미기재';
                 }
 
-                let instMatch = record.match(/(?:\t|\s|^)([1-9]\d{4,7}|0)(?=\t|\s|$)/g);
-                let inst = (instMatch && instMatch.map(s => s.trim()).filter(s => !s.startsWith('2025') && !s.startsWith('2026')).pop() !== '0') ? '할부24' : '카드결제';
+                     let instMatch = record.match(/(?:\t|\s|^)([1-9]\d{4,7}|0)(?=\t|\s|$)/g);
+                let inst = '0';
+                if (instMatch) {
+                    let valids = instMatch.map(s => s.trim()).filter(s => !s.startsWith('2025') && !s.startsWith('2026'));
+                    if (valids.length > 0) inst = valids[valids.length - 1];
+                }
+                
+                if (inst === '0') {
+                    inst = '카드결제';
+                } else {
+                    let formattedPrice = Number(inst).toLocaleString(); // 1,000 단위 콤마 찍기
+                    inst = `할부24 (5.9%) ${formattedPrice}`;
+                }
+
 
                 let rawUsim = '';
                 if (usimIdx !== -1) {
