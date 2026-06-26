@@ -977,7 +977,6 @@ function MaintenanceCostPopup({ onClose, operator, plans, features, initialData,
             <input type="text" value={(contractType === '공통지원' ? additionalSupport : selectiveAdditionalSupport).toLocaleString()} onChange={e => { const v = Number(e.target.value.replace(/\D/g, '')) || 0; if (contractType === '공통지원') { setAdditionalSupport(v); setAdditionalEdited(true); } else { setSelectiveAdditionalSupport(v); } }} className="border p-1 rounded w-24 text-center bg-white" onFocus={e=>e.target.select()} />
           </div>
           <div className="flex flex-col shrink-0">
-            <label className="text-sm mb-1 text-center">지원금 직접 입력</label>
             <div className="flex border rounded overflow-hidden h-[34px]">
               <button onClick={()=>handleContractTypeChange('공통지원')} className={`px-2 text-sm transition-colors whitespace-nowrap ${contractType==='공통지원'?'bg-blue-600 text-white':'bg-white text-gray-700 hover:bg-gray-100'}`}>공통지원</button>
               <div className="border-l"></div>
@@ -1177,7 +1176,7 @@ function NoticePopup({ onClose }) {
       <div className="bg-white p-6 rounded-lg shadow-xl relative w-max max-w-[90vw] text-center mb-[20vh]">
         <button onClick={onClose} className="absolute top-2 right-2 text-gray-400 hover:text-gray-800 text-2xl leading-none">&times;</button>
         <h2 className="text-lg font-bold mb-4 text-blue-600">📢 안내</h2>
-        <p className="text-gray-800 font-medium whitespace-nowrap">정책 기준일 : KT 6월 23일 / U+ 6월 23일<br />요금제 선택시 공통지원금이 0원이면 직접 계산해주세요.</p>
+        <p className="text-gray-800 font-medium whitespace-nowrap">정책 기준일 : KT 6월 23일 / U+ 6월 23일<br />공통지원금이 0원이면 지원금 칸에 직접 입력해야합니다.</p>
         <button onClick={onClose} className="mt-6 bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 w-full font-bold text-sm">확인</button>
       </div>
     </div>
@@ -1413,7 +1412,6 @@ function Calculator({
           <input type="text" value={(contractType === '공통지원' ? additionalSupport : selectiveAdditionalSupport).toLocaleString()} onChange={e => { const v = Number(e.target.value.replace(/\D/g, '')) || 0; if (contractType === '공통지원') { setAdditionalSupport(v); setAdditionalEdited(true); } else { setSelectiveAdditionalSupport(v); } }} className="border p-1 rounded w-24 text-center bg-white" onFocus={e=>e.target.select()} />
         </div>
         <div className="flex flex-col shrink-0">
-          <label className="text-sm mb-1 text-center">지원금 직접 입력</label>
           <div className="flex border rounded overflow-hidden h-[34px]">
             <button onClick={()=>handleContractTypeChange('공통지원')} className={`px-2 text-sm transition-colors whitespace-nowrap ${contractType==='공통지원'?'bg-blue-600 text-white':'bg-white text-gray-700 hover:bg-gray-100'}`}>공통지원</button>
             <div className="border-l"></div>
