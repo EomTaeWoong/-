@@ -1085,7 +1085,7 @@ function MaintenanceCostPopup({ onClose, operator, plans, features, initialData,
 
 // ------------------ 요금제 정리 팝업 ------------------
 function PlanSummaryPopup({ operator, onClose }) {
-  const ktImage = "https://img1.daumcdn.net/thumb/R1280x0/?scode=mtistory2&fname=https%3A%2F%2Fblog.kakaocdn.net%2Fdna%2FcL0Clj%2FdJMcadB7Khb%2FAAAAAAAAAAAAAAAAAAAAAPnRha76fckta_6rb8emH6JojFSbPQ1DTlFATPrzF2C3%2Fimg.png%3Fcredential%3DyqXZFxpELC7KVnFOS48ylbz2pIh7yKj8%26expires%3D1782831599%26allow_ip%3D%26allow_referer%3D%26signature%3DBwRXdWPEtmYR8AGDnDW97usfZFw%253D";
+  const ktImage = "https://img1.daumcdn.net/thumb/R1280x0/?scode=mtistory2&fname=https%3A%2F%2Fblog.kakaocdn.net%2Fdna%2F2TUVC%2FdJMcacwUsyE%2FAAAAAAAAAAAAAAAAAAAAALi1HtT2CLd_h6ZFveGowtjFHFYbHhIGqCS05bVUYsnm%2Fimg.png%3Fcredential%3DyqXZFxpELC7KVnFOS48ylbz2pIh7yKj8%26expires%3D1785509999%26allow_ip%3D%26allow_referer%3D%26signature%3DvQKFw3%252BNnc9aLcBTEWkAXtjFdWo%253D";
   const uImage = "https://img1.daumcdn.net/thumb/R1280x0/?scode=mtistory2&fname=https%3A%2F%2Fblog.kakaocdn.net%2Fdna%2FvSAuA%2FdJMcacpOaFl%2FAAAAAAAAAAAAAAAAAAAAANDk6zFHmDU6iiFh9Te_lvhXCN3DUHEWpGCU2y0cskfH%2Fimg.png%3Fcredential%3DyqXZFxpELC7KVnFOS48ylbz2pIh7yKj8%26expires%3D1782831599%26allow_ip%3D%26allow_referer%3D%26signature%3DaSVQ7VXGUiem5UjL0HyggnLWAgs%253D";
   const imageSrc = operator === 'KT' ? ktImage : uImage;
 
@@ -1176,7 +1176,7 @@ function NoticePopup({ onClose }) {
       <div className="bg-white p-6 rounded-lg shadow-xl relative w-max max-w-[90vw] text-center mb-[20vh]">
         <button onClick={onClose} className="absolute top-2 right-2 text-gray-400 hover:text-gray-800 text-2xl leading-none">&times;</button>
         <h2 className="text-lg font-bold mb-4 text-blue-600">📢 안내</h2>
-        <p className="text-gray-800 font-medium whitespace-nowrap">정책 기준일 : KT 6월 23일 / U+ 6월 23일<br />공통지원금이 0원이면 지원금 칸에 직접 입력해야합니다.</p>
+        <p className="text-gray-800 font-medium whitespace-nowrap">정책 기준일 : KT 6월 23일 / U+ 7월 1일<br />공통지원금이 0원이면 지원금 칸에 직접 입력해야합니다.</p>
         <button onClick={onClose} className="mt-6 bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 w-full font-bold text-sm">확인</button>
       </div>
     </div>
