@@ -1527,44 +1527,36 @@ function Calculator({
 
 function App() {
 
-  const handleFileUpload = (e) => {
+const handleFileUpload = (e) => {
     const file = e.target.files[0];
     if (!file) return;
 
-    const reader = new FileReader();
-    reader.readAsText(file, 'euc-kr'); 
-
-    reader.onload = (event) => {
-      try {
-        const text = event.target.result;
-        
+    const processRecords = (records, delimiter) => {
         let storeIdx = -1;
         let dotcomIdx = -1; 
         let usimIdx = -1;
         let planIdx = -1;
+        let orderNoIdx = -1;
+        let addrIdx = -1; // 💡 '주소' 열 위치 저장할 변수 추가!
         
-        let delimiter = text.includes('\t') ? '\t' : ',';
-        const linesForIdx = text.split(/\r?\n/);
-        for (let i = 0; i < Math.min(linesForIdx.length, 10); i++) {
-            if (linesForIdx[i].includes('구분') || linesForIdx[i].includes('상담희망일시')) {
-                const headers = linesForIdx[i].split(delimiter).map(h => h.trim().replace(/"/g, ''));
+        for (let i = 0; i < Math.min(records.length, 10); i++) {
+            if (records[i].includes('구분') || records[i].includes('상담희망일시')) {
+                const headers = records[i].split(delimiter).map(h => h.trim().replace(/"/g, ''));
                 storeIdx = headers.findIndex(h => h === '매장' || h === '매장명' || h.includes('매장'));
                 dotcomIdx = headers.findIndex(h => h.includes('닷컴상태'));
                 usimIdx = headers.findIndex(h => h.includes('유심모델'));
                 planIdx = headers.findIndex(h => h === '요금제' || h.includes('요금제'));
+                orderNoIdx = headers.findIndex(h => h.includes('주문번호') || h.includes('닷컴주문번호'));
+                addrIdx = headers.findIndex(h => h === '주소' || h.includes('주소')); // 💡 주소 열 찾기
                 break;
             }
         }
 
-        const records = text.split(/(?=202\d{10})/); 
         const timeGroups = { '09시 ~ 13시': [], '13시 ~ 15시': [], '15시 ~ 17시': [] };
-
-        const allKnownPlans = [...PLAN_LIST_KT, ...PLAN_LIST_U]
-          .map(p => p.name.replace(/\s*\(가입\s*중단\)/g, '').trim())
-          .sort((a, b) => b.length - a.length);
+        const allKnownPlans = [...PLAN_LIST_KT, ...PLAN_LIST_U].map(p => p.name.replace(/\s*\(가입\s*중단\)/g, '').trim()).sort((a, b) => b.length - a.length);
 
         records.forEach(record => {
-            if (!record.includes('202')) return;
+            if (record.includes('구분') && record.includes('상담희망일시')) return; 
 
             let timeMatch = record.match(/(09:00\s*~\s*13:00|13:00\s*~\s*15:00|15:00\s*~\s*17:00|09시\s*~\s*13시|13시\s*~\s*15시|15시\s*~\s*17시)/);
             if (!timeMatch) return;
@@ -1572,155 +1564,177 @@ function App() {
             let timeStr = timeMatch[1].replace(/\s/g, '');
             let timeKey = timeStr.includes('09') ? '09시 ~ 13시' : timeStr.includes('13') ? '13시 ~ 15시' : '15시 ~ 17시';
             
-            if (timeGroups[timeKey]) {
-                const getVal = (regex) => (record.match(regex) || [])[1] || '';
-                
-                let cat = getVal(/(택배|BOPIS|스마트픽|픽업|매장방문|퀵배송)/);
-                
-                let storeName = '';
-                if (storeIdx !== -1) {
-                    const cols = record.split(delimiter);
-                    if (cols.length > storeIdx) {
-                        storeName = cols[storeIdx].trim().replace(/"/g, '').split(/\r?\n/)[0].trim();
-                    }
-                }
-                if (!storeName || storeName.includes('09') || storeName.includes('13') || storeName.includes('15')) {
-                    let timeMatchForStore = record.match(/(?:09:00\s*~\s*13:00|13:00\s*~\s*15:00|15:00\s*~\s*17:00|09시\s*~\s*13시|13시\s*~\s*15시|15시\s*~\s*17시)[ ]*,?[ ]*\t?[ ]*([^\t\n,]+)/);
-                    if (timeMatchForStore) { storeName = timeMatchForStore[1].trim(); }
-                }
-                storeName = storeName.replace(/(09:00\s*~\s*13:00|13:00\s*~\s*15:00|15:00\s*~\s*17:00|09시\s*~\s*13시|13시\s*~\s*15시|15시\s*~\s*17시)/g, '').trim();
-                if ((cat === 'BOPIS' || cat === '퀵배송') && storeName) { cat = `${cat}(${storeName})`; }
+            const getVal = (regex) => (record.match(regex) || [])[1] || '';
+            
+            let cat = getVal(/(택배|BOPIS|스마트픽|픽업|매장방문|퀵배송)/);
+            
+            let storeName = '';
+            if (storeIdx !== -1) {
+                const cols = record.split(delimiter);
+                if (cols.length > storeIdx) { storeName = cols[storeIdx].trim().replace(/"/g, '').split(/\r?\n/)[0].trim(); }
+            }
+            if (!storeName || storeName.includes('09') || storeName.includes('13') || storeName.includes('15')) {
+                let timeMatchForStore = record.match(/(?:09:00\s*~\s*13:00|13:00\s*~\s*15:00|15:00\s*~\s*17:00|09시\s*~\s*13시|13시\s*~\s*15시|15시\s*~\s*17시)[ ]*,?[ ]*\t?[ ]*([^\t\n,]+)/);
+                if (timeMatchForStore) { storeName = timeMatchForStore[1].trim(); }
+            }
+            storeName = storeName.replace(/(09:00\s*~\s*13:00|13:00\s*~\s*15:00|15:00\s*~\s*17:00|09시\s*~\s*13시|13시\s*~\s*15시|15시\s*~\s*17시)/g, '').trim();
+            if ((cat === 'BOPIS' || cat === '퀵배송') && storeName) { cat = `${cat}(${storeName})`; }
 
-                let namePhoneMatch = record.match(/(?:[가-힣]{2,5}[,\s\t]+)?([가-힣]{2,5})[,\s\t]+(010-\d{3,4}-\d{4})/);
-                const name = namePhoneMatch ? namePhoneMatch[1] : '';
-                const confirm = namePhoneMatch ? namePhoneMatch[2] : ''; 
+            let namePhoneMatch = record.match(/(?:[가-힣]{2,5}[,\s\t]+)?([가-힣]{2,5})[,\s\t]+(010-\d{3,4}-\d{4})/);
+            const name = namePhoneMatch ? namePhoneMatch[1] : '';
+            const confirm = namePhoneMatch ? namePhoneMatch[2] : ''; 
 
-                let dotcom = '';
-                if (dotcomIdx !== -1) {
-                    const cols = record.split(delimiter);
-                    if (cols.length > dotcomIdx) { dotcom = cols[dotcomIdx].trim().replace(/"/g, '').split(/\r?\n/)[0].trim(); }
-                }
-                if (!dotcom || dotcom.length > 20 || dotcom.includes('202') || dotcom.includes('010')) {
-                    let dotcomMatches = record.match(/(임시저장|개통완료|개통대기|서식지접수|접수완료|해피콜|결제대기|결제완료|상품준비중|배송준비중|배송중|배송완료|닷컴개통\d*|취소완료|교환접수|반품접수|반품완료|정상)/g);
-                    dotcom = dotcomMatches ? dotcomMatches[dotcomMatches.length - 1] : '';
-                }
+            let dotcom = '';
+            if (dotcomIdx !== -1) {
+                const cols = record.split(delimiter);
+                if (cols.length > dotcomIdx) { dotcom = cols[dotcomIdx].trim().replace(/"/g, '').split(/\r?\n/)[0].trim(); }
+            }
+            if (!dotcom || dotcom.length > 20 || dotcom.includes('202') || dotcom.includes('010')) {
+                let dotcomMatches = record.match(/(임시저장|개통완료|개통대기|서식지접수|접수완료|해피콜|결제대기|결제완료|상품준비중|배송준비중|배송중|배송완료|닷컴개통\d*|취소완료|교환접수|반품접수|반품완료|정상)/g);
+                dotcom = dotcomMatches ? dotcomMatches[dotcomMatches.length - 1] : '';
+            }
 
-                const rawModel = getVal(/(SM-[A-Z0-9]+|iPhone\s*[A-Za-z0-9\s]+)/i);
-                let mappedModel = rawModel; 
-                if (rawModel) {
-                    const searchModel = rawModel.replace(/\s+/g, '').toUpperCase();
-                    let isFound = false;
-                    for (const [deviceName, colors] of Object.entries(DEVICE_COLORS_MAP)) {
-                        for (const colorInfo of colors) {
-                            if (colorInfo.copyText.toUpperCase() === searchModel) {
-                                mappedModel = `${deviceName} - ${colorInfo.name}`;
-                                isFound = true;
-                                break;
-                            }
-                        }
-                        if (isFound) break;
-                    }
-                }
-
-                let plan = '';
-                // 🚨 1단계: '요금제' 열에서 직접 추출 
-                if (planIdx !== -1) {
-                    const cols = record.split(delimiter);
-                    if (cols.length > planIdx) { 
-                        let tempPlan = cols[planIdx].trim().replace(/"/g, '').split(/\r?\n/)[0].trim(); 
-                        if (tempPlan && !tempPlan.match(/(010-\d|기변|이동|신규|공시|선약|택배|방문|BOPIS)/)) {
-                            // 한글이 들어있거나, \d{2,3}_(예: 47_데이터플랜) 형태만 인정!
-                            if (tempPlan.match(/[가-힣]/) || tempPlan.match(/^\d{2,3}_/)) {
-                                plan = tempPlan;
-                            }
+            const rawModel = getVal(/(SM-[A-Z0-9]+|iPhone\s*[A-Za-z0-9\s]+)/i);
+            let mappedModel = rawModel; 
+            if (rawModel) {
+                const searchModel = rawModel.replace(/\s+/g, '').toUpperCase();
+                let isFound = false;
+                for (const [deviceName, colors] of Object.entries(DEVICE_COLORS_MAP)) {
+                    for (const colorInfo of colors) {
+                        if (colorInfo.copyText.toUpperCase() === searchModel) {
+                            mappedModel = `${deviceName} - ${colorInfo.name}`;
+                            isFound = true;
+                            break;
                         }
                     }
+                    if (isFound) break;
                 }
+            }
 
-                // 🚨 2단계: 문서 전체 탐색 (기존유지) 같은 접두사 완벽 허용!)
+            let plan = '';
+            if (planIdx !== -1) {
+                const cols = record.split(delimiter);
+                if (cols.length > planIdx) { 
+                    let tempPlan = cols[planIdx].trim().replace(/"/g, '').split(/\r?\n/)[0].trim(); 
+                    if (tempPlan && !tempPlan.match(/(010-\d|기변|이동|신규|공시|선약|택배|방문|BOPIS)/)) {
+                        if (tempPlan.match(/[가-힣]/) || tempPlan.match(/^\d{2,3}_/)) { plan = tempPlan; }
+                    }
+                }
+            }
+
+            if (!plan) {
+                for (const pName of allKnownPlans) { if (record.includes(pName)) { plan = pName; break; } }
                 if (!plan) {
-                    for (const pName of allKnownPlans) { if (record.includes(pName)) { plan = pName; break; } }
-                    if (!plan) {
-                        let planMatch = record.match(/(?:기존유지\)?|기존\)?|유지\)?)\s*((?:5G[A-Za-z0-9+]*(?:\s+|[가-힣])[^\t,]*)|(?:LTE(?:\s+|[가-힣])[^\t,]*)|(?:3G(?:\s+|[가-힣])[^\t,]*)|Y[가-힣a-zA-Z0-9_]+\s*[^\t,]*|(?:(?:유튜브|디즈니\+|티빙\/지니|티빙|지니|넷플릭스|밀리|밀리의\s*서재|우주패스|바이브|OTT|삼성초이스)\s*)*(?:초이스|베이직|스페셜|프리미엄|에센셜|레귤러|플러스|시그니처|프라임|플래티넘|퍼펙트|컴팩트|맥스|다이렉트|플랜)[^\t,]*|데이터[A-Za-z0-9가-힣_]+\s*[^\t,]*|속걱데[^\t,]*|추걱데[^\t,]*|시니어[^\t,]*|키즈[^\t,]*|슬림[^\t,]*|순\s+[^\t,]+|\d{2,3}_[^\t,]+|[A-Za-z0-9가-힣_]+플랜[^\t,]*)/i);
-                        
-                        if (!planMatch) {
-                            planMatch = record.match(/(?:^|\t|\s|,)((?:5G[A-Za-z0-9+]*(?:\s+|[가-힣])[^\t,]*)|(?:LTE(?:\s+|[가-힣])[^\t,]*)|(?:3G(?:\s+|[가-힣])[^\t,]*)|Y[가-힣a-zA-Z0-9_]+\s*[^\t,]*|(?:(?:유튜브|디즈니\+|티빙\/지니|티빙|지니|넷플릭스|밀리|밀리의\s*서재|우주패스|바이브|OTT|삼성초이스)\s*)*(?:초이스|베이직|스페셜|프리미엄|에센셜|레귤러|플러스|시그니처|프라임|플래티넘|퍼펙트|컴팩트|맥스|다이렉트|플랜)[^\t,]*|데이터[A-Za-z0-9가-힣_]+\s*[^\t,]*|속걱데[^\t,]*|추걱데[^\t,]*|시니어[^\t,]*|키즈[^\t,]*|슬림[^\t,]*|순\s+[^\t,]+|\d{2,3}_[^\t,]+|[A-Za-z0-9가-힣_]+플랜[^\t,]*)/i);
-                        }
-                        
-                        plan = planMatch ? planMatch[1].trim() : '';
+                    let planMatch = record.match(/(?:기존유지\)?|기존\)?|유지\)?)\s*((?:5G[A-Za-z0-9+]*(?:\s+|[가-힣])[^\t,]*)|(?:LTE(?:\s+|[가-힣])[^\t,]*)|(?:3G(?:\s+|[가-힣])[^\t,]*)|Y[가-힣a-zA-Z0-9_]+\s*[^\t,]*|(?:(?:유튜브|디즈니\+|티빙\/지니|티빙|지니|넷플릭스|밀리|밀리의\s*서재|우주패스|바이브|OTT|삼성초이스)\s*)*(?:초이스|베이직|스페셜|프리미엄|에센셜|레귤러|플러스|시그니처|프라임|플래티넘|퍼펙트|컴팩트|맥스|다이렉트|플랜)[^\t,]*|데이터[A-Za-z0-9가-힣_]+\s*[^\t,]*|속걱데[^\t,]*|추걱데[^\t,]*|시니어[^\t,]*|키즈[^\t,]*|슬림[^\t,]*|순\s+[^\t,]+|\d{2,3}_[^\t,]+|[A-Za-z0-9가-힣_]+플랜[^\t,]*)/i);
+                    if (!planMatch) {
+                        planMatch = record.match(/(?:^|\t|\s|,)((?:5G[A-Za-z0-9+]*(?:\s+|[가-힣])[^\t,]*)|(?:LTE(?:\s+|[가-힣])[^\t,]*)|(?:3G(?:\s+|[가-힣])[^\t,]*)|Y[가-힣a-zA-Z0-9_]+\s*[^\t,]*|(?:(?:유튜브|디즈니\+|티빙\/지니|티빙|지니|넷플릭스|밀리|밀리의\s*서재|우주패스|바이브|OTT|삼성초이스)\s*)*(?:초이스|베이직|스페셜|프리미엄|에센셜|레귤러|플러스|시그니처|프라임|플래티넘|퍼펙트|컴팩트|맥스|다이렉트|플랜)[^\t,]*|데이터[A-Za-z0-9가-힣_]+\s*[^\t,]*|속걱데[^\t,]*|추걱데[^\t,]*|시니어[^\t,]*|키즈[^\t,]*|슬림[^\t,]*|순\s+[^\t,]+|\d{2,3}_[^\t,]+|[A-Za-z0-9가-힣_]+플랜[^\t,]*)/i);
                     }
+                    plan = planMatch ? planMatch[1].trim() : '';
                 }
+            }
 
-                // 🚨 3단계: 불순물(기존유지 글자 및 뒷부분 메모) 완벽 제거
-                if (plan) {
-                    plan = plan.replace(/^(?:기존유지\)?|기존\)?|유지\)?)\s*/, '');
-                    plan = plan.replace(/[\s/|,]+(주소지|문의|연락|전원|개통|취소|보류|변경|고객|상담|부재|메모|약정|할부|유심|단말기|기변|기기변경|이동|번호이동|통신사이동|신규|신규가입|에이징|번이|선약|선택약정|요금할인|공시|공시지원|지원금|단말할인|자급제|자급|택배|픽업|방문|스마트픽|BOPIS|퀵배송|S2[0-9]|Z\s*Fold|Z\s*Flip|아이폰|iPhone).*$/i, '').trim();
-                    plan = plan.replace(/[\s/|,]+(26플러스|26\+|256G?|512G?|1TB|바이올렛|블랙|화이트|그레이|블루|옐로우|크림|민트|티타늄).*$/i, '').trim();
-                    plan = plan.replace(/[\s/|,]+(현완|현금|완납|선납|지원|청구|요금).*$/i, '').trim(); 
-                    plan = plan.replace(/\s*\(가입\s*중단\)/g, '').trim();
-                }
+            if (plan) {
+                plan = plan.replace(/^(?:기존유지\)?|기존\)?|유지\)?)\s*/, '');
+                plan = plan.replace(/[\s/|,]+(주소지|문의|연락|전원|개통|취소|보류|변경|고객|상담|부재|메모|약정|할부|유심|단말기|기변|기기변경|이동|번호이동|통신사이동|신규|신규가입|에이징|번이|선약|선택약정|요금할인|공시|공시지원|지원금|단말할인|자급제|자급|택배|픽업|방문|스마트픽|BOPIS|퀵배송|S2[0-9]|Z\s*Fold|Z\s*Flip|아이폰|iPhone).*$/i, '').trim();
+                plan = plan.replace(/[\s/|,]+(26플러스|26\+|256G?|512G?|1TB|바이올렛|블랙|화이트|그레이|블루|옐로우|크림|민트|티타늄).*$/i, '').trim();
+                plan = plan.replace(/[\s/|,]+(현완|현금|완납|선납|지원|청구|요금).*$/i, '').trim(); 
+                plan = plan.replace(/\s*\(가입\s*중단\)/g, '').trim();
+            }
 
-                // 🚨 4단계: (최종 방어막) 한글이 전혀 없는 문구는 절대 요금제가 아님 -> 유심이므로 삭제!
-                if (plan && !plan.match(/[가-힣]/) && !plan.match(/^\d{2,3}_/)) {
-                    plan = '';
-                }
+            if (plan && !plan.match(/[가-힣]/) && !plan.match(/^\d{2,3}_/)) { plan = ''; }
+            if (!plan) { plan = '요금제 미기재'; }
 
-                // 요금제가 진짜 비어있을 경우 서식이 깨지지 않도록 미기재 처리
-                if (!plan) {
-                    plan = '요금제 미기재';
-                }
+            let instMatch = record.match(/(?:\t|\s|^)([1-9]\d{4,7}|0)(?=\t|\s|$)/g);
+            let inst = '0';
+            if (instMatch) {
+                let valids = instMatch.map(s => s.trim()).filter(s => !s.startsWith('2025') && !s.startsWith('2026'));
+                if (valids.length > 0) inst = valids[valids.length - 1];
+            }
+            
+            if (inst === '0') { inst = '카드결제'; } 
+            else {
+                let formattedPrice = Number(inst).toLocaleString();
+                inst = `할부24 (5.9%) ${formattedPrice}`;
+            }
 
-                     let instMatch = record.match(/(?:\t|\s|^)([1-9]\d{4,7}|0)(?=\t|\s|$)/g);
-                let inst = '0';
-                if (instMatch) {
-                    let valids = instMatch.map(s => s.trim()).filter(s => !s.startsWith('2025') && !s.startsWith('2026'));
-                    if (valids.length > 0) inst = valids[valids.length - 1];
-                }
-                
-                if (inst === '0') {
-                    inst = '카드결제';
-                } else {
-                    let formattedPrice = Number(inst).toLocaleString(); // 1,000 단위 콤마 찍기
-                    inst = `할부24 (5.9%) ${formattedPrice}`;
-                }
+            let rawUsim = '';
+            if (usimIdx !== -1) {
+                const cols = record.split(delimiter);
+                if (cols.length > usimIdx) { rawUsim = cols[usimIdx].trim().replace(/"/g, '').split(/\r?\n/)[0].trim(); }
+            }
+            let usim = (!rawUsim || rawUsim === '-' || rawUsim.toUpperCase() === 'N' || rawUsim === '없음') ? '기존유심 / 보험 및 부가서비스 미가입' : '유심구매 / 보험 및 부가서비스 미가입';
 
+            // 🚨 [핵심] 주소를 가져오는 이중 안전장치 탑재!
+            let addr = '';
+            if (addrIdx !== -1) {
+                const cols = record.split(delimiter);
+                if (cols.length > addrIdx) { addr = cols[addrIdx].trim().replace(/"/g, ''); }
+            }
 
-                let rawUsim = '';
-                if (usimIdx !== -1) {
-                    const cols = record.split(delimiter);
-                    if (cols.length > usimIdx) { rawUsim = cols[usimIdx].trim().replace(/"/g, '').split(/\r?\n/)[0].trim(); }
-                }
-                let usim = (!rawUsim || rawUsim === '-' || rawUsim.toUpperCase() === 'N' || rawUsim === '없음') ? '기존유심 / 보험 및 부가서비스 미가입' : '유심구매 / 보험 및 부가서비스 미가입';
-
-                let addr = '';
-                let addrM1 = record.match(/\b(\d{5})\b[,\s\t]*"([^"]*)"/);
-                let addrM2 = record.match(/\b(\d{5})\b[,\s\t]*([^\t\n]+)/);
+            // 만약 열 번호로 못 찾았다면, 4자리~5자리 우편번호를 모두 허용하는 정규식으로 탐색!
+            if (!addr || addr.length < 5) {
+                let addrM1 = record.match(/\b(\d{4,5})\b[,\s\t]*"([^"]*)"/);
+                let addrM2 = record.match(/\b(\d{4,5})\b[,\s\t]*([^\t\n]+)/);
                 if (addrM1) { addr = addrM1[2].trim(); } 
                 else if (addrM2) { addr = addrM2[2].trim(); }
-                addr = addr.replace(/\s*(?:MRS상태|상담원|임시저장|개통완료|개통대기|서식지접수|접수완료|해피콜|결제대기|결제완료|상품준비중|배송준비중|배송중|배송완료|닷컴개통\d*|취소완료|교환접수|반품접수|반품완료|정상).*$/, '').trim();
-                addr = addr.replace(/,+$/, '').trim();
-
-                if (addr.includes("온라인영업그룹")) { addr = "3일 내 픽업 불가 시 택배 수령 주소"; }
-
-                let changeType = '기타';
-                if (record.match(/(기기\s*변경|기변|보상\s*기변)/)) changeType = '기변';
-                else if (record.match(/(번호\s*이동|번이|이동|통신사\s*이동|MNP)/i)) changeType = '이동'; 
-                else if (record.match(/(신규\s*가입|신규|에이징)/)) changeType = '신규';
-
-                let discountType = '기타';
-                if (record.match(/(공시\s*지원|공시|단말\s*할인|지원금)/)) discountType = '공시지원';
-                else if (record.match(/(선택\s*약정|선약|요금\s*할인)/)) discountType = '선택약정';
-                else if (record.match(/(자급제|자급)/)) discountType = '자급';
-
-                let dotcomStr = dotcom ? ` ${dotcom}` : ''; 
-                const info = `${changeType} / ${cat} / ${name} / ${confirm}${dotcomStr}\n\n${mappedModel}\n${plan} / ${discountType} / ${inst}\n${usim}\n${addr}`;
-                timeGroups[timeKey].push(info.replace(/\n{3,}/g, '\n\n'));
             }
+
+            addr = addr.replace(/\s*(?:MRS상태|상담원|임시저장|개통완료|개통대기|서식지접수|접수완료|해피콜|결제대기|결제완료|상품준비중|배송준비중|배송중|배송완료|닷컴개통\d*|취소완료|교환접수|반품접수|반품완료|정상).*$/, '').trim();
+            addr = addr.replace(/,+$/, '').trim();
+
+            if (addr.includes("온라인영업그룹")) { addr = "3일 내 픽업 불가 시 택배 수령 주소"; }
+
+            let changeType = '기타';
+            if (record.match(/(기기\s*변경|기변|보상\s*기변)/)) changeType = '기변';
+            else if (record.match(/(번호\s*이동|번이|이동|통신사\s*이동|MNP)/i)) changeType = '이동'; 
+            else if (record.match(/(신규\s*가입|신규|에이징)/)) changeType = '신규';
+
+            let discountType = '기타';
+            if (record.match(/(공시\s*지원|공시|단말\s*할인|지원금)/)) discountType = '공시지원';
+            else if (record.match(/(선택\s*약정|선약|요금\s*할인)/)) discountType = '선택약정';
+            else if (record.match(/(자급제|자급)/)) discountType = '자급';
+
+            let dotcomStr = dotcom ? ` ${dotcom}` : ''; 
+            const info = `${changeType} / ${cat} / ${name} / ${confirm}${dotcomStr}\n\n${mappedModel}\n${plan} / ${discountType} / ${inst}\n${usim}\n${addr}`;
+            
+            let orderNo = '';
+            if (orderNoIdx !== -1) {
+                const cols = record.split(delimiter);
+                if (cols.length > orderNoIdx) { orderNo = cols[orderNoIdx].trim().replace(/"/g, '').split(/\r?\n/)[0].trim(); }
+            }
+
+            let datePart = 999999;     
+            let numPart = 999999999;   
+            
+            let orderMatch = orderNo.match(/(KR|EW)(\d{6})-(?:EDU)?(\d+)/i);
+            if (!orderMatch) orderMatch = record.match(/(KR|EW)(\d{6})-(?:EDU)?(\d+)/i); 
+            
+            if (orderMatch) {
+                datePart = parseInt(orderMatch[2], 10);
+                numPart = parseInt(orderMatch[3], 10);
+            } else {
+                let oldOrderMatch = record.match(/202(\d{10})/); 
+                if (oldOrderMatch) {
+                    datePart = parseInt(oldOrderMatch[1].substring(0, 6), 10);
+                    numPart = parseInt(oldOrderMatch[1].substring(6), 10);
+                }
+            }
+
+            timeGroups[timeKey].push({
+                text: info.replace(/\n{3,}/g, '\n\n'),
+                datePart: datePart,
+                numPart: numPart
+            });
         });
 
         let finalOutput = '';
         ['09시 ~ 13시', '13시 ~ 15시', '15시 ~ 17시'].forEach((time, i, arr) => {
-            finalOutput += `[${time}]\n\n` + (timeGroups[time].length > 0 ? timeGroups[time].map((info, idx) => `${idx + 1}. ${info}`).join('\n\n\n') + '\n\n' : '\n');
+            timeGroups[time].sort((a, b) => {
+                if (a.datePart !== b.datePart) { return a.datePart - b.datePart; }
+                return a.numPart - b.numPart;       
+            });
+
+            finalOutput += `[${time}]\n\n` + (timeGroups[time].length > 0 ? timeGroups[time].map((item, idx) => `${idx + 1}. ${item.text}`).join('\n\n\n') + '\n\n' : '\n');
             if (i < arr.length - 1) finalOutput += '===============================\n';
         });
 
@@ -1733,21 +1747,47 @@ function App() {
         a.click();
         document.body.removeChild(a);
         URL.revokeObjectURL(url);
-        e.target.value = null;
-
-      } catch (err) {
-        alert("처리에 실패했습니다. 파일 내용을 확인해주세요.");
-      }
     };
+
+    const fileName = file.name.toLowerCase();
+    
+    if (fileName.endsWith('.xlsx') || fileName.endsWith('.xls')) {
+        const reader = new FileReader();
+        reader.onload = (event) => {
+            try {
+                const data = new Uint8Array(event.target.result);
+                const workbook = XLSX.read(data, { type: 'array' });
+                const firstSheetName = workbook.SheetNames[0];
+                const worksheet = workbook.Sheets[firstSheetName];
+                const rows = XLSX.utils.sheet_to_json(worksheet, { header: 1, raw: false });
+                
+                const records = rows.map(row => 
+                    row.map(cell => cell == null ? '' : String(cell).replace(/\r?\n/g, ' ')).join('\t')
+                );
+                
+                processRecords(records, '\t');
+            } catch (err) {
+                alert("엑셀 파일 처리에 실패했습니다.");
+            }
+        };
+        reader.readAsArrayBuffer(file);
+    } 
+    else {
+        const reader = new FileReader();
+        reader.onload = (event) => {
+            try {
+                const text = event.target.result;
+                const records = text.split(/(?=202\d{10})/); 
+                const delimiter = text.includes('\t') ? '\t' : ',';
+                processRecords(records, delimiter);
+            } catch (err) {
+                alert("텍스트 파일 처리에 실패했습니다.");
+            }
+        };
+        reader.readAsText(file, 'euc-kr');
+    }
+    e.target.value = null;
   };
-               
-
-          
-
-
-            
-                     
-
 
 
   
