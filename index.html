@@ -1536,8 +1536,8 @@ const handleFileUpload = (e) => {
         let dotcomIdx = -1; 
         let usimIdx = -1;
         let planIdx = -1;
-        let orderNoIdx = -1;
-        let addrIdx = -1; // 💡 '주소' 열 위치 저장할 변수 추가!
+        let addrIdx = -1; 
+        let dateIdx = -1; // 💡 '상담희망일시' 열 위치 저장할 변수 추가!
         
         for (let i = 0; i < Math.min(records.length, 10); i++) {
             if (records[i].includes('구분') || records[i].includes('상담희망일시')) {
@@ -1546,8 +1546,8 @@ const handleFileUpload = (e) => {
                 dotcomIdx = headers.findIndex(h => h.includes('닷컴상태'));
                 usimIdx = headers.findIndex(h => h.includes('유심모델'));
                 planIdx = headers.findIndex(h => h === '요금제' || h.includes('요금제'));
-                orderNoIdx = headers.findIndex(h => h.includes('주문번호') || h.includes('닷컴주문번호'));
-                addrIdx = headers.findIndex(h => h === '주소' || h.includes('주소')); // 💡 주소 열 찾기
+                addrIdx = headers.findIndex(h => h === '주소' || h.includes('주소')); 
+                dateIdx = headers.findIndex(h => h === '상담희망일시' || h.includes('희망일시')); // 💡 위치 찾기
                 break;
             }
         }
@@ -1584,6 +1584,22 @@ const handleFileUpload = (e) => {
             const name = namePhoneMatch ? namePhoneMatch[1] : '';
             const confirm = namePhoneMatch ? namePhoneMatch[2] : ''; 
 
+            // 🚨 1. 상담희망일시에서 '날짜'만 숫자형태로 추출! (예: 2026-06-24 -> 24일)
+            let reqDay = '';
+            if (dateIdx !== -1) {
+                const cols = record.split(delimiter);
+                if (cols.length > dateIdx) { 
+                    let rawDate = cols[dateIdx].trim().replace(/"/g, ''); 
+                    let dateM = rawDate.match(/202\d[-\.]\d{2}[-\.](\d{2})/);
+                    if (dateM) reqDay = parseInt(dateM[1], 10) + '일';
+                }
+            }
+            if (!reqDay) {
+                let dateM = record.match(/202\d[-\.]\d{2}[-\.](\d{2})[,\s\t]*(?:09:00|13:00|15:00|09시|13시|15시)/);
+                if (dateM) reqDay = parseInt(dateM[1], 10) + '일';
+            }
+
+            // 🚨 2. 기존 닷컴상태 추출 로직
             let dotcom = '';
             if (dotcomIdx !== -1) {
                 const cols = record.split(delimiter);
@@ -1592,6 +1608,13 @@ const handleFileUpload = (e) => {
             if (!dotcom || dotcom.length > 20 || dotcom.includes('202') || dotcom.includes('010')) {
                 let dotcomMatches = record.match(/(임시저장|개통완료|개통대기|서식지접수|접수완료|해피콜|결제대기|결제완료|상품준비중|배송준비중|배송중|배송완료|닷컴개통\d*|취소완료|교환접수|반품접수|반품완료|정상)/g);
                 dotcom = dotcomMatches ? dotcomMatches[dotcomMatches.length - 1] : '';
+            }
+
+            // 🚨 3. 추출한 날짜를 닷컴상태 문자열 뒤에 예쁘게 붙여주기! (예: 서식지접수, 24일)
+            if (dotcom && reqDay) {
+                dotcom = `${dotcom}, ${reqDay}`;
+            } else if (reqDay) {
+                dotcom = reqDay;
             }
 
             const rawModel = getVal(/(SM-[A-Z0-9]+|iPhone\s*[A-Za-z0-9\s]+)/i);
@@ -1664,14 +1687,12 @@ const handleFileUpload = (e) => {
             }
             let usim = (!rawUsim || rawUsim === '-' || rawUsim.toUpperCase() === 'N' || rawUsim === '없음') ? '기존유심 / 보험 및 부가서비스 미가입' : '유심구매 / 보험 및 부가서비스 미가입';
 
-            // 🚨 [핵심] 주소를 가져오는 이중 안전장치 탑재!
             let addr = '';
             if (addrIdx !== -1) {
                 const cols = record.split(delimiter);
                 if (cols.length > addrIdx) { addr = cols[addrIdx].trim().replace(/"/g, ''); }
             }
 
-            // 만약 열 번호로 못 찾았다면, 4자리~5자리 우편번호를 모두 허용하는 정규식으로 탐색!
             if (!addr || addr.length < 5) {
                 let addrM1 = record.match(/\b(\d{4,5})\b[,\s\t]*"([^"]*)"/);
                 let addrM2 = record.match(/\b(\d{4,5})\b[,\s\t]*([^\t\n]+)/);
@@ -1697,44 +1718,14 @@ const handleFileUpload = (e) => {
             let dotcomStr = dotcom ? ` ${dotcom}` : ''; 
             const info = `${changeType} / ${cat} / ${name} / ${confirm}${dotcomStr}\n\n${mappedModel}\n${plan} / ${discountType} / ${inst}\n${usim}\n${addr}`;
             
-            let orderNo = '';
-            if (orderNoIdx !== -1) {
-                const cols = record.split(delimiter);
-                if (cols.length > orderNoIdx) { orderNo = cols[orderNoIdx].trim().replace(/"/g, '').split(/\r?\n/)[0].trim(); }
-            }
-
-            let datePart = 999999;     
-            let numPart = 999999999;   
-            
-            let orderMatch = orderNo.match(/(KR|EW)(\d{6})-(?:EDU)?(\d+)/i);
-            if (!orderMatch) orderMatch = record.match(/(KR|EW)(\d{6})-(?:EDU)?(\d+)/i); 
-            
-            if (orderMatch) {
-                datePart = parseInt(orderMatch[2], 10);
-                numPart = parseInt(orderMatch[3], 10);
-            } else {
-                let oldOrderMatch = record.match(/202(\d{10})/); 
-                if (oldOrderMatch) {
-                    datePart = parseInt(oldOrderMatch[1].substring(0, 6), 10);
-                    numPart = parseInt(oldOrderMatch[1].substring(6), 10);
-                }
-            }
-
-            timeGroups[timeKey].push({
-                text: info.replace(/\n{3,}/g, '\n\n'),
-                datePart: datePart,
-                numPart: numPart
-            });
+            timeGroups[timeKey].push(info.replace(/\n{3,}/g, '\n\n'));
         });
 
         let finalOutput = '';
         ['09시 ~ 13시', '13시 ~ 15시', '15시 ~ 17시'].forEach((time, i, arr) => {
-            timeGroups[time].sort((a, b) => {
-                if (a.datePart !== b.datePart) { return a.datePart - b.datePart; }
-                return a.numPart - b.numPart;       
-            });
+            timeGroups[time].reverse();
 
-            finalOutput += `[${time}]\n\n` + (timeGroups[time].length > 0 ? timeGroups[time].map((item, idx) => `${idx + 1}. ${item.text}`).join('\n\n\n') + '\n\n' : '\n');
+            finalOutput += `[${time}]\n\n` + (timeGroups[time].length > 0 ? timeGroups[time].map((text, idx) => `${idx + 1}. ${text}`).join('\n\n\n') + '\n\n' : '\n');
             if (i < arr.length - 1) finalOutput += '===============================\n';
         });
 
