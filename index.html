@@ -1051,7 +1051,7 @@ const totalCost2_Selective = installMonths === 0
               totalCostValue={totalCost2_Public}
               totalCostSubtext={
   installMonths === 0 
-    ? `(기기값 ${principal_Public.toLocaleString()}원 + 요금 ${originalPlanPrice.toLocaleString()}원×6 + ${originalPlanPrice2.toLocaleString()}원×18)`
+    ? `(기기값 ${principal_Public.toLocaleString()}원 + 요금 ${(originalPlanPrice * 6).toLocaleString()}원 + ${(originalPlanPrice2 * 18).toLocaleString()}원)`
     : `(${totalMonthly_Public.toLocaleString()}원 × 6개월 + ${totalMonthly_Public2.toLocaleString()}원 × 18개월)`
 }
               highlightClass={highlightClassPublic2}
@@ -1078,7 +1078,7 @@ const totalCost2_Selective = installMonths === 0
               totalCostValue={totalCost2_Selective}
               totalCostSubtext={
   installMonths === 0 
-    ? `(기기값 ${principal_Selective.toLocaleString()}원 + 요금 ${planPrice_Selective.toLocaleString()}원×6 + ${planPrice_Selective2.toLocaleString()}원×18)`
+    ? `(기기값 ${principal_Selective.toLocaleString()}원 + 요금 ${(planPrice_Selective * 6).toLocaleString()}원 + ${(planPrice_Selective2 * 18).toLocaleString()}원)`
     : `(${totalMonthly_Selective.toLocaleString()}원 × 6개월 + ${totalMonthly_Selective2.toLocaleString()}원 × 18개월)`
 }
               highlightClass={highlightClassSelective2}
@@ -1490,6 +1490,11 @@ const winnerMain = total24_Public < total24_Selective ? '공통지원' : (total2
             totalMonthly={totalMonthly_Public}
             totalCostLabel="총 유지비용"
             totalCostValue={total24_Public}
+            totalCostSubtext={
+              installMonths === 0 
+                ? `(기기값 ${principal_Public.toLocaleString()}원 + 요금 ${originalPlanPrice.toLocaleString()}원×24개월 ${(originalPlanPrice * 24).toLocaleString()}원)`
+                : `(${totalMonthly_Public.toLocaleString()}원 × 24개월)`
+            }
             highlightClass={highlightClassPublic}
             arrowColor="text-red-600"
           />
@@ -1512,6 +1517,11 @@ const winnerMain = total24_Public < total24_Selective ? '공통지원' : (total2
             totalMonthly={totalMonthly_Selective}
             totalCostLabel="총 유지비용"
             totalCostValue={total24_Selective}
+            totalCostSubtext={
+              installMonths === 0 
+                ? `(기기값 ${principal_Selective.toLocaleString()}원 + 요금 ${planPrice_Selective.toLocaleString()}원×24개월 ${(planPrice_Selective * 24).toLocaleString()}원)`
+                : `(${totalMonthly_Selective.toLocaleString()}원 × 24개월)`
+            }
             highlightClass={highlightClassSelective}
             arrowColor="text-red-600"
           />
