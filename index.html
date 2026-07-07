@@ -927,8 +927,14 @@ function MaintenanceCostPopup({ onClose, operator, plans, features, initialData,
   const planPrice_Selective = Math.round(originalPlanPrice * 0.75);
   const totalMonthly_Selective = monthlyDevice_Selective + planPrice_Selective;
 
-  const totalCost2_Public = (totalMonthly_Public * 6) + (totalMonthly_Public2 * 18);
-  const totalCost2_Selective = (totalMonthly_Selective * 6) + (totalMonthly_Selective2 * 18);
+// 일시불(0개월)일 경우 기기값을 명시적으로 합산해주도록 변경
+const totalCost2_Public = installMonths === 0 
+  ? principal_Public + (originalPlanPrice * 6) + (originalPlanPrice2 * 18)
+  : (totalMonthly_Public * 6) + (totalMonthly_Public2 * 18);
+
+const totalCost2_Selective = installMonths === 0 
+  ? principal_Selective + (planPrice_Selective * 6) + (planPrice_Selective2 * 18)
+  : (totalMonthly_Selective * 6) + (totalMonthly_Selective2 * 18);
   const diff2 = Math.abs(totalCost2_Public - totalCost2_Selective);
   const winner2 = totalCost2_Public < totalCost2_Selective ? '공통지원' : (totalCost2_Selective < totalCost2_Public ? '선택약정' : '동일');
 
@@ -1043,7 +1049,11 @@ function MaintenanceCostPopup({ onClose, operator, plans, features, initialData,
               totalMonthly={totalMonthly_Public2}
               totalCostLabel="총 유지비용"
               totalCostValue={totalCost2_Public}
-              totalCostSubtext={`(${totalMonthly_Public.toLocaleString()}원 × 6개월 + ${totalMonthly_Public2.toLocaleString()}원 × 18개월)`}
+              totalCostSubtext={
+  installMonths === 0 
+    ? `(기기값 ${principal_Public.toLocaleString()}원 + 요금 ${originalPlanPrice.toLocaleString()}원×6 + ${originalPlanPrice2.toLocaleString()}원×18)`
+    : `(${totalMonthly_Public.toLocaleString()}원 × 6개월 + ${totalMonthly_Public2.toLocaleString()}원 × 18개월)`
+}
               highlightClass={highlightClassPublic2}
               arrowColor="text-blue-600"
             />
@@ -1066,7 +1076,11 @@ function MaintenanceCostPopup({ onClose, operator, plans, features, initialData,
               totalMonthly={totalMonthly_Selective2}
               totalCostLabel="총 유지비용"
               totalCostValue={totalCost2_Selective}
-              totalCostSubtext={`(${totalMonthly_Selective.toLocaleString()}원 × 6개월 + ${totalMonthly_Selective2.toLocaleString()}원 × 18개월)`}
+              totalCostSubtext={
+  installMonths === 0 
+    ? `(기기값 ${principal_Selective.toLocaleString()}원 + 요금 ${planPrice_Selective.toLocaleString()}원×6 + ${planPrice_Selective2.toLocaleString()}원×18)`
+    : `(${totalMonthly_Selective.toLocaleString()}원 × 6개월 + ${totalMonthly_Selective2.toLocaleString()}원 × 18개월)`
+}
               highlightClass={highlightClassSelective2}
               arrowColor="text-blue-600"
             />
@@ -1334,13 +1348,16 @@ function Calculator({
   const monthlyInterest_Public = installMonths === 0 ? 0 : Math.max(0, monthlyDevice_Public - Math.round(principal_Public / installMonths));
   const monthlyInterest_Selective = installMonths === 0 ? 0 : Math.max(0, monthlyDevice_Selective - Math.round(principal_Selective / installMonths));
 
-  const highlightClassPublic = totalMonthly_Public < totalMonthly_Selective ? 'bg-green-50 ring-2 ring-green-500 z-10' : 'bg-white';
-  const highlightClassSelective = totalMonthly_Selective < totalMonthly_Public ? 'bg-green-50 ring-2 ring-green-500 z-10' : 'bg-white';
+// 1. 총비용을 먼저 계산합니다.
+const total24_Public = principal_Public + totalInterest_Public + (originalPlanPrice * 24);
+const total24_Selective = principal_Selective + totalInterest_Selective + (planPrice_Selective * 24);
 
-  const total24_Public = principal_Public + totalInterest_Public + (originalPlanPrice * 24);
-  const total24_Selective = principal_Selective + totalInterest_Selective + (planPrice_Selective * 24);
-  const diffMain = Math.abs(total24_Public - total24_Selective);
-  const winnerMain = total24_Public < total24_Selective ? '공통지원' : (total24_Selective < total24_Public ? '선택약정' : '동일');
+// 2. 초록색 테두리(유리함 표시) 기준을 계산된 '총 24개월 총비용' 기준으로 비교합니다.
+const highlightClassPublic = total24_Public < total24_Selective ? 'bg-green-50 ring-2 ring-green-500 z-10' : 'bg-white';
+const highlightClassSelective = total24_Selective < total24_Public ? 'bg-green-50 ring-2 ring-green-500 z-10' : 'bg-white';
+
+const diffMain = Math.abs(total24_Public - total24_Selective);
+const winnerMain = total24_Public < total24_Selective ? '공통지원' : (total24_Selective < total24_Public ? '선택약정' : '동일');
 
   const handleContractTypeChange = (newType) => setContractType(newType);
 
