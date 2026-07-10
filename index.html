@@ -1988,7 +1988,7 @@ const handleFileUpload = (e) => {
               onBlur={(e) => e.target.placeholder = '모델명 검색'} 
             />
           </div>
-          <input type="text" value={trackingNumber} onChange={(e) => setTrackingNumber(e.target.value.replace(/\D/g, ''))} onKeyDown={(e) => e.key === 'Enter' && handleTrackingSearch()} placeholder="송장번호 검색" className="border p-2 rounded w-32 h-[36px] text-sm text-center placeholder-gray-700 shrink-0" onFocus={(e) => e.target.placeholder = ''} onBlur={(e) => e.target.placeholder = '대한통운 송장번호'} />
+          <input type="text" value={trackingNumber} onChange={(e) => setTrackingNumber(e.target.value.replace(/\D/g, ''))} onKeyDown={(e) => e.key === 'Enter' && handleTrackingSearch()} placeholder="송장번호 검색" className="border p-2 rounded w-32 h-[36px] text-sm text-center placeholder-gray-700 shrink-0" onFocus={(e) => e.target.placeholder = ''} onBlur={(e) => e.target.placeholder = 'CJ 송장번호'} />
         </div>
       </div>
 
