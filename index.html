@@ -968,7 +968,7 @@ const totalCost2_Selective = installMonths === 0
             </div>
           </div>
           <select value={installMonths} onChange={e=>setInstallMonths(Number(e.target.value))} className="border p-2 rounded w-[72px] md:w-24 text-center outline-none focus:ring-2 focus:ring-blue-500 h-[38px] shrink-0">
-            {[0,6,12,18,24,30,36,48].map(m=><option key={m} value={m}>{m===0?'일시불':m+'개월'}</option>)}
+            {[0,3,6,9,10,12,18,24,30,36,48].map(m=><option key={m} value={m}>{m===0?'일시불':m+'개월'}</option>)}
           </select>
         </div>
 
@@ -1415,7 +1415,7 @@ const winnerMain = total24_Public < total24_Selective ? '공통지원' : (total2
           )}
         </div>
         <select value={installMonths} onChange={e=>setInstallMonths(Number(e.target.value))} className="border p-2 rounded w-[70px] md:w-24 text-center outline-none focus:ring-2 focus:ring-blue-500 shrink-0 h-[38px]">
-          {[0,6,12,18,24,30,36,48].map(m=><option key={m} value={m}>{m===0?'일시불':m+'개월'}</option>)}
+          {[0,3,6,9,10,12,18,24,30,36,48].map(m=><option key={m} value={m}>{m===0?'일시불':m+'개월'}</option>)}
         </select>
       </div>
 
