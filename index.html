@@ -46,24 +46,24 @@ const POLICY = {
     U_TIER_A_MIN: 33000
   },
   DEVICES: {
-    'Z Fold8 Ultra 512G': { KT_COMMON: {}, U_COMMON: {}, EXTRA: {} },
-    'Z Fold8 와이드 512G': { KT_COMMON: {}, U_COMMON: {}, EXTRA: {} },
-    'Z Flip8 512G': { KT_COMMON: {}, U_COMMON: {}, EXTRA: {} },
-    'S26 Ultra 512G': { KT_COMMON: {}, U_COMMON: {}, EXTRA: {} },
+    'Z 폴드8 울트라 512G': { KT_COMMON: {}, U_COMMON: {}, EXTRA: {} },
+    'Z 폴드8 와이드 512G': { KT_COMMON: {}, U_COMMON: {}, EXTRA: {} },
+    'Z 플립8 512G': { KT_COMMON: {}, U_COMMON: {}, EXTRA: {} },
+    'S26 울트라 512G': { KT_COMMON: {}, U_COMMON: {}, EXTRA: {} },
     'S26+ 512G': { KT_COMMON: {}, U_COMMON: {}, EXTRA: {} },
     'S26 512G': { KT_COMMON: {}, U_COMMON: {}, EXTRA: {} },
-    'S26 Ultra 256G': { KT_COMMON: {}, U_COMMON: {}, EXTRA: {} },
+    'S26 울트라 256G': { KT_COMMON: {}, U_COMMON: {}, EXTRA: {} },
     'S26+ 256G': { KT_COMMON: {}, U_COMMON: {}, EXTRA: {} },
     'S26 256G': { KT_COMMON: {}, U_COMMON: {}, EXTRA: {} },
-    'S25 Ultra 256G': { KT_COMMON: {}, U_COMMON: {}, EXTRA: {} },
+    'S25 울트라 256G': { KT_COMMON: {}, U_COMMON: {}, EXTRA: {} },
     'S25+ 256G': { KT_COMMON: {}, U_COMMON: {}, EXTRA: {} },
     'S25 256G': { KT_COMMON: {}, U_COMMON: {}, EXTRA: {} },
-    'S25 Edge 256G': { KT_COMMON: {}, U_COMMON: {}, EXTRA: {} },
+    'S25 엣지 256G': { KT_COMMON: {}, U_COMMON: {}, EXTRA: {} },
     'S26 FE': { KT_COMMON: {}, U_COMMON: {}, EXTRA: {} },
     'S25 FE': { KT_COMMON: {}, U_COMMON: {}, EXTRA: {} },
-    'Z Fold7 256G': { KT_COMMON: {}, U_COMMON: {}, EXTRA: {} },
-    'Z Flip7 256G': { KT_COMMON: {}, U_COMMON: {}, EXTRA: {} },
-    'Z Flip7 FE': { KT_COMMON: {}, U_COMMON: {}, EXTRA: {} },
+    'Z 폴드7 256G': { KT_COMMON: {}, U_COMMON: {}, EXTRA: {} },
+    'Z 플립7 256G': { KT_COMMON: {}, U_COMMON: {}, EXTRA: {} },
+    'Z 플립7 FE': { KT_COMMON: {}, U_COMMON: {}, EXTRA: {} },
     'A37 5G': { KT_COMMON: {}, U_COMMON: {}, EXTRA: {} },
     'A36 5G': { KT_COMMON: {}, U_COMMON: {}, EXTRA: {} },
     'A17 LTE': { KT_COMMON: {}, U_COMMON: {}, EXTRA: {} }
@@ -74,28 +74,28 @@ const POLICY = {
 // 💡 [색상 복사 텍스트 설정] 단말기별 색상과 복사될 텍스트 💡
 // =====================================================================
 const DEVICE_COLORS_MAP = {
-  'Z Fold8 Ultra 512G': [
+  'Z 폴드8 울트라 512G': [
     { name: '그라파이트', copyText: 'SM-F976NKEKOD' },
     { name: '크림', copyText: 'SM-F976NZWEKOD' },
     { name: '바이올렛 쉐도우', copyText: 'SM-F976NZVEKOD' },
   ],
-  'Z Fold8 와이드 512G': [
+  'Z 폴드8 와이드 512G': [
     { name: '그라파이트', copyText: 'SM-F971NZKEKOD' },
     { name: '크림', copyText: 'SM-F971NZWEKOD' },
     { name: '라벤더', copyText: 'SM-F971NLVEKOD' },
   ],
-  'Z Flip8 512G': [
+  'Z 플립8 512G': [
     { name: '그라파이트', copyText: 'SM-F776NZKEKOD' },
     { name: '크림', copyText: 'SM-F776NZWEKOD' },
     { name: '핑크', copyText: 'SM-F776NLIEKOD' },
   ],
-  'S26 Ultra 512G': [
+  'S26 울트라 512G': [
     { name: '코발트 바이올렛', copyText: 'SM-S948NZVWKOD' },
     { name: '화이트', copyText: 'SM-S948NZWWKOD' },
     { name: '스카이 블루', copyText: 'SM-S948NLBWKOD' },
     { name: '블랙', copyText: 'SM-S948NZKWKOD' },
   ],
-  'S26 Ultra 256G': [
+  'S26 울트라 256G': [
     { name: '코발트 바이올렛', copyText: 'SM-S948NZVBKOD' },
     { name: '화이트', copyText: 'SM-S948NZWBKOD' },
     { name: '스카이 블루', copyText: 'SM-S948NLBBKOD' },
@@ -125,12 +125,12 @@ const DEVICE_COLORS_MAP = {
     { name: '스카이 블루', copyText: 'SM-S942NLBEKOD' },
     { name: '블랙', copyText: 'SM-S942NZKEKOD' },
   ],
-  'S25 Edge 256G': [
+  'S25 엣지 256G': [
     { name: '티타늄 실버', copyText: 'SM-S937NZSBKOD' },
     { name: '티타늄 아이스블루', copyText: 'SM-S937NLBBKOD' },
     { name: '티타늄 제트블랙', copyText: 'SM-S937NZKBKOD' },
   ],
-  'S25 Ultra 256G': [
+  'S25 울트라 256G': [
     { name: '티타늄 블랙', copyText: 'SM-S938NZKAKOD' },
     { name: '티타늄 그레이', copyText: 'SM-S938NZTAKOD' },
     { name: '티타늄 실버블루', copyText: 'SM-S938NZBAKOD' },
@@ -160,17 +160,17 @@ const DEVICE_COLORS_MAP = {
     { name: '제트블랙', copyText: 'SM-S731NZKWKOD' },
     { name: '화이트', copyText: 'SM-S731NZWWKOD' },
   ],
-  'Z Fold7 256G': [
+  'Z 폴드7 256G': [
     { name: '블루 쉐도우', copyText: 'SM-F966NDBAKOD' },
     { name: '제트블랙', copyText: 'SM-F966NZKAKOD' },
     { name: '실버 쉐도우', copyText: 'SM-F966NZSAKOD' },
   ],
-  'Z Flip7 256G': [
+  'Z 플립7 256G': [
     { name: '블루 쉐도우', copyText: 'SM-F766NDBAKOD' },
     { name: '코랄레드', copyText: 'SM-F766NZRAKOD' },
     { name: '제트블랙', copyText: 'SM-F766NZKAKOD' },
   ],
-  'Z Flip7 FE': [
+  'Z 플립7 FE': [
     { name: '블랙', copyText: 'SM-F761NZKVKOD' },
     { name: '화이트', copyText: 'SM-F761NZWVKOD' },
   ],
@@ -200,18 +200,18 @@ const CATEGORIZED_DEVICE_LIST = [
   {
     category: '사전예약',
     devices: [
-      { name: 'Z Fold8 Ultra 512G', price: 5000000, isHighlight: true },
-      { name: 'Z Fold8 와이드 512G', price: 4500000, isHighlight: true },
-      { name: 'Z Flip8 512G', price: 4000000, isHighlight: true }
+      { name: 'Z 폴드8 울트라 512G', price: 2830000, isHighlight: true },
+      { name: 'Z 폴드8 와이드 512G', price: 2531000, isHighlight: true },
+      { name: 'Z 플립8 512G', price: 1936000, isHighlight: true }
     ]
   },
   {
     category: 'S26 시리즈',
     devices: [
-      { name: 'S26 Ultra 512G', price: 2050400, isGreen: true },
+      { name: 'S26 울트라 512G', price: 2050400, isGreen: true },
       { name: 'S26+ 512G', price: 1705000, isGreen: true },
       { name: 'S26 512G', price: 1507000, isGreen: true },
-      { name: 'S26 Ultra 256G', price: 1797400, isPurple: true },
+      { name: 'S26 울트라 256G', price: 1797400, isPurple: true },
       { name: 'S26+ 256G', price: 1452000, isPurple: true },
       { name: 'S26 256G', price: 1254000, isPurple: true },
       { name: 'S26 FE', price: 946000 }
@@ -220,19 +220,19 @@ const CATEGORIZED_DEVICE_LIST = [
   {
     category: 'S25 시리즈',
     devices: [
-      { name: 'S25 Edge 256G', price: 1496000 },
-      { name: 'S25 Ultra 256G', price: 1698400 },
+      { name: 'S25 엣지 256G', price: 1496000 },
+      { name: 'S25 울트라 256G', price: 1698400 },
       { name: 'S25+ 256G', price: 1353000 },
       { name: 'S25 256G', price: 1155000 },
       { name: 'S25 FE', price: 946000 }
     ]
   },
   {
-    category: '폴더블7 시리즈',
+    category: '폴더블8 시리즈',
     devices: [
-      { name: 'Z Fold7 256G', price: 2379300 },
-      { name: 'Z Flip7 256G', price: 1485000 },
-      { name: 'Z Flip7 FE', price: 1199000 }
+      { name: 'Z 폴드8 울트라 256G', price: 2577000 },
+      { name: 'Z 폴드8 와이드 256G', price: 2278000 },
+      { name: 'Z 플립8 256G', price: 1683000 }
     ]
   },
   {
