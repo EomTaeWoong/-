@@ -75,19 +75,19 @@ const POLICY = {
 // =====================================================================
 const DEVICE_COLORS_MAP = {
   'Z 폴드8 울트라 512G': [
-    { name: '그라파이트', copyText: 'SM-F976NKEKOD' },
-    { name: '크림', copyText: 'SM-F976NZWEKOD' },
-    { name: '바이올렛 쉐도우', copyText: 'SM-F976NZVEKOD' },
+    { name: '바이올렛 쉐도우', copyText: 'SM-F976NZVIKOD' },
+    { name: '크림', copyText: 'SM-F976NZWIKOD' },
+    { name: '그라파이트', copyText: 'SM-F976NZKIKOD' },
   ],
   'Z 폴드8 와이드 512G': [
-    { name: '그라파이트', copyText: 'SM-F971NZKEKOD' },
-    { name: '크림', copyText: 'SM-F971NZWEKOD' },
-    { name: '라벤더', copyText: 'SM-F971NLVEKOD' },
+    { name: '라벤더', copyText: 'SM-F971NLVIKOD' },
+    { name: '크림', copyText: 'SM-F971NZWIKOD' },
+    { name: '그라파이트', copyText: 'SM-F971NZKIKOD' },
   ],
   'Z 플립8 512G': [
+    { name: '핑크', copyText: 'SM-F776NLIEKOD' },
     { name: '그라파이트', copyText: 'SM-F776NZKEKOD' },
     { name: '크림', copyText: 'SM-F776NZWEKOD' },
-    { name: '핑크', copyText: 'SM-F776NLIEKOD' },
   ],
   'S26 울트라 512G': [
     { name: '코발트 바이올렛', copyText: 'SM-S948NZVWKOD' },
@@ -161,18 +161,19 @@ const DEVICE_COLORS_MAP = {
     { name: '화이트', copyText: 'SM-S731NZWWKOD' },
   ],
   'Z 폴드8 울트라 256G': [
-    { name: '블루 쉐도우', copyText: 'SM-F966NDBAKOD' },
-    { name: '제트블랙', copyText: 'SM-F966NZKAKOD' },
-    { name: '실버 쉐도우', copyText: 'SM-F966NZSAKOD' },
+    { name: '바이올렛 쉐도우', copyText: 'SM-F976NZVPKOD' },
+    { name: '크림', copyText: 'SM-F976NZWPKOD' },
+    { name: '그라파이트', copyText: 'SM-F976NZKPKOD' },
   ],
   'Z 폴드8 와이드 256G': [
-    { name: '블루 쉐도우', copyText: 'SM-F766NDBAKOD' },
-    { name: '코랄레드', copyText: 'SM-F766NZRAKOD' },
-    { name: '제트블랙', copyText: 'SM-F766NZKAKOD' },
+    { name: '라벤더', copyText: 'SM-F971NLVPKOD' },
+    { name: '크림', copyText: 'SM-F971NZWPKOD' },
+    { name: '그라파이트', copyText: 'SM-F971NZKPKOD' },
   ],
   'Z 플립8 256G': [
-    { name: '블랙', copyText: 'SM-F761NZKVKOD' },
-    { name: '화이트', copyText: 'SM-F761NZWVKOD' },
+    { name: '핑크', copyText: 'SM-F776NLIAKOD' },
+    { name: '그라파이트', copyText: 'SM-F776NZKAKOD' },
+    { name: '크림', copyText: 'SM-F776NZWAKOD' },
   ],
   'A37 5G': [
     { name: '어썸 라벤더', copyText: 'SM-A376NLVAKOD' },
@@ -1144,9 +1145,9 @@ function RequestFormPopup({ onClose }) {
   );
 }
 
-// ------------------ 이벤트 이미지 팝업 컴포넌트 ------------------
+// ------------------ 닷컴 혜택 이미지 팝업 컴포넌트 ------------------
 function DeviceColorPopup({ onClose }) {
-  const imageSrc = "https://img1.daumcdn.net/thumb/R1280x0/?scode=mtistory2&fname=https%3A%2F%2Fblog.kakaocdn.net%2Fdna%2FA9qMF%2FdJMcaiDKm8R%2FAAAAAAAAAAAAAAAAAAAAAL_fOH_YE6DTtlATfetyOxg0ZMqBC0CKXIxi57MBtj3D%2Fimg.png%3Fcredential%3DyqXZFxpELC7KVnFOS48ylbz2pIh7yKj8%26expires%3D1785509999%26allow_ip%3D%26allow_referer%3D%26signature%3DbAmA7Up4KA7YY6y80wBs4mKMwqE%253D"; 
+  const imageSrc = "https://img1.daumcdn.net/thumb/R1280x0/?scode=mtistory2&fname=https%3A%2F%2Fblog.kakaocdn.net%2Fdna%2FdlC7YL%2FdJMcadpeLkL%2FAAAAAAAAAAAAAAAAAAAAAFcmokBY7mKEf5Hmjd48WvJdy2_gk2tJOLwdtqpTSUzV%2Fimg.png%3Fcredential%3DyqXZFxpELC7KVnFOS48ylbz2pIh7yKj8%26expires%3D1785509999%26allow_ip%3D%26allow_referer%3D%26signature%3DLBKF%252Btx5mfjkpm%252FnbNKG6kpW76U%253D"; 
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
