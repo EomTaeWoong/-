@@ -1841,7 +1841,7 @@ const handleAdminClick = async () => {
       const sendRes = await fetch(`${workerUrl}/send-otp`);
       if (!sendRes.ok) throw new Error('발송 실패');
 
-      const code = prompt("인증번호 4자리를 입력하세요.");
+      const code = prompt("인증번호 4자리를 입력하세요.\n(관리자에게 문의하세요.)");
       if (!code) return; 
 
       const verifyRes = await fetch(`${workerUrl}/verify-otp?code=${code}`);
