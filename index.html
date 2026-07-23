@@ -1826,6 +1826,34 @@ const handleFileUpload = (e) => {
 
   const fileInputRef = React.useRef(null);     
 
+const handleAdminClick = async () => {
+    // 방금 만든 Cloudflare Worker 주소
+    const workerUrl = 'https://shiny-surf-3362.xodnd9733.workers.dev';
+
+    try {
+      // 1. 서버에 인증번호 발송 요청
+      const sendRes = await fetch(`${workerUrl}/send-otp`);
+      if (!sendRes.ok) throw new Error('발송 실패');
+
+      // 2. 사용자에게 인증번호 입력받기
+      const code = prompt("인증번호 4자리를 입력하세요.");
+      if (!code) return; // 취소 누르면 종료
+
+      // 3. 서버에 인증번호 검증 요청
+      const verifyRes = await fetch(`${workerUrl}/verify-otp?code=${code}`);
+      const verifyData = await verifyRes.json();
+
+      if (verifyData.success) {
+        // 4. 인증 성공 시 기존 업로드 창 열기
+        fileInputRef.current.click();
+      } else {
+        alert("인증번호가 틀렸습니다.");
+      }
+    } catch (error) {
+      alert("서버 통신 오류가 발생했습니다.");
+      console.error(error);
+    }
+  };
             
 
         
@@ -1974,7 +2002,8 @@ const handleFileUpload = (e) => {
         <button onClick={() => setShowStorePopup(true)} className="bg-emerald-600 text-white px-3 py-2 rounded hover:bg-emerald-700 text-sm whitespace-nowrap shrink-0">MVNO</button>
         <button onClick={() => setShowPopup(true)} className="bg-gray-600 text-white px-3 py-2 rounded hover:bg-gray-700 text-sm whitespace-nowrap shrink-0">전화번호</button>
         
-        <button onClick={() => fileInputRef.current.click()} className="bg-amber-500 text-white px-3 py-2 rounded hover:bg-amber-600 text-sm font-bold whitespace-nowrap shrink-0">관리</button>
+
+<button onClick={handleAdminClick} className="bg-amber-500 text-white px-3 py-2 rounded hover:bg-amber-600 text-sm font-bold whitespace-nowrap shrink-0">관리</button>
         
         <div className="flex items-center ml-auto gap-1.5 shrink-0">
           <div className="relative w-40 h-[36px]">
