@@ -1843,7 +1843,7 @@ const fileInputRef = React.useRef(null);
       if (!sendRes.ok) throw new Error('발송 실패');
 
       // 2. 사용자에게 인증번호 입력받기
-      const code = prompt("텔레그램으로 발송된 인증번호 4자리를 입력하세요.");
+      const code = prompt("인증번호 4자리를 입력하세요.");
       if (!code) return; // 취소 누르면 종료
 
       // 3. 서버에 인증번호 검증 요청
