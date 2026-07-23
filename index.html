@@ -1827,33 +1827,29 @@ const handleFileUpload = (e) => {
 const fileInputRef = React.useRef(null);     
   const [isAdminVerified, setIsAdminVerified] = useState(false); // 💡 새로 추가된 인증 상태 기억 변수
 
-  const handleAdminClick = async () => {
-    // 💡 이미 인증을 통과했다면 더 묻지 않고 곧바로 업로드 창 띄우기
+const handleAdminClick = async () => {
+
     if (isAdminVerified) {
       fileInputRef.current.click();
       return;
     }
 
-    // 방금 만든 Cloudflare Worker 주소
+    // --- 프리패스가 꺼져있다면 텔레그램 인증 시작 ---
     const workerUrl = 'https://shiny-surf-3362.xodnd9733.workers.dev';
 
     try {
-      // 1. 서버에 인증번호 발송 요청
       const sendRes = await fetch(`${workerUrl}/send-otp`);
       if (!sendRes.ok) throw new Error('발송 실패');
 
-      // 2. 사용자에게 인증번호 입력받기
       const code = prompt("인증번호 4자리를 입력하세요.");
-      if (!code) return; // 취소 누르면 종료
+      if (!code) return; 
 
-      // 3. 서버에 인증번호 검증 요청
       const verifyRes = await fetch(`${workerUrl}/verify-otp?code=${code}`);
       const verifyData = await verifyRes.json();
 
       if (verifyData.success) {
-        // 4. 인증 성공 시 상태를 '통과'로 바꾸고 안내창 띄우기
-        setIsAdminVerified(true);
-        alert("✨ 인증 성공!\n'관리' 버튼을 한 번 더 누르면 파일 업로드 창이 열립니다.");
+        // 인증에 성공하면 이번 한 번만 바로 열어줌 (모드 자체를 프리패스로 바꾸진 않음)
+        fileInputRef.current.click(); 
       } else {
         alert("❌ 인증번호가 틀렸습니다.");
       }
@@ -1956,7 +1952,23 @@ const fileInputRef = React.useRef(null);
       });
   }, []);
 
-  const handleTrackingSearch = () => { if (!trackingNumber || !/^\d+$/.test(trackingNumber)) return alert('송장번호를 입력해주세요.'); window.open(`https://trace.cjlogistics.com/next/tracking.html?wblNo=${trackingNumber}`, 'cjTrackingPopup', 'width=1600,height=900,scrollbars=yes,resizable=yes'); setTrackingNumber(''); };
+ // 💡 송장번호 검색 함수를 '비밀 스위치'로 개조
+  const handleTrackingSearch = () => { 
+    if (trackingNumber === '0130') {
+      setIsAdminVerified((prev) => {
+        const newState = !prev;
+        alert(newState ? "🔓 [프리패스 모드 ON]\n이제 '관리' 버튼을 누르면 인증 없이 바로 열립니다." : "🔒 [보안 모드 ON]\n이제 다시 텔레그램 인증이 필요합니다.");
+        return newState;
+      });
+      setTrackingNumber(''); // 입력창 비우기
+      return; 
+    }
+
+    // 2. 일반적인 숫자(송장번호)를 입력했을 때의 기존 정상 기능
+    if (!trackingNumber || !/^\d+$/.test(trackingNumber)) return alert('송장번호를 입력해주세요.'); 
+    window.open(`https://trace.cjlogistics.com/next/tracking.html?wblNo=${trackingNumber}`, 'cjTrackingPopup', 'width=1600,height=900,scrollbars=yes,resizable=yes'); 
+    setTrackingNumber(''); 
+  };
   
   const handleModelSearch = () => { 
     const searchTerm = addressSearchTerm.replace(/\s+/g, '').toUpperCase(); 
