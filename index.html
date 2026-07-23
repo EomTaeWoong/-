@@ -1824,9 +1824,16 @@ const handleFileUpload = (e) => {
   const [policyData, setPolicyData] = useState(POLICY);
   const [isLoading, setIsLoading] = useState(true)
 
-  const fileInputRef = React.useRef(null);     
+const fileInputRef = React.useRef(null);     
+  const [isAdminVerified, setIsAdminVerified] = useState(false); // 💡 새로 추가된 인증 상태 기억 변수
 
-const handleAdminClick = async () => {
+  const handleAdminClick = async () => {
+    // 💡 이미 인증을 통과했다면 더 묻지 않고 곧바로 업로드 창 띄우기
+    if (isAdminVerified) {
+      fileInputRef.current.click();
+      return;
+    }
+
     // 방금 만든 Cloudflare Worker 주소
     const workerUrl = 'https://shiny-surf-3362.xodnd9733.workers.dev';
 
@@ -1836,7 +1843,7 @@ const handleAdminClick = async () => {
       if (!sendRes.ok) throw new Error('발송 실패');
 
       // 2. 사용자에게 인증번호 입력받기
-      const code = prompt("인증번호 4자리를 입력하세요.");
+      const code = prompt("텔레그램으로 발송된 인증번호 4자리를 입력하세요.");
       if (!code) return; // 취소 누르면 종료
 
       // 3. 서버에 인증번호 검증 요청
@@ -1844,20 +1851,17 @@ const handleAdminClick = async () => {
       const verifyData = await verifyRes.json();
 
       if (verifyData.success) {
-        // 4. 인증 성공 시 기존 업로드 창 열기
-        fileInputRef.current.click();
+        // 4. 인증 성공 시 상태를 '통과'로 바꾸고 안내창 띄우기
+        setIsAdminVerified(true);
+        alert("✨ 인증 성공!\n'관리' 버튼을 한 번 더 누르면 파일 업로드 창이 열립니다.");
       } else {
-        alert("인증번호가 틀렸습니다.");
+        alert("❌ 인증번호가 틀렸습니다.");
       }
     } catch (error) {
       alert("서버 통신 오류가 발생했습니다.");
       console.error(error);
     }
   };
-            
-
-        
-
  
 
 
