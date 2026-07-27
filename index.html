@@ -46,9 +46,9 @@ const POLICY = {
     U_TIER_A_MIN: 33000
   },
   DEVICES: {
-    'Z 폴드8 울트라 512G': { KT_COMMON: {}, U_COMMON: {}, EXTRA: {} },
-    'Z 폴드8 와이드 512G': { KT_COMMON: {}, U_COMMON: {}, EXTRA: {} },
-    'Z 플립8 512G': { KT_COMMON: {}, U_COMMON: {}, EXTRA: {} },
+    '폴드8 울트라 512G': { KT_COMMON: {}, U_COMMON: {}, EXTRA: {} },
+    '폴드8 와이드 512G': { KT_COMMON: {}, U_COMMON: {}, EXTRA: {} },
+    '플립8 512G': { KT_COMMON: {}, U_COMMON: {}, EXTRA: {} },
     'S26 울트라 512G': { KT_COMMON: {}, U_COMMON: {}, EXTRA: {} },
     'S26+ 512G': { KT_COMMON: {}, U_COMMON: {}, EXTRA: {} },
     'S26 512G': { KT_COMMON: {}, U_COMMON: {}, EXTRA: {} },
@@ -61,9 +61,9 @@ const POLICY = {
     'S25 엣지 256G': { KT_COMMON: {}, U_COMMON: {}, EXTRA: {} },
     'S26 FE': { KT_COMMON: {}, U_COMMON: {}, EXTRA: {} },
     'S25 FE': { KT_COMMON: {}, U_COMMON: {}, EXTRA: {} },
-    'Z 폴드8 울트라 256G': { KT_COMMON: {}, U_COMMON: {}, EXTRA: {} },
-    'Z 폴드8 와이드 256G': { KT_COMMON: {}, U_COMMON: {}, EXTRA: {} },
-    'Z 플립8 256G': { KT_COMMON: {}, U_COMMON: {}, EXTRA: {} },
+    '폴드8 울트라 256G': { KT_COMMON: {}, U_COMMON: {}, EXTRA: {} },
+    '폴드8 와이드 256G': { KT_COMMON: {}, U_COMMON: {}, EXTRA: {} },
+    '플립8 256G': { KT_COMMON: {}, U_COMMON: {}, EXTRA: {} },
     'A37 5G': { KT_COMMON: {}, U_COMMON: {}, EXTRA: {} },
     'A36 5G': { KT_COMMON: {}, U_COMMON: {}, EXTRA: {} },
     'A17 LTE': { KT_COMMON: {}, U_COMMON: {}, EXTRA: {} }
@@ -74,17 +74,17 @@ const POLICY = {
 // 💡 [색상 복사 텍스트 설정] 단말기별 색상과 복사될 텍스트 💡
 // =====================================================================
 const DEVICE_COLORS_MAP = {
-  'Z 폴드8 울트라 512G': [
+  '폴드8 울트라 512G': [
     { name: '바이올렛 쉐도우', copyText: 'SM-F976NZVIKOD' },
     { name: '크림', copyText: 'SM-F976NZWIKOD' },
     { name: '그라파이트', copyText: 'SM-F976NZKIKOD' },
   ],
-  'Z 폴드8 와이드 512G': [
+  '폴드8 와이드 512G': [
     { name: '라벤더', copyText: 'SM-F971NLVIKOD' },
     { name: '크림', copyText: 'SM-F971NZWIKOD' },
     { name: '그라파이트', copyText: 'SM-F971NZKIKOD' },
   ],
-  'Z 플립8 512G': [
+  '플립8 512G': [
     { name: '핑크', copyText: 'SM-F776NLIEKOD' },
     { name: '그라파이트', copyText: 'SM-F776NZKEKOD' },
     { name: '크림', copyText: 'SM-F776NZWEKOD' },
@@ -160,17 +160,17 @@ const DEVICE_COLORS_MAP = {
     { name: '제트블랙', copyText: 'SM-S731NZKWKOD' },
     { name: '화이트', copyText: 'SM-S731NZWWKOD' },
   ],
-  'Z 폴드8 울트라 256G': [
+  '폴드8 울트라 256G': [
     { name: '바이올렛 쉐도우', copyText: 'SM-F976NZVPKOD' },
     { name: '크림', copyText: 'SM-F976NZWPKOD' },
     { name: '그라파이트', copyText: 'SM-F976NZKPKOD' },
   ],
-  'Z 폴드8 와이드 256G': [
+  '폴드8 와이드 256G': [
     { name: '라벤더', copyText: 'SM-F971NLVPKOD' },
     { name: '크림', copyText: 'SM-F971NZWPKOD' },
     { name: '그라파이트', copyText: 'SM-F971NZKPKOD' },
   ],
-  'Z 플립8 256G': [
+  '플립8 256G': [
     { name: '핑크', copyText: 'SM-F776NLIAKOD' },
     { name: '그라파이트', copyText: 'SM-F776NZKAKOD' },
     { name: '크림', copyText: 'SM-F776NZWAKOD' },
@@ -201,9 +201,9 @@ const CATEGORIZED_DEVICE_LIST = [
   {
     category: '사전예약',
     devices: [
-      { name: 'Z 폴드8 울트라 512G', price: 2830000, isHighlight: true },
-      { name: 'Z 폴드8 와이드 512G', price: 2531000, isHighlight: true },
-      { name: 'Z 플립8 512G', price: 1936000, isHighlight: true }
+      { name: '폴드8 울트라 512G', price: 2830000, isHighlight: true },
+      { name: '폴드8 와이드 512G', price: 2531000, isHighlight: true },
+      { name: '플립8 512G', price: 1936000, isHighlight: true }
     ]
   },
   {
@@ -231,9 +231,9 @@ const CATEGORIZED_DEVICE_LIST = [
   {
     category: '폴더블8 시리즈',
     devices: [
-      { name: 'Z 폴드8 울트라 256G', price: 2577000 },
-      { name: 'Z 폴드8 와이드 256G', price: 2278000 },
-      { name: 'Z 플립8 256G', price: 1683000 }
+      { name: '폴드8 울트라 256G', price: 2577000 },
+      { name: '폴드8 와이드 256G', price: 2278000 },
+      { name: '플립8 256G', price: 1683000 }
     ]
   },
   {
