@@ -43,30 +43,31 @@ const POLICY = {
     U_TIER_1_MAX: 95000,
     U_TIER_2_MIN: 95000,
     KT_TIER_1_MIN: 90000,
-    U_TIER_A_MIN: 33000
+    U_TIER_A_MIN: 33000,
+    SK_TIER_1_MIN: 99000
   },
   DEVICES: {
-    '폴드8 울트라 512G': { KT_COMMON: {}, U_COMMON: {}, EXTRA: {} },
-    '폴드8 와이드 512G': { KT_COMMON: {}, U_COMMON: {}, EXTRA: {} },
-    '플립8 512G': { KT_COMMON: {}, U_COMMON: {}, EXTRA: {} },
-    'S26 울트라 512G': { KT_COMMON: {}, U_COMMON: {}, EXTRA: {} },
-    'S26+ 512G': { KT_COMMON: {}, U_COMMON: {}, EXTRA: {} },
-    'S26 512G': { KT_COMMON: {}, U_COMMON: {}, EXTRA: {} },
-    'S26 울트라 256G': { KT_COMMON: {}, U_COMMON: {}, EXTRA: {} },
-    'S26+ 256G': { KT_COMMON: {}, U_COMMON: {}, EXTRA: {} },
-    'S26 256G': { KT_COMMON: {}, U_COMMON: {}, EXTRA: {} },
-    'S25 울트라 256G': { KT_COMMON: {}, U_COMMON: {}, EXTRA: {} },
-    'S25+ 256G': { KT_COMMON: {}, U_COMMON: {}, EXTRA: {} },
-    'S25 256G': { KT_COMMON: {}, U_COMMON: {}, EXTRA: {} },
-    'S25 엣지 256G': { KT_COMMON: {}, U_COMMON: {}, EXTRA: {} },
-    'S26 FE': { KT_COMMON: {}, U_COMMON: {}, EXTRA: {} },
-    'S25 FE': { KT_COMMON: {}, U_COMMON: {}, EXTRA: {} },
-    '폴드8 울트라 256G': { KT_COMMON: {}, U_COMMON: {}, EXTRA: {} },
-    '폴드8 와이드 256G': { KT_COMMON: {}, U_COMMON: {}, EXTRA: {} },
-    '플립8 256G': { KT_COMMON: {}, U_COMMON: {}, EXTRA: {} },
-    'A37 5G': { KT_COMMON: {}, U_COMMON: {}, EXTRA: {} },
-    'A36 5G': { KT_COMMON: {}, U_COMMON: {}, EXTRA: {} },
-    'A17 LTE': { KT_COMMON: {}, U_COMMON: {}, EXTRA: {} }
+    '폴드8 울트라 512G': { SK_COMMON: {}, KT_COMMON: {}, U_COMMON: {}, EXTRA: {} },
+    '폴드8 와이드 512G': { SK_COMMON: {}, KT_COMMON: {}, U_COMMON: {}, EXTRA: {} },
+    '플립8 512G': { SK_COMMON: {}, KT_COMMON: {}, U_COMMON: {}, EXTRA: {} },
+    'S26 울트라 512G': { SK_COMMON: {}, KT_COMMON: {}, U_COMMON: {}, EXTRA: {} },
+    'S26+ 512G': { SK_COMMON: {}, KT_COMMON: {}, U_COMMON: {}, EXTRA: {} },
+    'S26 512G': { SK_COMMON: {}, KT_COMMON: {}, U_COMMON: {}, EXTRA: {} },
+    'S26 울트라 256G': { SK_COMMON: {}, KT_COMMON: {}, U_COMMON: {}, EXTRA: {} },
+    'S26+ 256G': { SK_COMMON: {}, KT_COMMON: {}, U_COMMON: {}, EXTRA: {} },
+    'S26 256G': { SK_COMMON: {}, KT_COMMON: {}, U_COMMON: {}, EXTRA: {} },
+    'S25 울트라 256G': { SK_COMMON: {}, KT_COMMON: {}, U_COMMON: {}, EXTRA: {} },
+    'S25+ 256G': { SK_COMMON: {}, KT_COMMON: {}, U_COMMON: {}, EXTRA: {} },
+    'S25 256G': { SK_COMMON: {}, KT_COMMON: {}, U_COMMON: {}, EXTRA: {} },
+    'S25 엣지 256G': { SK_COMMON: {}, KT_COMMON: {}, U_COMMON: {}, EXTRA: {} },
+    'S26 FE': { SK_COMMON: {}, KT_COMMON: {}, U_COMMON: {}, EXTRA: {} },
+    'S25 FE': { SK_COMMON: {}, KT_COMMON: {}, U_COMMON: {}, EXTRA: {} },
+    '폴드8 울트라 256G': { SK_COMMON: {}, KT_COMMON: {}, U_COMMON: {}, EXTRA: {} },
+    '폴드8 와이드 256G': { SK_COMMON: {}, KT_COMMON: {}, U_COMMON: {}, EXTRA: {} },
+    '플립8 256G': { SK_COMMON: {}, KT_COMMON: {}, U_COMMON: {}, EXTRA: {} },
+    'A37 5G': { SK_COMMON: {}, KT_COMMON: {}, U_COMMON: {}, EXTRA: {} },
+    'A36 5G': { SK_COMMON: {}, KT_COMMON: {}, U_COMMON: {}, EXTRA: {} },
+    'A17 LTE': { SK_COMMON: {}, KT_COMMON: {}, U_COMMON: {}, EXTRA: {} }
   }
 };
 
@@ -246,6 +247,62 @@ const CATEGORIZED_DEVICE_LIST = [
   }
 ];
 
+const PLAN_LIST_SK = [
+  { category: '통합', name: '베스트 Max', price: 129000 },
+  { category: '통합', name: '베스트 Pro', price: 119000 },
+  { category: '통합', name: '베스트 109', price: 109000 },
+  { category: '통합', name: '베스트 99', price: 99000 },
+  { category: '통합', name: '베스트 89', price: 89000 },
+  { category: '통합', name: '라이트 79', price: 79000 },
+  { category: '통합', name: '라이트 69', price: 69000 },
+  { category: '통합', name: '라이트 59 75GB업', price: 68000 },
+  { category: '통합', name: '라이트 59 50GB업', price: 66000 },
+  { category: '통합', name: '라이트 59 30GB업', price: 64000 },
+  { category: '통합', name: '라이트 59 13GB업', price: 62000 },
+  { category: '통합', name: '라이트 59', price: 59000 },
+  { category: '통합', name: '라이트 55', price: 55000 },
+  { category: '통합', name: '라이트 49', price: 49000 },
+  { category: '통합', name: '라이트 45', price: 45000 },
+  { category: '통합', name: '5G 시니어 B형', price: 44000 },
+  { category: '통합', name: '5G 시니어 C형', price: 42000 },
+  { category: '통합', name: '주말엔 팅 3.0G', price: 41000 },
+  { category: '통합', name: '라이트 39', price: 39000 },
+  { category: '통합', name: 'ZEM플랜 퍼펙트', price: 36000 },
+  { category: '통합', name: 'T플랜 세이브', price: 33000 },
+  { category: '통합', name: '주말엔 팅 세이브', price: 31000 },
+  { category: '통합', name: 'ZEM플랜 베스트', price: 26000 },
+  { category: '통합', name: 'ZEM플랜 스마트', price: 198000 },
+  // 필요에 따라 기존 양식처럼 추가 작성해주세요.
+];
+
+const PLAN_FEATURES_SK = {
+  '베스트 Max': '완전 무제한',
+  '베스트 Pro': '완전 무제한',
+  '베스트 109': '완전 무제한',
+  '베스트 99': '완전 무제한',
+  '베스트 89': '완전 무제한',
+  '라이트 79': '250GB + 5Mbps/스마트기기 1회선 이용요금 50% 할인',
+  '라이트 69': '110GB + 5Mbps',
+  '라이트 59 75GB업': '99GB + 1Mbps',
+  '라이트 59 50GB업': '74GB + 1Mbps',
+  '라이트 59 30GB업': '54GB + 1Mbps',
+  '라이트 59 13GB업': '37GB + 1Mbps',
+  '라이트 59': '24GB + 1Mbps',
+  '라이트 55': '15GB + 1Mbps',
+  '라이트 49': '11GB + 400kbps',
+  '라이트 45': '8GB + 400kbps',
+  '5G 시니어 B형': '9GB + 1Mbps/만 70세 이상',
+  '5G 시니어 C형': '8GB + 1Mbps/만 80세 이상',
+  '주말엔 팅 3.0G': '3GB + 400kbps/만 18세 이하/주말 전용 데이터 1GB + 400kbps 제공',
+  '라이트 39': '6GB + 400kbps',
+  'ZEM플랜 퍼펙트': '6GB + 1Mbps / 만 12세 이하',
+  'T플랜 세이브': '1.5GB + 400kbps/매일 00시~07시 사용 데이터 75% 할인',
+  '주말엔 팅 세이브': '800MB + 400kbps/만 18세 이하/주말 전용 데이터 1GB + 400kbps 제공',
+  'ZEM플랜 베스트': '3GB + 400kbps/만 12세 이하',
+  'ZEM플랜 스마트': '1.5GB + 400kbps/만 12세 이하',
+  // 필요에 따라 추가 작성해주세요.
+};
+
 const PLAN_LIST_KT = [
   { category: '통합', name: '초이스 130', price: 130000 },
   { category: '통합', name: '초이스 120', price: 120000 },
@@ -365,8 +422,10 @@ function getSupportAmounts({ selectedDevice, selectedPlanPrice, operator, joinTy
     return { commonSupport: 0, additionalSupport: 0, selectiveAdditionalSupport: 0 };
   }
 
-  let commonSupport = 0;
-  if (operator === 'U' && devicePolicy.U_COMMON && devicePolicy.U_COMMON[selectedPlanPrice] !== undefined) {
+let commonSupport = 0;
+  if (operator === 'SK' && devicePolicy.SK_COMMON && devicePolicy.SK_COMMON[selectedPlanPrice] !== undefined) {
+    commonSupport = devicePolicy.SK_COMMON[selectedPlanPrice];
+  } else if (operator === 'U' && devicePolicy.U_COMMON && devicePolicy.U_COMMON[selectedPlanPrice] !== undefined) {
     commonSupport = devicePolicy.U_COMMON[selectedPlanPrice];
   } else if (operator === 'KT' && devicePolicy.KT_COMMON && devicePolicy.KT_COMMON[selectedPlanPrice] !== undefined) {
     commonSupport = devicePolicy.KT_COMMON[selectedPlanPrice];
@@ -376,7 +435,33 @@ function getSupportAmounts({ selectedDevice, selectedPlanPrice, operator, joinTy
   let selectiveAdditionalSupport = 0;
   const extraConfig = devicePolicy.EXTRA || {};
 
-  if (operator === 'U') {
+if (operator === 'SK') {
+    let policyBlock = null;
+    if (joinType === '기기변경') {
+      policyBlock = isGalcams ? extraConfig.SK_CHANGE_GALCAMS : extraConfig.SK_CHANGE_DOTCOM;
+    } else if (joinType === '번호이동') {
+      policyBlock = isGalcams ? extraConfig.SK_MNP_GALCAMS : extraConfig.SK_MNP_DOTCOM;
+    }
+
+if (policyBlock) {
+      // 💡 99,000원 이상일 때: 엑셀에서 설정한 추가지원금 적용
+      if (policyBlock.OVER_99K !== undefined && selectedPlanPrice >= 99000) {
+        additionalSupport = policyBlock.OVER_99K.common; // 💡 99K로 수정
+        selectiveAdditionalSupport = policyBlock.OVER_99K.selective; // 💡 99K로 수정
+      } 
+      // 💡 99,000원 미만일 때: 무조건 50,000원 적용
+      else if (selectedPlanPrice < 99000) {
+        additionalSupport = 50000;
+        selectiveAdditionalSupport = 50000;
+      }
+    } else {
+      // 엑셀 데이터가 매핑되지 않은 모델일 경우에도 99,000원 미만이면 5만 원 적용 (선택 사항)
+      if (selectedPlanPrice < 99000) {
+        additionalSupport = 50000;
+        selectiveAdditionalSupport = 50000;
+      }
+    }
+  } else if (operator === 'U') {
     let policyBlock = null;
     if (joinType === '기기변경') {
       policyBlock = isGalcams ? extraConfig.U_CHANGE_GALCAMS : extraConfig.U_CHANGE_DOTCOM;
@@ -1100,9 +1185,10 @@ const totalCost2_Selective = installMonths === 0
 
 // ------------------ 요금제 정리 팝업 ------------------
 function PlanSummaryPopup({ operator, onClose }) {
+  const skImage = "https://img1.daumcdn.net/thumb/R1280x0/?scode=mtistory2&fname=https%3A%2F%2Fblog.kakaocdn.net%2Fdna%2FoofXs%2FdJMcaae9m5r%2FAAAAAAAAAAAAAAAAAAAAAOJ7dJJ1Hc2MEB7pHVNvIJ9TB_qCoHDshj1A9_snjwjV%2Fimg.png%3Fcredential%3DyqXZFxpELC7KVnFOS48ylbz2pIh7yKj8%26expires%3D1785509999%26allow_ip%3D%26allow_referer%3D%26signature%3DO0j62v2btBgCHHUuxjQnUqtIAgc%253D";
   const ktImage = "https://img1.daumcdn.net/thumb/R1280x0/?scode=mtistory2&fname=https%3A%2F%2Fblog.kakaocdn.net%2Fdna%2F2TUVC%2FdJMcacwUsyE%2FAAAAAAAAAAAAAAAAAAAAALi1HtT2CLd_h6ZFveGowtjFHFYbHhIGqCS05bVUYsnm%2Fimg.png%3Fcredential%3DyqXZFxpELC7KVnFOS48ylbz2pIh7yKj8%26expires%3D1785509999%26allow_ip%3D%26allow_referer%3D%26signature%3DvQKFw3%252BNnc9aLcBTEWkAXtjFdWo%253D";
   const uImage = "https://img1.daumcdn.net/thumb/R1280x0/?scode=mtistory2&fname=https%3A%2F%2Fblog.kakaocdn.net%2Fdna%2FEnnRK%2FdJMcagM4Br0%2FAAAAAAAAAAAAAAAAAAAAAJWnbP9xhP1GMuAakI4eWq_OrMFJduJy2kGCGdMU5LSU%2Fimg.png%3Fcredential%3DyqXZFxpELC7KVnFOS48ylbz2pIh7yKj8%26expires%3D1785509999%26allow_ip%3D%26allow_referer%3D%26signature%3DzO%252FoqXHrqU8ivkJ47rq9fqgXDO4%253D";
-  const imageSrc = operator === 'KT' ? ktImage : uImage;
+const imageSrc = operator === 'SK' ? skImage : (operator === 'KT' ? ktImage : uImage);
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
@@ -1191,7 +1277,7 @@ function NoticePopup({ onClose }) {
       <div className="bg-white p-6 rounded-lg shadow-xl relative w-max max-w-[90vw] text-center mb-[20vh]">
         <button onClick={onClose} className="absolute top-2 right-2 text-gray-400 hover:text-gray-800 text-2xl leading-none">&times;</button>
         <h2 className="text-lg font-bold mb-4 text-blue-600">📢 안내</h2>
-        <p className="text-gray-800 font-medium whitespace-nowrap">정책 기준일 : KT 7월 28일 / U+ 7월 28일<br />공통지원금이 0원이면 지원금 칸에 직접 입력해야합니다.</p>
+        <p className="text-gray-800 font-medium whitespace-nowrap">정책 기준일 : SK 7월 28일 / KT 7월 28일 / U+ 7월 28일<br />공통지원금이 0원이면 지원금 칸에 직접 입력해야합니다.</p>
         <button onClick={onClose} className="mt-6 bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 w-full font-bold text-sm">확인</button>
       </div>
     </div>
@@ -1813,7 +1899,6 @@ const handleFileUpload = (e) => {
   const [operator, setOperator] = useState('KT');
   const [trackingNumber, setTrackingNumber] = useState('');
   const [showPopup, setShowPopup] = useState(false);
-  const [addressSearchTerm, setAddressSearchTerm] = useState(''); 
   const [showRequestFormPopup, setShowRequestFormPopup] = useState(false);
   const [showDeviceColorPopup, setShowDeviceColorPopup] = useState(false);
   const [showPlanSummaryPopup, setShowPlanSummaryPopup] = useState(false);
@@ -1868,7 +1953,21 @@ const handleAdminClick = async () => {
       .then(response => response.arrayBuffer())
       .then(data => {
         const wb = XLSX.read(data, { type: 'array' });
-        let updatedPolicy = JSON.parse(JSON.stringify(POLICY)); 
+let updatedPolicy = JSON.parse(JSON.stringify(POLICY)); 
+
+        // SK 공통지원금 파싱 추가
+        if (wb.Sheets['SK_공통지원금']) {
+          const skData = XLSX.utils.sheet_to_json(wb.Sheets['SK_공통지원금']);
+          skData.forEach(row => {
+            const modelName = row['모델명'];
+            if (updatedPolicy.DEVICES[modelName]) {
+              updatedPolicy.DEVICES[modelName].SK_COMMON = {};
+              Object.keys(row).forEach(key => {
+                if (key !== '모델명') updatedPolicy.DEVICES[modelName].SK_COMMON[key] = row[key];
+              });
+            }
+          });
+        }
 
         if (wb.Sheets['KT_공통지원금']) {
           const ktData = XLSX.utils.sheet_to_json(wb.Sheets['KT_공통지원금']);
@@ -1923,6 +2022,14 @@ const handleAdminClick = async () => {
               if(row['KT번이'] !== undefined) extra.KT_MNP_DOTCOM = { [ktTier]: { common: row['KT번이'], selective: row['KT번이'] } };
               if(row['KT번이_갤'] !== undefined) extra.KT_MNP_GALCAMS = { [ktTier]: { common: row['KT번이_갤'], selective: row['KT번이_갤'] } };
               
+              
+              // SK 추가지원금 파싱 추가
+              let skTier = 'OVER_99K';
+              if(row['SK기변'] !== undefined) extra.SK_CHANGE_DOTCOM = { [skTier]: { common: row['SK기변'], selective: row['SK기변'] } };
+              if(row['SK기변_갤'] !== undefined) extra.SK_CHANGE_GALCAMS = { [skTier]: { common: row['SK기변_갤'], selective: row['SK기변_갤'] } };
+              if(row['SK번이'] !== undefined) extra.SK_MNP_DOTCOM = { [skTier]: { common: row['SK번이'], selective: row['SK번이'] } };
+              if(row['SK번이_갤'] !== undefined) extra.SK_MNP_GALCAMS = { [skTier]: { common: row['SK번이_갤'], selective: row['SK번이_갤'] } };
+
               const applyUPlus = (highVal, lowVal) => {
                 if (uHighTier === uLowTier) {
                   const val = highVal !== undefined ? highVal : (lowVal !== undefined ? lowVal : 0);
@@ -1970,30 +2077,10 @@ const handleAdminClick = async () => {
     setTrackingNumber(''); 
   };
   
-  const handleModelSearch = () => { 
-    const searchTerm = addressSearchTerm.replace(/\s+/g, '').toUpperCase(); 
-    if (!searchTerm) return alert('검색할 모델명을 입력해주세요. (예: SM-S948...)'); 
 
-    let foundResults = [];
 
-    Object.entries(DEVICE_COLORS_MAP).forEach(([deviceName, colors]) => {
-      colors.forEach(colorInfo => {
-        if (colorInfo.copyText.toUpperCase() === searchTerm) {
-          foundResults.push(`[${deviceName}] - ${colorInfo.name}`);
-        }
-      });
-    });
-
-    if (foundResults.length > 0) {
-      alert(`✨ 검색 결과 ✨\n\n${foundResults.join('\n')}`);
-    } else {
-      alert('❌ 일치하는 단말기/색상 정보가 없습니다.');
-    }
-    setAddressSearchTerm(''); 
-  };
-
-  const plans = useMemo(()=> operator==='KT'?PLAN_LIST_KT:PLAN_LIST_U, [operator]);
-  const features = useMemo(()=> operator==='KT'?PLAN_FEATURES_KT:PLAN_FEATURES_U, [operator]);
+const plans = useMemo(() => operator === 'SK' ? PLAN_LIST_SK : (operator === 'KT' ? PLAN_LIST_KT : PLAN_LIST_U), [operator]);
+  const features = useMemo(() => operator === 'SK' ? PLAN_FEATURES_SK : (operator === 'KT' ? PLAN_FEATURES_KT : PLAN_FEATURES_U), [operator]);
 
   if (isLoading) {
     return (
@@ -2006,10 +2093,12 @@ const handleAdminClick = async () => {
 
   return (
     <div className="font-sans text-gray-900 bg-gray-50 min-h-screen flex flex-col">
-      <div className="py-1.5 px-3 mb-1 max-w-4xl mx-auto flex flex-nowrap overflow-x-auto hide-scroll-bar gap-1.5 items-center border-b border-gray-100">
+<div className="py-1.5 px-3 mb-1 max-w-4xl mx-auto flex flex-nowrap overflow-x-auto hide-scroll-bar gap-1.5 items-center border-b border-gray-100">
+        <button className={`px-4 py-2 rounded text-sm font-bold shrink-0 ${operator === 'SK' ? 'bg-red-600 text-white shadow' : 'bg-white border'}`} onClick={() => setOperator('SK')}>SK</button>
         <button className={`px-4 py-2 rounded text-sm font-bold shrink-0 ${operator === 'KT' ? 'bg-blue-600 text-white shadow' : 'bg-white border'}`} onClick={() => setOperator('KT')}>KT</button>
         <button className={`px-4 py-2 rounded text-sm font-bold shrink-0 ${operator === 'U' ? 'bg-green-600 text-white shadow' : 'bg-white border'}`} onClick={() => setOperator('U')}>U+</button>
         
+        {operator === 'SK' && <a href="https://shop.tworld.co.kr/notice" target="_blank" className="bg-red-500 text-white px-3 py-2 rounded hover:bg-red-600 text-sm whitespace-nowrap shrink-0">SK 지원금</a>}
         {operator === 'KT' && <a href="https://shop.kt.com/smart/supportAmtList.do" target="_blank" className="bg-blue-500 text-white px-3 py-2 rounded hover:bg-blue-600 text-sm whitespace-nowrap shrink-0">KT 지원금</a>}
         {operator === 'U' && <a href="https://www.lguplus.com/mobile/financing-model" target="_blank" className="bg-green-500 text-white px-3 py-2 rounded hover:bg-green-600 text-sm whitespace-nowrap shrink-0">U+ 지원금</a>}
 
@@ -2022,18 +2111,7 @@ const handleAdminClick = async () => {
 <button onClick={handleAdminClick} className="bg-amber-500 text-white px-3 py-2 rounded hover:bg-amber-600 text-sm font-bold whitespace-nowrap shrink-0">관리</button>
         
         <div className="flex items-center ml-auto gap-1.5 shrink-0">
-          <div className="relative w-40 h-[36px]">
-            <input 
-              type="text" 
-              value={addressSearchTerm} 
-              onChange={(e) => setAddressSearchTerm(e.target.value)} 
-              onKeyDown={(e) => e.key === 'Enter' && handleModelSearch()} 
-              placeholder="모델명 검색" 
-              className="absolute top-0 left-0 border p-2 rounded w-40 focus:w-72 h-[36px] text-sm text-center focus:text-left placeholder-gray-700 border-green-400 focus:border-green-500 focus:outline-none focus:shadow-xl transition-all duration-300 z-10 focus:z-50 bg-white" 
-              onFocus={(e) => e.target.placeholder = ''} 
-              onBlur={(e) => e.target.placeholder = '모델명 검색'} 
-            />
-          </div>
+
           <input type="text" value={trackingNumber} onChange={(e) => setTrackingNumber(e.target.value.replace(/\D/g, ''))} onKeyDown={(e) => e.key === 'Enter' && handleTrackingSearch()} placeholder="송장번호 검색" className="border p-2 rounded w-32 h-[36px] text-sm text-center placeholder-gray-700 shrink-0" onFocus={(e) => e.target.placeholder = ''} onBlur={(e) => e.target.placeholder = 'CJ 송장번호'} />
         </div>
       </div>
