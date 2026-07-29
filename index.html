@@ -527,6 +527,7 @@ if (policyBlock) {
 // 🛠️ [리팩토링] 공통 결과 데이터 카드 컴포넌트 (공통지원/선택약정 구조 통합)
 // =====================================================================
 function CostCard({
+  operator,
   title,
   type,
   planName,
@@ -537,6 +538,7 @@ function CostCard({
   doubleStorageDiscount,
   commonSupport = 0,
   additionalSupport = 0,
+  pointPark = 0,
   principal,
   installMonths,
   monthlyDevice,
@@ -601,10 +603,16 @@ function CostCard({
             <span>- {commonSupport.toLocaleString()} 원</span>
           </div>
         )}
-        {additionalSupport > 0 && (
-          <div className="flex justify-between text-[#ec008c] font-bold text-[15px] mb-2">
+{additionalSupport > 0 && (
+          <div className="flex justify-between text-[#ec008c] font-bold text-[15px] mb-1">
             <span>삼성닷컴 추가지원금</span>
             <span>- {additionalSupport.toLocaleString()} 원</span>
+          </div>
+        )}
+        {pointPark > 0 && (
+          <div className="flex justify-between text-[#ec008c] font-bold text-[15px] mb-2">
+<span>{operator === 'SK' ? '★티모아 포인트★' : '★포인트파크★'}</span>
+            <span>- {pointPark.toLocaleString()} 원</span>
           </div>
         )}
 
@@ -863,8 +871,9 @@ function MaintenanceCostPopup({ onClose, operator, plans, features, initialData,
   const [interestRate] = useState(0.059);
   
   const [commonSupport, setCommonSupport] = useState(initialData?.commonSupport || 0);
-  const [additionalSupport, setAdditionalSupport] = useState(initialData?.additionalSupport || 0);
+const [additionalSupport, setAdditionalSupport] = useState(initialData?.additionalSupport || 0);
   const [selectiveAdditionalSupport, setSelectiveAdditionalSupport] = useState(initialData?.selectiveAdditionalSupport || 0); 
+  const [pointPark, setPointPark] = useState(initialData?.pointPark || 0);
   const [, setAdditionalEdited] = useState(initialData?.additionalEdited || false);
   const [contractType, setContractType] = useState(initialData?.contractType || '공통지원');
   
@@ -988,11 +997,11 @@ function MaintenanceCostPopup({ onClose, operator, plans, features, initialData,
 
   const devicePrice = useMemo(()=> DEVICE_LIST.find(d=>d.name===selectedDevice)?.price || 0, [selectedDevice]);
 
-  const totalDiscount_Public = commonSupport + additionalSupport;
-  const principal_Public = Math.max(0, devicePrice - totalDiscount_Public - doubleStorageDiscount);
+const totalDiscount_Public = commonSupport + additionalSupport;
+  const principal_Public = Math.max(0, devicePrice - totalDiscount_Public - doubleStorageDiscount - pointPark);
   const monthlyDevice_Public = installMonths === 0 ? 0 : Math.round(pmt(interestRate/12, installMonths, principal_Public));
-
-  const principal_Selective = Math.max(0, devicePrice - selectiveAdditionalSupport - doubleStorageDiscount);
+  
+  const principal_Selective = Math.max(0, devicePrice - selectiveAdditionalSupport - doubleStorageDiscount - pointPark);
   const monthlyDevice_Selective = installMonths === 0 ? 0 : Math.round(pmt(interestRate/12, installMonths, principal_Selective));
   
   const originalPlanPrice2 = useMemo(() => plans.find(p => p.name === selectedPlan2)?.price || 0, [selectedPlan2, plans]);
@@ -1060,13 +1069,17 @@ const totalCost2_Selective = installMonths === 0
 
         {/* 하단 컨트롤러 */}
         <div className="mb-2 flex flex-nowrap items-end gap-1.5 w-full">
-          <div className="flex flex-col shrink-0">
+<div className="flex flex-col shrink-0">
             <label className="text-sm text-center">공통지원금</label>
             <input type="text" value={commonSupport.toLocaleString()} disabled={contractType === '선택약정'} onChange={e => { setCommonSupport(Number(e.target.value.replace(/\D/g, '')) || 0); setAdditionalEdited(false); }} className={`border p-1 rounded w-24 text-center ${contractType === '선택약정' ? 'bg-gray-200 text-gray-400' : 'bg-white'}`} onFocus={e=>e.target.select()} />
           </div>
           <div className="flex flex-col shrink-0">
             <label className="text-sm text-center">추가지원금</label>
             <input type="text" value={(contractType === '공통지원' ? additionalSupport : selectiveAdditionalSupport).toLocaleString()} onChange={e => { const v = Number(e.target.value.replace(/\D/g, '')) || 0; if (contractType === '공통지원') { setAdditionalSupport(v); setAdditionalEdited(true); } else { setSelectiveAdditionalSupport(v); } }} className="border p-1 rounded w-24 text-center bg-white" onFocus={e=>e.target.select()} />
+          </div>
+          <div className="flex flex-col shrink-0">
+<label className="text-sm text-center">{operator === 'SK' ? '티모아 포인트' : '포인트파크'}</label>
+            <input type="text" value={pointPark.toLocaleString()} onChange={e => setPointPark(Number(e.target.value.replace(/\D/g, '')) || 0)} className="border p-1 rounded w-24 text-center bg-white" onFocus={e=>e.target.select()} />
           </div>
           <div className="flex flex-col shrink-0">
             <div className="flex border rounded overflow-hidden h-[34px]">
@@ -1127,6 +1140,8 @@ const totalCost2_Selective = installMonths === 0
               doubleStorageDiscount={doubleStorageDiscount}
               commonSupport={commonSupport}
               additionalSupport={additionalSupport}
+              operator={operator}
+              pointPark={pointPark}
               principal={principal_Public}
               installMonths={installMonths}
               monthlyDevice={monthlyDevice_Public}
@@ -1154,6 +1169,8 @@ const totalCost2_Selective = installMonths === 0
               isPreorderDevice={isPreorderDevice}
               doubleStorageDiscount={doubleStorageDiscount}
               additionalSupport={selectiveAdditionalSupport}
+              operator={operator}
+              pointPark={pointPark}
               principal={principal_Selective}
               installMonths={installMonths}
               monthlyDevice={monthlyDevice_Selective}
@@ -1297,6 +1314,7 @@ function Calculator({
   const [commonSupport, setCommonSupport] = useState(0);
   const [additionalSupport, setAdditionalSupport] = useState(0);
   const [selectiveAdditionalSupport, setSelectiveAdditionalSupport] = useState(0); 
+  const [pointPark, setPointPark] = useState(0); // 새로 추가된 포인트파크 상태
   const [, setAdditionalEdited] = useState(false);
   const [contractType, setContractType] = useState('공통지원');
   
@@ -1420,13 +1438,13 @@ function Calculator({
   }, [selectedPlan, features]);
 
   const totalDiscount_Public = commonSupport + additionalSupport;
-  const principal_Public = Math.max(0, devicePrice - totalDiscount_Public - doubleStorageDiscount);
+  const principal_Public = Math.max(0, devicePrice - totalDiscount_Public - doubleStorageDiscount - pointPark);
   const monthlyDevice_Public = installMonths === 0 ? 0 : Math.round(pmt(interestRate/12, installMonths, principal_Public));
   const totalMonthly_Public = monthlyDevice_Public + originalPlanPrice;
   const totalInterest_Public = installMonths === 0 ? 0 : Math.max(0, (monthlyDevice_Public * installMonths) - principal_Public);
 
   const totalDiscount_Selective = selectiveAdditionalSupport + totalPlanDiscount;
-  const principal_Selective = Math.max(0, devicePrice - selectiveAdditionalSupport - doubleStorageDiscount);
+  const principal_Selective = Math.max(0, devicePrice - selectiveAdditionalSupport - doubleStorageDiscount - pointPark);
   const monthlyDevice_Selective = installMonths === 0 ? 0 : Math.round(pmt(interestRate/12, installMonths, principal_Selective));
   const planPrice_Selective = Math.round(originalPlanPrice * 0.75);
   const totalMonthly_Selective = monthlyDevice_Selective + planPrice_Selective;
@@ -1507,13 +1525,17 @@ const winnerMain = total24_Public < total24_Selective ? '공통지원' : (total2
       </div>
 
       <div className="mb-3 flex flex-nowrap items-end gap-1.5 w-full">
-        <div className="flex flex-col shrink-0">
+<div className="flex flex-col shrink-0">
           <label className="text-sm text-center">공통지원금</label>
           <input type="text" value={commonSupport.toLocaleString()} disabled={contractType === '선택약정'} onChange={e => { setCommonSupport(Number(e.target.value.replace(/\D/g, '')) || 0); setAdditionalEdited(false); }} className={`border p-1 rounded w-24 text-center ${contractType === '선택약정' ? 'bg-gray-200 text-gray-400' : 'bg-white'}`} onFocus={e=>e.target.select()} />
         </div>
         <div className="flex flex-col shrink-0">
           <label className="text-sm text-center">추가지원금</label>
           <input type="text" value={(contractType === '공통지원' ? additionalSupport : selectiveAdditionalSupport).toLocaleString()} onChange={e => { const v = Number(e.target.value.replace(/\D/g, '')) || 0; if (contractType === '공통지원') { setAdditionalSupport(v); setAdditionalEdited(true); } else { setSelectiveAdditionalSupport(v); } }} className="border p-1 rounded w-24 text-center bg-white" onFocus={e=>e.target.select()} />
+        </div>
+        <div className="flex flex-col shrink-0">
+<label className="text-sm text-center">{operator === 'SK' ? '티모아 포인트' : '포인트파크'}</label>
+          <input type="text" value={pointPark.toLocaleString()} onChange={e => setPointPark(Number(e.target.value.replace(/\D/g, '')) || 0)} className="border p-1 rounded w-24 text-center bg-white" onFocus={e=>e.target.select()} />
         </div>
         <div className="flex flex-col shrink-0">
           <div className="flex border rounded overflow-hidden h-[34px]">
@@ -1539,7 +1561,7 @@ const winnerMain = total24_Public < total24_Selective ? '공통지원' : (total2
             </div>
             <button onClick={() => setShowPlanSummaryPopup(true)} className="bg-blue-500 text-white px-2.5 rounded hover:bg-blue-600 h-[34px] flex items-center justify-center text-[13px] font-medium whitespace-nowrap">요금제 정리</button>
             <button onClick={() => setShowRequestFormPopup(true)} className="bg-purple-600 text-white px-2.5 rounded hover:bg-purple-700 h-[34px] flex items-center justify-center text-[13px] font-medium whitespace-nowrap">양식</button>
-            <button onClick={() => setShowDeviceColorPopup(true)} className="bg-pink-600 text-white px-2.5 rounded hover:bg-pink-700 h-[34px] flex items-center justify-center text-[13px] font-medium whitespace-nowrap">닷컴 혜택</button>
+            
            </div>
         </div>
       </div>
@@ -1569,6 +1591,8 @@ const winnerMain = total24_Public < total24_Selective ? '공통지원' : (total2
             doubleStorageDiscount={doubleStorageDiscount}
             commonSupport={commonSupport}
             additionalSupport={additionalSupport}
+            operator={operator}
+            pointPark={pointPark}
             principal={principal_Public}
             installMonths={installMonths}
             monthlyDevice={monthlyDevice_Public}
@@ -1596,6 +1620,8 @@ const winnerMain = total24_Public < total24_Selective ? '공통지원' : (total2
             isPreorderDevice={isPreorderDevice}
             doubleStorageDiscount={doubleStorageDiscount}
             additionalSupport={selectiveAdditionalSupport}
+            operator={operator}
+            pointPark={pointPark}
             principal={principal_Selective}
             installMonths={installMonths}
             monthlyDevice={monthlyDevice_Selective}
@@ -1628,12 +1654,11 @@ const winnerMain = total24_Public < total24_Selective ? '공통지원' : (total2
           plans={plans}
           features={features}
           policyData={policyData}
-          initialData={{
+initialData={{
             selectedDevice, selectedPlan, installMonths, commonSupport,
             additionalSupport, selectiveAdditionalSupport, additionalEdited: true,
-            contractType, joinType, isGalcams
-          }}
-        />
+            contractType, joinType, isGalcams, pointPark
+          }}        />
       )}
     </div>
   );
@@ -2109,6 +2134,9 @@ const plans = useMemo(() => operator === 'SK' ? PLAN_LIST_SK : (operator === 'KT
         
 
 <button onClick={handleAdminClick} className="bg-amber-500 text-white px-3 py-2 rounded hover:bg-amber-600 text-sm font-bold whitespace-nowrap shrink-0">관리</button>
+
+{/* 새로 옮겨진 닷컴 혜택 버튼 */}
+<button onClick={() => setShowDeviceColorPopup(true)} className="bg-pink-600 text-white px-3 py-2 rounded hover:bg-pink-700 text-sm font-bold whitespace-nowrap shrink-0">닷컴 혜택</button>
         
         <div className="flex items-center ml-auto gap-1.5 shrink-0">
 
