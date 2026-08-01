@@ -1204,7 +1204,7 @@ const totalCost2_Selective = installMonths === 0
 function PlanSummaryPopup({ operator, onClose }) {
   const skImage = "https://img1.daumcdn.net/thumb/R1280x0/?scode=mtistory2&fname=https%3A%2F%2Fblog.kakaocdn.net%2Fdna%2FoofXs%2FdJMcaae9m5r%2FAAAAAAAAAAAAAAAAAAAAAOJ7dJJ1Hc2MEB7pHVNvIJ9TB_qCoHDshj1A9_snjwjV%2Fimg.png%3Fcredential%3DyqXZFxpELC7KVnFOS48ylbz2pIh7yKj8%26expires%3D1785509999%26allow_ip%3D%26allow_referer%3D%26signature%3DO0j62v2btBgCHHUuxjQnUqtIAgc%253D";
   const ktImage = "https://img1.daumcdn.net/thumb/R1280x0/?scode=mtistory2&fname=https%3A%2F%2Fblog.kakaocdn.net%2Fdna%2F2TUVC%2FdJMcacwUsyE%2FAAAAAAAAAAAAAAAAAAAAALi1HtT2CLd_h6ZFveGowtjFHFYbHhIGqCS05bVUYsnm%2Fimg.png%3Fcredential%3DyqXZFxpELC7KVnFOS48ylbz2pIh7yKj8%26expires%3D1785509999%26allow_ip%3D%26allow_referer%3D%26signature%3DvQKFw3%252BNnc9aLcBTEWkAXtjFdWo%253D";
-  const uImage = "https://img1.daumcdn.net/thumb/R1280x0/?scode=mtistory2&fname=https%3A%2F%2Fblog.kakaocdn.net%2Fdna%2FbiGTjr%2FdJMcaiRKOSO%2FAAAAAAAAAAAAAAAAAAAAANB405_v6CHz4O-ZYMxv0j21evYN2jZe-DCpSxyYwMjb%2Fimg.png%3Fcredential%3DyqXZFxpELC7KVnFOS48ylbz2pIh7yKj8%26expires%3D1788188399%26allow_ip%3D%26allow_referer%3D%26signature%3DrvCYOwb1QRuLqyNKUyvL6T0FwOk%253D";
+  const uImage = "https://img1.daumcdn.net/thumb/R1280x0/?scode=mtistory2&fname=https%3A%2F%2Fblog.kakaocdn.net%2Fdna%2FEnnRK%2FdJMcagM4Br0%2FAAAAAAAAAAAAAAAAAAAAAJWnbP9xhP1GMuAakI4eWq_OrMFJduJy2kGCGdMU5LSU%2Fimg.png%3Fcredential%3DyqXZFxpELC7KVnFOS48ylbz2pIh7yKj8%26expires%3D1788188399%26allow_ip%3D%26allow_referer%3D%26signature%3Dkz3vg%252FsAEj5Ylq8mCJ9HUcxsmkA%253D";
 const imageSrc = operator === 'SK' ? skImage : (operator === 'KT' ? ktImage : uImage);
 
   return (
@@ -1250,7 +1250,7 @@ function RequestFormPopup({ onClose }) {
 
 // ------------------ 닷컴 혜택 이미지 팝업 컴포넌트 ------------------
 function DeviceColorPopup({ onClose }) {
-  const imageSrc = "https://img1.daumcdn.net/thumb/R1280x0/?scode=mtistory2&fname=https%3A%2F%2Fblog.kakaocdn.net%2Fdna%2FbiGTjr%2FdJMcaiRKOSO%2FAAAAAAAAAAAAAAAAAAAAANB405_v6CHz4O-ZYMxv0j21evYN2jZe-DCpSxyYwMjb%2Fimg.png%3Fcredential%3DyqXZFxpELC7KVnFOS48ylbz2pIh7yKj8%26expires%3D1785509999%26allow_ip%3D%26allow_referer%3D%26signature%3DK%252B6pKQ5gu6Xdj5r%252F%252BbXN2ZG99bk%253D"; 
+  const imageSrc = "https://img1.daumcdn.net/thumb/R1280x0/?scode=mtistory2&fname=https%3A%2F%2Fblog.kakaocdn.net%2Fdna%2FbiGTjr%2FdJMcaiRKOSO%2FAAAAAAAAAAAAAAAAAAAAANB405_v6CHz4O-ZYMxv0j21evYN2jZe-DCpSxyYwMjb%2Fimg.png%3Fcredential%3DyqXZFxpELC7KVnFOS48ylbz2pIh7yKj8%26expires%3D1788188399%26allow_ip%3D%26allow_referer%3D%26signature%3DrvCYOwb1QRuLqyNKUyvL6T0FwOk%253D"; 
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
@@ -1294,7 +1294,7 @@ function NoticePopup({ onClose }) {
       <div className="bg-white p-6 rounded-lg shadow-xl relative w-max max-w-[90vw] text-center mb-[20vh]">
         <button onClick={onClose} className="absolute top-2 right-2 text-gray-400 hover:text-gray-800 text-2xl leading-none">&times;</button>
         <h2 className="text-lg font-bold mb-4 text-blue-600">📢 안내</h2>
-        <p className="text-gray-800 font-medium whitespace-nowrap">정책 기준일 : SK 7월 28일 / KT 7월 28일 / U+ 7월 28일<br />공통지원금이 0원이면 지원금 칸에 직접 입력해야합니다.</p>
+        <p className="text-gray-800 font-medium whitespace-nowrap">정책 기준일 : SK 7월 28일 / KT 7월 28일 / U+ 8월 1일<br />공통지원금이 0원이면 지원금 칸에 직접 입력해야합니다.</p>
         <button onClick={onClose} className="mt-6 bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 w-full font-bold text-sm">확인</button>
       </div>
     </div>
