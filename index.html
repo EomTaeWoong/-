@@ -47,6 +47,9 @@ const POLICY = {
     SK_TIER_1_MIN: 99000
   },
   DEVICES: {
+    '폴드8 울트라 512G (사전예약)': { SK_COMMON: {}, KT_COMMON: {}, U_COMMON: {}, EXTRA: {} },
+    '폴드8 와이드 512G (사전예약)': { SK_COMMON: {}, KT_COMMON: {}, U_COMMON: {}, EXTRA: {} },
+    '플립8 512G (사전예약)': { SK_COMMON: {}, KT_COMMON: {}, U_COMMON: {}, EXTRA: {} },
     '폴드8 울트라 512G': { SK_COMMON: {}, KT_COMMON: {}, U_COMMON: {}, EXTRA: {} },
     '폴드8 와이드 512G': { SK_COMMON: {}, KT_COMMON: {}, U_COMMON: {}, EXTRA: {} },
     '플립8 512G': { SK_COMMON: {}, KT_COMMON: {}, U_COMMON: {}, EXTRA: {} },
@@ -75,17 +78,17 @@ const POLICY = {
 // 💡 [색상 복사 텍스트 설정] 단말기별 색상과 복사될 텍스트 💡
 // =====================================================================
 const DEVICE_COLORS_MAP = {
-  '폴드8 울트라 512G': [
+  '폴드8 울트라 512G (사전예약)': [
     { name: '바이올렛 쉐도우', copyText: 'SM-F976NZVIKOD' },
     { name: '크림', copyText: 'SM-F976NZWIKOD' },
     { name: '그라파이트', copyText: 'SM-F976NZKIKOD' },
   ],
-  '폴드8 와이드 512G': [
+  '폴드8 와이드 512G (사전예약)': [
     { name: '라벤더', copyText: 'SM-F971NLVIKOD' },
     { name: '크림', copyText: 'SM-F971NZWIKOD' },
     { name: '그라파이트', copyText: 'SM-F971NZKIKOD' },
   ],
-  '플립8 512G': [
+  '플립8 512G (사전예약)': [
     { name: '핑크', copyText: 'SM-F776NLIEKOD' },
     { name: '그라파이트', copyText: 'SM-F776NZKEKOD' },
     { name: '크림', copyText: 'SM-F776NZWEKOD' },
@@ -161,6 +164,21 @@ const DEVICE_COLORS_MAP = {
     { name: '제트블랙', copyText: 'SM-S731NZKWKOD' },
     { name: '화이트', copyText: 'SM-S731NZWWKOD' },
   ],
+  '폴드8 울트라 512G': [
+    { name: '바이올렛 쉐도우', copyText: 'SM-F976NZVIKOD' },
+    { name: '크림', copyText: 'SM-F976NZWIKOD' },
+    { name: '그라파이트', copyText: 'SM-F976NZKIKOD' },
+  ],
+  '폴드8 와이드 512G': [
+    { name: '라벤더', copyText: 'SM-F971NLVIKOD' },
+    { name: '크림', copyText: 'SM-F971NZWIKOD' },
+    { name: '그라파이트', copyText: 'SM-F971NZKIKOD' },
+  ],
+  '플립8 512G': [
+    { name: '핑크', copyText: 'SM-F776NLIEKOD' },
+    { name: '그라파이트', copyText: 'SM-F776NZKEKOD' },
+    { name: '크림', copyText: 'SM-F776NZWEKOD' },
+  ],
   '폴드8 울트라 256G': [
     { name: '바이올렛 쉐도우', copyText: 'SM-F976NZVPKOD' },
     { name: '크림', copyText: 'SM-F976NZWPKOD' },
@@ -202,9 +220,9 @@ const CATEGORIZED_DEVICE_LIST = [
   {
     category: '사전예약',
     devices: [
-      { name: '폴드8 울트라 512G', price: 2830300, isHighlight: true },
-      { name: '폴드8 와이드 512G', price: 2531100, isHighlight: true },
-      { name: '플립8 512G', price: 1936000, isHighlight: true }
+      { name: '폴드8 울트라 512G (사전예약)', price: 2830300, isHighlight: true },
+      { name: '폴드8 와이드 512G (사전예약)', price: 2531100, isHighlight: true },
+      { name: '플립8 512G (사전예약)', price: 1936000, isHighlight: true }
     ]
   },
   {
@@ -220,6 +238,17 @@ const CATEGORIZED_DEVICE_LIST = [
     ]
   },
   {
+    category: '폴더블8 시리즈',
+    devices: [
+      { name: '폴드8 울트라 512G', price: 2830300 },
+      { name: '폴드8 와이드 512G', price: 2531100 },
+      { name: '플립8 512G', price: 1936000 },
+      { name: '폴드8 울트라 256G', price: 2577300 },
+      { name: '폴드8 와이드 256G', price: 2278100 },
+      { name: '플립8 256G', price: 1683000 }
+    ]
+  },
+  {
     category: 'S25 시리즈',
     devices: [
       { name: 'S25 엣지 256G', price: 1496000 },
@@ -227,14 +256,6 @@ const CATEGORIZED_DEVICE_LIST = [
       { name: 'S25+ 256G', price: 1353000 },
       { name: 'S25 256G', price: 1155000 },
       { name: 'S25 FE', price: 946000 }
-    ]
-  },
-  {
-    category: '폴더블8 시리즈',
-    devices: [
-      { name: '폴드8 울트라 256G', price: 2577300 },
-      { name: '폴드8 와이드 256G', price: 2278100 },
-      { name: '플립8 256G', price: 1683000 }
     ]
   },
   {
@@ -422,7 +443,8 @@ function getSupportAmounts({ selectedDevice, selectedPlanPrice, operator, joinTy
     return { commonSupport: 0, additionalSupport: 0, selectiveAdditionalSupport: 0 };
   }
 
-let commonSupport = 0;
+  // 💡 1. 공통지원금 로직 (기존 유지)
+  let commonSupport = 0;
   if (operator === 'SK' && devicePolicy.SK_COMMON && devicePolicy.SK_COMMON[selectedPlanPrice] !== undefined) {
     commonSupport = devicePolicy.SK_COMMON[selectedPlanPrice];
   } else if (operator === 'U' && devicePolicy.U_COMMON && devicePolicy.U_COMMON[selectedPlanPrice] !== undefined) {
@@ -431,91 +453,183 @@ let commonSupport = 0;
     commonSupport = devicePolicy.KT_COMMON[selectedPlanPrice];
   }
 
+  // 💡 2. 추가지원금 로직 시작
   let additionalSupport = 0;
   let selectiveAdditionalSupport = 0;
   const extraConfig = devicePolicy.EXTRA || {};
 
-if (operator === 'SK') {
-    let policyBlock = null;
-    if (joinType === '기기변경') {
-      policyBlock = isGalcams ? extraConfig.SK_CHANGE_GALCAMS : extraConfig.SK_CHANGE_DOTCOM;
-    } else if (joinType === '번호이동') {
-      policyBlock = isGalcams ? extraConfig.SK_MNP_GALCAMS : extraConfig.SK_MNP_DOTCOM;
-    }
+  // 선택된 단말기가 '사전예약' 카테고리에 속하는지 확인
+  const isPreorder = CATEGORIZED_DEVICE_LIST
+    .find(c => c.category === '사전예약')
+    ?.devices.some(d => d.name === selectedDevice);
 
-if (policyBlock) {
-      // 💡 99,000원 이상일 때: 엑셀에서 설정한 추가지원금 적용
-      if (policyBlock.OVER_99K !== undefined && selectedPlanPrice >= 99000) {
-        additionalSupport = policyBlock.OVER_99K.common; // 💡 99K로 수정
-        selectiveAdditionalSupport = policyBlock.OVER_99K.selective; // 💡 99K로 수정
-      } 
-      // 💡 99,000원 미만일 때: 무조건 50,000원 적용
-      else if (selectedPlanPrice < 99000) {
-        additionalSupport = 50000;
-        selectiveAdditionalSupport = 50000;
+  if (isPreorder) {
+    // =====================================================================
+    // 🚀 [사전예약 단말기] 전용 추가지원금 로직
+    // 기존처럼 엑셀 데이터를 불러오면서 특정 요금제 기준을 적용합니다.
+    // =====================================================================
+    if (operator === 'SK') {
+      let policyBlock = null;
+      if (joinType === '기기변경') {
+        policyBlock = isGalcams ? extraConfig.SK_CHANGE_GALCAMS : extraConfig.SK_CHANGE_DOTCOM;
+      } else if (joinType === '번호이동') {
+        policyBlock = isGalcams ? extraConfig.SK_MNP_GALCAMS : extraConfig.SK_MNP_DOTCOM;
       }
-    } else {
-      // 엑셀 데이터가 매핑되지 않은 모델일 경우에도 99,000원 미만이면 5만 원 적용 (선택 사항)
-      if (selectedPlanPrice < 99000) {
-        additionalSupport = 50000;
-        selectiveAdditionalSupport = 50000;
-      }
-    }
-  } else if (operator === 'U') {
-    let policyBlock = null;
-    if (joinType === '기기변경') {
-      policyBlock = isGalcams ? extraConfig.U_CHANGE_GALCAMS : extraConfig.U_CHANGE_DOTCOM;
-    } else if (joinType === '번호이동') {
-      policyBlock = isGalcams ? extraConfig.U_MNP_GALCAMS : extraConfig.U_MNP_DOTCOM;
-    }
 
-    if (policyBlock) {
-      if (policyBlock.OVER_95K !== undefined && selectedPlanPrice >= 95000) {
-        additionalSupport = policyBlock.OVER_95K.common;
-        selectiveAdditionalSupport = policyBlock.OVER_95K.selective;
-      } else if (policyBlock.OVER_61K !== undefined && selectedPlanPrice >= 61000) {
-        additionalSupport = policyBlock.OVER_61K.common;
-        selectiveAdditionalSupport = policyBlock.OVER_61K.selective;
-      } else if (policyBlock.OVER_33K !== undefined && selectedPlanPrice >= 33000) {
-        additionalSupport = policyBlock.OVER_33K.common;
-        selectiveAdditionalSupport = policyBlock.OVER_33K.selective;
+      if (policyBlock) {
+        if (policyBlock.OVER_99K !== undefined && selectedPlanPrice >= 99000) {
+          additionalSupport = policyBlock.OVER_99K.common; 
+          selectiveAdditionalSupport = policyBlock.OVER_99K.selective; 
+        } else if (selectedPlanPrice < 99000) {
+          additionalSupport = 50000; // 사전예약용 SK 미만 기준 금액
+          selectiveAdditionalSupport = 50000;
+        }
+      } else {
+        if (selectedPlanPrice < 99000) {
+          additionalSupport = 50000;
+          selectiveAdditionalSupport = 50000;
+        }
       }
-    } else {
-      let baseAdd = 0;
-      if (extraConfig.U_TIER_A_DOTCOM !== undefined) {
-        if (selectedPlanPrice >= policyData.TIERS.U_TIER_A_MIN) baseAdd = isGalcams ? (extraConfig.U_TIER_A_GALCAMS || 0) : (extraConfig.U_TIER_A_DOTCOM || 0);
-      } else if (selectedPlanPrice >= policyData.TIERS.U_TIER_1_MIN && selectedPlanPrice < policyData.TIERS.U_TIER_1_MAX) {
-        baseAdd = isGalcams ? (extraConfig.U_TIER_1_GALCAMS || 0) : (extraConfig.U_TIER_1_DOTCOM || 0);
-      } else if (selectedPlanPrice >= policyData.TIERS.U_TIER_2_MIN) {
-        baseAdd = isGalcams ? (extraConfig.U_TIER_2_GALCAMS || 0) : (extraConfig.U_TIER_2_DOTCOM || 0);
+    } else if (operator === 'U') {
+      let policyBlock = null;
+      if (joinType === '기기변경') {
+        policyBlock = isGalcams ? extraConfig.U_CHANGE_GALCAMS : extraConfig.U_CHANGE_DOTCOM;
+      } else if (joinType === '번호이동') {
+        policyBlock = isGalcams ? extraConfig.U_MNP_GALCAMS : extraConfig.U_MNP_DOTCOM;
       }
-      additionalSupport = baseAdd;
-      selectiveAdditionalSupport = baseAdd;
-    }
-  } else if (operator === 'KT') {
-    let policyBlock = null;
-    if (joinType === '기기변경') {
-      policyBlock = isGalcams ? extraConfig.KT_CHANGE_GALCAMS : extraConfig.KT_CHANGE_DOTCOM;
-    } else if (joinType === '번호이동') {
-      policyBlock = isGalcams ? extraConfig.KT_MNP_GALCAMS : extraConfig.KT_MNP_DOTCOM;
-    }
 
-    if (policyBlock) {
-      if (policyBlock.OVER_90K !== undefined && selectedPlanPrice >= 90000) {
-        additionalSupport = policyBlock.OVER_90K.common;
-        selectiveAdditionalSupport = policyBlock.OVER_90K.selective;
-      } else if (policyBlock.OVER_61K !== undefined && selectedPlanPrice >= 61000) {
-        additionalSupport = policyBlock.OVER_61K.common;
-        selectiveAdditionalSupport = policyBlock.OVER_61K.selective;
-      } else if (policyBlock.OVER_33K !== undefined && selectedPlanPrice >= 33000) {
-        additionalSupport = policyBlock.OVER_33K.common;
-        selectiveAdditionalSupport = policyBlock.OVER_33K.selective;
-      }
-    } else {
-      if (selectedPlanPrice >= policyData.TIERS.KT_TIER_1_MIN) {
-        let baseAdd = isGalcams ? (extraConfig.KT_TIER_1_GALCAMS || 0) : (extraConfig.KT_TIER_1_DOTCOM || 0);
+      if (policyBlock) {
+        if (policyBlock.OVER_95K !== undefined && selectedPlanPrice >= 95000) {
+          additionalSupport = policyBlock.OVER_95K.common;
+          selectiveAdditionalSupport = policyBlock.OVER_95K.selective;
+        } else if (policyBlock.OVER_61K !== undefined && selectedPlanPrice >= 61000) {
+          additionalSupport = policyBlock.OVER_61K.common;
+          selectiveAdditionalSupport = policyBlock.OVER_61K.selective;
+        } else if (policyBlock.OVER_33K !== undefined && selectedPlanPrice >= 33000) {
+          additionalSupport = policyBlock.OVER_33K.common;
+          selectiveAdditionalSupport = policyBlock.OVER_33K.selective;
+        }
+      } else {
+        let baseAdd = 0;
+        if (extraConfig.U_TIER_A_DOTCOM !== undefined) {
+          if (selectedPlanPrice >= policyData.TIERS.U_TIER_A_MIN) baseAdd = isGalcams ? (extraConfig.U_TIER_A_GALCAMS || 0) : (extraConfig.U_TIER_A_DOTCOM || 0);
+        } else if (selectedPlanPrice >= policyData.TIERS.U_TIER_1_MIN && selectedPlanPrice < policyData.TIERS.U_TIER_1_MAX) {
+          baseAdd = isGalcams ? (extraConfig.U_TIER_1_GALCAMS || 0) : (extraConfig.U_TIER_1_DOTCOM || 0);
+        } else if (selectedPlanPrice >= policyData.TIERS.U_TIER_2_MIN) {
+          baseAdd = isGalcams ? (extraConfig.U_TIER_2_GALCAMS || 0) : (extraConfig.U_TIER_2_DOTCOM || 0);
+        }
         additionalSupport = baseAdd;
         selectiveAdditionalSupport = baseAdd;
+      }
+    } else if (operator === 'KT') {
+      let policyBlock = null;
+      if (joinType === '기기변경') {
+        policyBlock = isGalcams ? extraConfig.KT_CHANGE_GALCAMS : extraConfig.KT_CHANGE_DOTCOM;
+      } else if (joinType === '번호이동') {
+        policyBlock = isGalcams ? extraConfig.KT_MNP_GALCAMS : extraConfig.KT_MNP_DOTCOM;
+      }
+
+      if (policyBlock) {
+        if (policyBlock.OVER_90K !== undefined && selectedPlanPrice >= 90000) {
+          additionalSupport = policyBlock.OVER_90K.common;
+          selectiveAdditionalSupport = policyBlock.OVER_90K.selective;
+        } else if (policyBlock.OVER_61K !== undefined && selectedPlanPrice >= 61000) {
+          additionalSupport = policyBlock.OVER_61K.common;
+          selectiveAdditionalSupport = policyBlock.OVER_61K.selective;
+        } else if (policyBlock.OVER_33K !== undefined && selectedPlanPrice >= 33000) {
+          additionalSupport = policyBlock.OVER_33K.common;
+          selectiveAdditionalSupport = policyBlock.OVER_33K.selective;
+        }
+      } else {
+        if (selectedPlanPrice >= policyData.TIERS.KT_TIER_1_MIN) {
+          let baseAdd = isGalcams ? (extraConfig.KT_TIER_1_GALCAMS || 0) : (extraConfig.KT_TIER_1_DOTCOM || 0);
+          additionalSupport = baseAdd;
+          selectiveAdditionalSupport = baseAdd;
+        }
+      }
+    }
+  } else {
+    // =====================================================================
+    // 📱 [사전예약 이외 일반 단말기] 기존 추가지원금 로직 
+    // =====================================================================
+    if (operator === 'SK') {
+      let policyBlock = null;
+      if (joinType === '기기변경') {
+        policyBlock = isGalcams ? extraConfig.SK_CHANGE_GALCAMS : extraConfig.SK_CHANGE_DOTCOM;
+      } else if (joinType === '번호이동') {
+        policyBlock = isGalcams ? extraConfig.SK_MNP_GALCAMS : extraConfig.SK_MNP_DOTCOM;
+      }
+
+      if (policyBlock) {
+        if (policyBlock.OVER_99K !== undefined && selectedPlanPrice >= 99000) {
+          additionalSupport = policyBlock.OVER_99K.common; 
+          selectiveAdditionalSupport = policyBlock.OVER_99K.selective; 
+        } else if (selectedPlanPrice < 99000) {
+          additionalSupport = 50000;
+          selectiveAdditionalSupport = 50000;
+        }
+      } else {
+        if (selectedPlanPrice < 99000) {
+          additionalSupport = 50000;
+          selectiveAdditionalSupport = 50000;
+        }
+      }
+    } else if (operator === 'U') {
+      let policyBlock = null;
+      if (joinType === '기기변경') {
+        policyBlock = isGalcams ? extraConfig.U_CHANGE_GALCAMS : extraConfig.U_CHANGE_DOTCOM;
+      } else if (joinType === '번호이동') {
+        policyBlock = isGalcams ? extraConfig.U_MNP_GALCAMS : extraConfig.U_MNP_DOTCOM;
+      }
+
+      if (policyBlock) {
+        if (policyBlock.OVER_95K !== undefined && selectedPlanPrice >= 95000) {
+          additionalSupport = policyBlock.OVER_95K.common;
+          selectiveAdditionalSupport = policyBlock.OVER_95K.selective;
+        } else if (policyBlock.OVER_61K !== undefined && selectedPlanPrice >= 61000) {
+          additionalSupport = policyBlock.OVER_61K.common;
+          selectiveAdditionalSupport = policyBlock.OVER_61K.selective;
+        } else if (policyBlock.OVER_33K !== undefined && selectedPlanPrice >= 33000) {
+          additionalSupport = policyBlock.OVER_33K.common;
+          selectiveAdditionalSupport = policyBlock.OVER_33K.selective;
+        }
+      } else {
+        let baseAdd = 0;
+        if (extraConfig.U_TIER_A_DOTCOM !== undefined) {
+          if (selectedPlanPrice >= policyData.TIERS.U_TIER_A_MIN) baseAdd = isGalcams ? (extraConfig.U_TIER_A_GALCAMS || 0) : (extraConfig.U_TIER_A_DOTCOM || 0);
+        } else if (selectedPlanPrice >= policyData.TIERS.U_TIER_1_MIN && selectedPlanPrice < policyData.TIERS.U_TIER_1_MAX) {
+          baseAdd = isGalcams ? (extraConfig.U_TIER_1_GALCAMS || 0) : (extraConfig.U_TIER_1_DOTCOM || 0);
+        } else if (selectedPlanPrice >= policyData.TIERS.U_TIER_2_MIN) {
+          baseAdd = isGalcams ? (extraConfig.U_TIER_2_GALCAMS || 0) : (extraConfig.U_TIER_2_DOTCOM || 0);
+        }
+        additionalSupport = baseAdd;
+        selectiveAdditionalSupport = baseAdd;
+      }
+    } else if (operator === 'KT') {
+      let policyBlock = null;
+      if (joinType === '기기변경') {
+        policyBlock = isGalcams ? extraConfig.KT_CHANGE_GALCAMS : extraConfig.KT_CHANGE_DOTCOM;
+      } else if (joinType === '번호이동') {
+        policyBlock = isGalcams ? extraConfig.KT_MNP_GALCAMS : extraConfig.KT_MNP_DOTCOM;
+      }
+
+      if (policyBlock) {
+        if (policyBlock.OVER_90K !== undefined && selectedPlanPrice >= 90000) {
+          additionalSupport = policyBlock.OVER_90K.common;
+          selectiveAdditionalSupport = policyBlock.OVER_90K.selective;
+        } else if (policyBlock.OVER_61K !== undefined && selectedPlanPrice >= 61000) {
+          additionalSupport = policyBlock.OVER_61K.common;
+          selectiveAdditionalSupport = policyBlock.OVER_61K.selective;
+        } else if (policyBlock.OVER_33K !== undefined && selectedPlanPrice >= 33000) {
+          additionalSupport = policyBlock.OVER_33K.common;
+          selectiveAdditionalSupport = policyBlock.OVER_33K.selective;
+        }
+      } else {
+        if (selectedPlanPrice >= policyData.TIERS.KT_TIER_1_MIN) {
+          let baseAdd = isGalcams ? (extraConfig.KT_TIER_1_GALCAMS || 0) : (extraConfig.KT_TIER_1_DOTCOM || 0);
+          additionalSupport = baseAdd;
+          selectiveAdditionalSupport = baseAdd;
+        }
       }
     }
   }
@@ -523,6 +637,9 @@ if (policyBlock) {
   return { commonSupport, additionalSupport, selectiveAdditionalSupport };
 }
 
+// =====================================================================
+// 🛠️ [리팩토링] 공통 결과 데이터 카드 컴포넌트 (공통지원/선택약정 구조 통합)
+// =====================================================================
 // =====================================================================
 // 🛠️ [리팩토링] 공통 결과 데이터 카드 컴포넌트 (공통지원/선택약정 구조 통합)
 // =====================================================================
@@ -1979,7 +2096,7 @@ useEffect(() => {
     // 시간은 '연도-월-일T시:분:초' 형식으로 적습니다.
     const policySchedule = [
       { time: '2026-08-01T00:00:00', file: 'policy_20260801.xlsx' },       // 1. 기존 파일 (기본값)
-      { time: '2026-08-26T00:00:00', file: 'policy_20260826.xlsx' },  //
+      { time: '2026-08-07T00:00:00', file: 'policy_20260807.xlsx' },  //
     ];
 
     // 💡 3. 리스트를 확인하며 현재 시간이 예약 시간을 지났는지 체크합니다.
