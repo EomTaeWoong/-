@@ -2096,11 +2096,11 @@ useEffect(() => {
     // 시간은 '연도-월-일T시:분:초' 형식으로 적습니다.
     const policySchedule = [
       { time: '2026-08-07T00:00:00', file: 'policy_20260807.xlsx' },       // 1. 기존 파일 (기본값)
-      { time: '2026-08-026T00:00:00', file: 'policy_20260826.xlsx' },  //
+      { time: '2026-08-26T00:00:00', file: 'policy_20260826.xlsx' },  //
     ];
 
     // 💡 3. 리스트를 확인하며 현재 시간이 예약 시간을 지났는지 체크합니다.
-    let activeFile = 'policy.xlsx'; // 아무 조건에도 안 맞을 때 쓸 기본 파일명
+    let activeFile = policySchedule[0].file; // 기본값을 리스트의 첫 번째 파일로 지정
     for (const schedule of policySchedule) {
       if (now >= new Date(schedule.time)) {
         activeFile = schedule.file; // 시간이 지났으면 해당 파일명으로 갱신!
