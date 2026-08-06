@@ -2074,12 +2074,12 @@ const handleAdminClick = async () => {
       const verifyRes = await fetch(`${workerUrl}/verify-otp?code=${code}`);
       const verifyData = await verifyRes.json();
 
-      if (verifyData.success) {
-        // 인증에 성공하면 이번 한 번만 바로 열어줌 (모드 자체를 프리패스로 바꾸진 않음)
-        fileInputRef.current.click(); 
-      } else {
-        alert("❌ 인증번호가 틀렸습니다.");
-      }
+if (verifyData.success) {
+  setIsAdminVerified(true); // 💡 이 줄을 추가해야 페이지를 벗어나기 전까지 인증이 유지됩니다!
+  fileInputRef.current.click(); 
+} else {
+  alert("❌ 인증번호가 틀렸습니다.");
+}
     } catch (error) {
       alert("서버 통신 오류가 발생했습니다.");
       console.error(error);
