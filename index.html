@@ -1873,7 +1873,7 @@ const handleFileUpload = (e) => {
                 dotcom = reqDay;
             }
 
-            const rawModel = getVal(/(SM-[A-Z0-9]+|iPhone\s*[A-Za-z0-9\s]+)/i);
+const rawModel = getVal(/(SM-[A-Z0-9]+|iPhone\s*[A-Za-z0-9\s]+)/i);
             let mappedModel = rawModel; 
             if (rawModel) {
                 const searchModel = rawModel.replace(/\s+/g, '').toUpperCase();
@@ -1881,7 +1881,8 @@ const handleFileUpload = (e) => {
                 for (const [deviceName, colors] of Object.entries(DEVICE_COLORS_MAP)) {
                     for (const colorInfo of colors) {
                         if (colorInfo.copyText.toUpperCase() === searchModel) {
-                            mappedModel = `${deviceName} - ${colorInfo.name}`;
+                            // deviceName에서 '(사전예약)' 문구를 빈 문자열로 바꾸고 양옆 공백을 정리합니다.
+                            mappedModel = `${deviceName.replace('(사전예약)', '').trim()} - ${colorInfo.name}`;
                             isFound = true;
                             break;
                         }
