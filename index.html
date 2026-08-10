@@ -1836,7 +1836,7 @@ const handleFileUpload = (e) => {
             storeName = storeName.replace(/(09:00\s*~\s*13:00|13:00\s*~\s*15:00|15:00\s*~\s*17:00|09시\s*~\s*13시|13시\s*~\s*15시|15시\s*~\s*17시)/g, '').trim();
             if ((cat === 'BOPIS' || cat === '퀵배송') && storeName) { cat = `${cat}(${storeName})`; }
 
-            let namePhoneMatch = record.match(/(?:[가-힣]{2,5}[,\s\t]+)?([가-힣]{2,5})[,\s\t]+(010-\d{3,4}-\d{4})/);
+            let namePhoneMatch = record.match(/(?:[가-힣a-zA-Z]{2,20}[,\s\t]+)?([가-힣a-zA-Z\s]{2,20})[,\s\t]+(010-\d{3,4}-\d{4})/);
             const name = namePhoneMatch ? namePhoneMatch[1] : '';
             const confirm = namePhoneMatch ? namePhoneMatch[2] : ''; 
 
