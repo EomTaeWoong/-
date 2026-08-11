@@ -1968,8 +1968,8 @@ const rawModel = getVal(/(SM-[A-Z0-9]+|iPhone\s*[A-Za-z0-9\s]+)/i);
             else if (record.match(/(신규\s*가입|신규|에이징)/)) changeType = '신규';
 
             let discountType = '기타';
-            if (record.match(/(공시\s*지원|공시|단말\s*할인|지원금)/)) discountType = '공시지원';
-            else if (record.match(/(선택\s*약정|선약|요금\s*할인)/)) discountType = '선택약정';
+            if (record.match(/(공시\s*지원|공시|단말\s*할인|지원금)/)) discountType = '공시';
+            else if (record.match(/(선택\s*약정|선약|요금\s*할인)/)) discountType = '선약24';
             else if (record.match(/(자급제|자급)/)) discountType = '자급';
 
             let dotcomStr = dotcom ? ` ${dotcom}` : ''; 
