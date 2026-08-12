@@ -468,29 +468,38 @@ function getSupportAmounts({ selectedDevice, selectedPlanPrice, operator, joinTy
     // 🚀 [사전예약 단말기] 전용 추가지원금 로직
     // 기존처럼 엑셀 데이터를 불러오면서 특정 요금제 기준을 적용합니다.
     // =====================================================================
-    if (operator === 'SK') {
-      let policyBlock = null;
-      if (joinType === '기기변경') {
-        policyBlock = isGalcams ? extraConfig.SK_CHANGE_GALCAMS : extraConfig.SK_CHANGE_DOTCOM;
-      } else if (joinType === '번호이동') {
-        policyBlock = isGalcams ? extraConfig.SK_MNP_GALCAMS : extraConfig.SK_MNP_DOTCOM;
-      }
+if (operator === 'SK') {
+  let policyBlock = null;
+  if (joinType === '기기변경') {
+    policyBlock = isGalcams ? extraConfig.SK_CHANGE_GALCAMS : extraConfig.SK_CHANGE_DOTCOM;
+  } else if (joinType === '번호이동') {
+    policyBlock = isGalcams ? extraConfig.SK_MNP_GALCAMS : extraConfig.SK_MNP_DOTCOM;
+  }
 
-      if (policyBlock) {
-        if (policyBlock.OVER_99K !== undefined && selectedPlanPrice >= 99000) {
-          additionalSupport = policyBlock.OVER_99K.common; 
-          selectiveAdditionalSupport = policyBlock.OVER_99K.selective; 
-        } else if (selectedPlanPrice < 99000) {
-          additionalSupport = 50000; // 사전예약용 SK 미만 기준 금액
-          selectiveAdditionalSupport = 50000;
-        }
-      } else {
-        if (selectedPlanPrice < 99000) {
-          additionalSupport = 50000;
-          selectiveAdditionalSupport = 50000;
-        }
-      }
-    } else if (operator === 'U') {
+  // 💡 단말기에 따른 동적 요금제 기준(Threshold) 설정
+  let skThreshold = 99000; // 기본 기준은 99,000원
+  if (selectedDevice.includes('A36') || selectedDevice.includes('A37')) {
+    skThreshold = 50000;
+  } else if (selectedDevice.includes('A17')) {
+    skThreshold = 33000;
+  }
+
+  if (policyBlock) {
+    // 💡 엑셀 파싱 시 key가 'OVER_99K'로 고정되어 들어가므로 key 이름은 유지하되, 조건 비교만 skThreshold로 진행
+    if (policyBlock.OVER_99K !== undefined && selectedPlanPrice >= skThreshold) {
+      additionalSupport = policyBlock.OVER_99K.common; 
+      selectiveAdditionalSupport = policyBlock.OVER_99K.selective; 
+    } else if (selectedPlanPrice < skThreshold) {
+      additionalSupport = 50000; 
+      selectiveAdditionalSupport = 50000;
+    }
+  } else {
+    if (selectedPlanPrice < skThreshold) {
+      additionalSupport = 50000;
+      selectiveAdditionalSupport = 50000;
+    }
+  }
+} else if (operator === 'U') {
       let policyBlock = null;
       if (joinType === '기기변경') {
         policyBlock = isGalcams ? extraConfig.U_CHANGE_GALCAMS : extraConfig.U_CHANGE_DOTCOM;
@@ -552,29 +561,38 @@ function getSupportAmounts({ selectedDevice, selectedPlanPrice, operator, joinTy
     // =====================================================================
     // 📱 [사전예약 이외 일반 단말기] 기존 추가지원금 로직 
     // =====================================================================
-    if (operator === 'SK') {
-      let policyBlock = null;
-      if (joinType === '기기변경') {
-        policyBlock = isGalcams ? extraConfig.SK_CHANGE_GALCAMS : extraConfig.SK_CHANGE_DOTCOM;
-      } else if (joinType === '번호이동') {
-        policyBlock = isGalcams ? extraConfig.SK_MNP_GALCAMS : extraConfig.SK_MNP_DOTCOM;
-      }
+if (operator === 'SK') {
+  let policyBlock = null;
+  if (joinType === '기기변경') {
+    policyBlock = isGalcams ? extraConfig.SK_CHANGE_GALCAMS : extraConfig.SK_CHANGE_DOTCOM;
+  } else if (joinType === '번호이동') {
+    policyBlock = isGalcams ? extraConfig.SK_MNP_GALCAMS : extraConfig.SK_MNP_DOTCOM;
+  }
 
-      if (policyBlock) {
-        if (policyBlock.OVER_99K !== undefined && selectedPlanPrice >= 99000) {
-          additionalSupport = policyBlock.OVER_99K.common; 
-          selectiveAdditionalSupport = policyBlock.OVER_99K.selective; 
-        } else if (selectedPlanPrice < 99000) {
-          additionalSupport = 50000;
-          selectiveAdditionalSupport = 50000;
-        }
-      } else {
-        if (selectedPlanPrice < 99000) {
-          additionalSupport = 50000;
-          selectiveAdditionalSupport = 50000;
-        }
-      }
-    } else if (operator === 'U') {
+  // 💡 단말기에 따른 동적 요금제 기준(Threshold) 설정
+  let skThreshold = 99000; // 기본 기준은 99,000원
+  if (selectedDevice.includes('A36') || selectedDevice.includes('A37')) {
+    skThreshold = 50000;
+  } else if (selectedDevice.includes('A17')) {
+    skThreshold = 33000;
+  }
+
+  if (policyBlock) {
+    // 💡 엑셀 파싱 시 key가 'OVER_99K'로 고정되어 들어가므로 key 이름은 유지하되, 조건 비교만 skThreshold로 진행
+    if (policyBlock.OVER_99K !== undefined && selectedPlanPrice >= skThreshold) {
+      additionalSupport = policyBlock.OVER_99K.common; 
+      selectiveAdditionalSupport = policyBlock.OVER_99K.selective; 
+    } else if (selectedPlanPrice < skThreshold) {
+      additionalSupport = 50000; 
+      selectiveAdditionalSupport = 50000;
+    }
+  } else {
+    if (selectedPlanPrice < skThreshold) {
+      additionalSupport = 50000;
+      selectiveAdditionalSupport = 50000;
+    }
+  }
+} else if (operator === 'U') {
       let policyBlock = null;
       if (joinType === '기기변경') {
         policyBlock = isGalcams ? extraConfig.U_CHANGE_GALCAMS : extraConfig.U_CHANGE_DOTCOM;
