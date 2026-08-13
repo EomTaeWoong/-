@@ -1839,20 +1839,31 @@ const initialInventory = useMemo(() => {
 
   const [inventory, setInventory] = useState(initialInventory);
 
-  // 서버에서 최신 재고 불러오기 (백그라운드에서 진행)
-React.useEffect(() => {
+// 서버에서 최신 재고 불러오기 (백그라운드에서 진행)
+  React.useEffect(() => {
     // 최신 데이터를 가져오는 함수
     const fetchLatestInventory = () => {
       fetch(`${workerUrl}/get-inventory`)
         .then(res => res.json())
         .then(data => {
           if (data && Object.keys(data).length > 0) {
+            // 💡 사전예약 단말기 키값은 서버 데이터에서 제외하는 정제 함수
+            const cleanData = (tabData) => {
+              if (!tabData) return {};
+              const cleaned = {};
+              Object.keys(tabData).forEach(key => {
+                if (!key.includes('(사전예약)')) {
+                  cleaned[key] = tabData[key];
+                }
+              });
+              return cleaned;
+            };
+
             setInventory(prevInventory => {
-              // 현재 내가 입력 중인 상태와 서버 상태를 부드럽게 병합
               return {
-                SK: { ...initialInventory.SK, ...(data.SK || {}) },
-                KT: { ...initialInventory.KT, ...(data.KT || {}) },
-                'U+': { ...initialInventory['U+'], ...(data['U+'] || {}) }
+                SK: { ...initialInventory.SK, ...cleanData(data.SK) },
+                KT: { ...initialInventory.KT, ...cleanData(data.KT) },
+                'U+': { ...initialInventory['U+'], ...cleanData(data['U+']) }
               };
             });
           }
@@ -1867,10 +1878,9 @@ React.useEffect(() => {
     // 팝업이 처음 열릴 때 즉시 1번 불러오기
     fetchLatestInventory();
 
-    // 💡 3초(3000ms)마다 백그라운드에서 최신 데이터 몰래 가져오기
+    // 💡 1초마다 백그라운드에서 최신 데이터 동기화
     const intervalId = setInterval(fetchLatestInventory, 1000);
 
-    // 팝업을 닫으면 타이머를 종료해서 메모리 누수 방지
     return () => clearInterval(intervalId);
   }, [initialInventory]);
 
