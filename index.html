@@ -1822,9 +1822,11 @@ function DraggablePopup({ onClose }) {
   const workerUrl = 'https://shiny-surf-3362.xodnd9733.workers.dev';
 
   // 초기 재고 구조
-  const initialInventory = useMemo(() => {
+const initialInventory = useMemo(() => {
     const init = { SK: {}, KT: {}, 'U+': {} };
-    Object.keys(DEVICE_COLORS_MAP).forEach(device => {
+    Object.keys(DEVICE_COLORS_MAP)
+      .filter(device => !device.includes('(사전예약)'))
+      .forEach(device => {
       DEVICE_COLORS_MAP[device].forEach(colorObj => {
         const key = `${device}_${colorObj.name}`;
         init.SK[key] = '';
@@ -1976,8 +1978,10 @@ React.useEffect(() => {
                 <th className="py-2 px-3 font-bold text-amber-700 w-[25%] text-center">수량/메모</th>
               </tr>
             </thead>
-            <tbody>
-              {Object.entries(DEVICE_COLORS_MAP).map(([device, colors]) => {
+<tbody>
+            {Object.entries(DEVICE_COLORS_MAP)
+              .filter(([device]) => !device.includes('(사전예약)'))
+              .map(([device, colors]) => {
                 return colors.map((colorObj, idx) => {
                   const key = `${device}_${colorObj.name}`;
                   return (
