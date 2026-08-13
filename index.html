@@ -1879,7 +1879,7 @@ const initialInventory = useMemo(() => {
     fetchLatestInventory();
 
     // 💡 1초마다 백그라운드에서 최신 데이터 동기화
-    const intervalId = setInterval(fetchLatestInventory, 1000);
+    const intervalId = setInterval(fetchLatestInventory, 2000);
 
     return () => clearInterval(intervalId);
   }, [initialInventory]);
