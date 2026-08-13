@@ -1879,7 +1879,7 @@ const initialInventory = useMemo(() => {
     fetchLatestInventory();
 
     // 💡 1초마다 백그라운드에서 최신 데이터 동기화
-    const intervalId = setInterval(fetchLatestInventory, 1000);
+    const intervalId = setInterval(fetchLatestInventory, 2000);
 
     return () => clearInterval(intervalId);
   }, [initialInventory]);
@@ -2015,13 +2015,14 @@ const initialInventory = useMemo(() => {
                         </td>
 
 <td className="p-0 bg-white">
-                          <input 
+<input 
                             type="text" 
                             value={inventory[activeTab]?.[key] || ''}
                             onChange={(e) => handleStockChange(key, e.target.value)}
                             onKeyDown={(e) => {
                               if (e.key === 'Enter') {
-                                e.target.blur(); // 💡 엔터를 치면 입력 칸 포커스가 해제되면서 엑셀처럼 바로 확정됩니다!
+                                e.preventDefault(); // 기본 엔터 동작 방지
+                                e.target.blur();    // 포커스 해제하며 값 확정
                               }
                             }}
                             placeholder="-"
