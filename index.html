@@ -1839,6 +1839,11 @@ const initialInventory = useMemo(() => {
 
   const [inventory, setInventory] = useState(initialInventory);
 
+  // 💡 입력 씹힘 방지용 방어막 변수 (입력 중이거나 방금 저장했을 때 덮어쓰기 금지)
+  const isEditingRef = useRef(false);
+  const lastSaveTimeRef = useRef(0);
+
+
 // 서버에서 최신 재고 불러오기 (백그라운드에서 진행)
   React.useEffect(() => {
     // 최신 데이터를 가져오는 함수
@@ -1846,8 +1851,18 @@ const initialInventory = useMemo(() => {
       fetch(`${workerUrl}/get-inventory`)
         .then(res => res.json())
         .then(data => {
+          if (data && Object.keys(data).length > 0) 
+                  .then(data => {
           if (data && Object.keys(data).length > 0) {
+            // 💡 내가 타이핑 중이거나, 마지막 입력 후 3초가 안 지났다면(서버 반영 대기시간) 덮어쓰기 무시!
+            if (isEditingRef.current || Date.now() - lastSaveTimeRef.current < 3000) {
+              return;
+            }
+
             // 💡 사전예약 단말기 키값은 서버 데이터에서 제외하는 정제 함수
+
+          {
+            
             const cleanData = (tabData) => {
               if (!tabData) return {};
               const cleaned = {};
@@ -1884,9 +1899,11 @@ const initialInventory = useMemo(() => {
     return () => clearInterval(intervalId);
   }, [initialInventory]);
 
-  // 실시간 수정 및 서버에 저장
+    // 실시간 수정 및 서버에 저장
   const handleStockChange = (deviceKey, value) => {
+    lastSaveTimeRef.current = Date.now(); // 💡 값을 수정할 때마다 저장 시간 기록 (방어막 가동)
     const newInventory = {
+
       ...inventory,
       [activeTab]: {
         ...inventory[activeTab],
@@ -2015,19 +2032,26 @@ const initialInventory = useMemo(() => {
                         </td>
 
 <td className="p-0 bg-white">
-<input 
+                          <input 
                             type="text" 
                             value={inventory[activeTab]?.[key] || ''}
                             onChange={(e) => handleStockChange(key, e.target.value)}
+                            onFocus={() => isEditingRef.current = true} // 💡 클릭해서 입력 시작할 때 덮어쓰기 잠금
+                            onBlur={() => {
+                              isEditingRef.current = false; // 💡 입력 끝날 때 잠금 해제
+                              lastSaveTimeRef.current = Date.now(); // 해제 시점부터 3초간 다시 방어막 유지
+                            }}
                             onKeyDown={(e) => {
                               if (e.key === 'Enter') {
-                                e.preventDefault(); // 기본 엔터 동작 방지
-                                e.target.blur();    // 포커스 해제하며 값 확정
+                                e.preventDefault(); 
+                                e.target.blur(); 
                               }
                             }}
                             placeholder="-"
                             className="w-full h-full p-2 text-center outline-none focus:bg-amber-100 focus:ring-2 inset-0 ring-amber-400 font-bold text-blue-700 transition-colors"
                           />
+
+
                         </td>
                       </tr>
                     );
