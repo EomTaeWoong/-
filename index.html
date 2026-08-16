@@ -1998,9 +1998,9 @@ const initialInventory = useMemo(() => {
           <table className="w-full text-[14px] text-left border-collapse">
             <thead className="bg-slate-100 sticky top-0 z-10 shadow-sm border-b-2 border-gray-300">
               <tr>
-                <th className="py-2 px-3 border-r border-gray-200 font-bold text-gray-700 w-[45%] text-center">단말기 모델명</th>
-                <th className="py-2 px-3 border-r border-gray-200 font-bold text-gray-700 w-[30%] text-center">색상</th>
-                <th className="py-2 px-3 font-bold text-amber-700 w-[25%] text-center">수량/메모</th>
+                <th className="py-2 px-3 border-r border-gray-200 font-bold text-gray-700 w-[35%] text-center">단말기 모델명</th>
+		<th className="py-2 px-3 border-r border-gray-200 font-bold text-gray-700 w-[40%] text-center">색상</th>
+		<th className="py-2 px-3 font-bold text-amber-700 w-[25%] text-center">수량/메모</th>
               </tr>
             </thead>
 
@@ -2015,7 +2015,7 @@ const initialInventory = useMemo(() => {
                     const isZero = inventory[activeTab]?.[key] === '0';
 
                     return (
-                      <tr key={key} className={`border-b border-gray-200 transition-colors ${isZero ? 'bg-red-50/50' : 'hover:bg-amber-50'}`}>
+                      <tr key={key} className={`transition-colors ${isZero ? 'bg-red-50/50' : 'hover:bg-amber-50'} ${idx === colors.length - 1 ? 'border-b-2 border-gray-400' : 'border-b border-gray-200'}`}>
                         {idx === 0 && (
                           <td rowSpan={colors.length} className="py-1 px-3 border-r border-gray-200 bg-gray-50 font-bold text-gray-800 align-middle">
                             {device}
@@ -2023,7 +2023,7 @@ const initialInventory = useMemo(() => {
                         )}
                         
                         {/* 💡 수량이 '0'이면 색상 칸 배경이 연한 빨간색으로 변하고 빨간 글씨 + [품절] 표시 */}
-                        <td className={`py-1 px-3 border-r border-gray-200 text-center transition-colors ${
+                        <td className={`py-1 px-3 border-r border-gray-200 text-center whitespace-nowrap transition-colors ${
                           isZero ? 'bg-red-100 text-red-600 font-bold' : 'text-gray-600'
                         }`}>
                           {colorObj.name} {isZero && <span className="text-xs ml-1 font-extrabold text-red-500">[품절]</span>}
