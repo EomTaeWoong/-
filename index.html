@@ -4,7 +4,27 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>기다리다 지쳐서 만든 기능</title>
+  
   <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- 👇 눈 피로도 감소를 위한 커스텀 색상 설정 추가 👇 -->
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            // 1. 기존의 눈부신 순백색(팝업, 카드)을 e북 같은 '크림 화이트'로 톤다운
+            white: '#FCFCF9', 
+            // 2. 전체 바탕색과 입력창(gray-50)을 차분하고 따뜻한 '소프트 웜그레이'로 톤다운
+            gray: {
+              50: '#F4F4F2',
+              100: '#EBEBE8',
+            }
+          }
+        }
+      }
+    }
+  </script>
   <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
   <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
   <script src="https://unpkg.com/@babel/standalone@7.23.10/babel.min.js"></script>
@@ -1157,7 +1177,7 @@ const totalCost2_Selective = installMonths === 0
           <div className="flex flex-col w-[350px] shrink-0">
             <div className="text-red-500 font-bold text-[13px] mb-1 text-center w-full whitespace-nowrap">개통 요금제</div>
             <div className="relative w-full" ref={planDropdownRef}>
-              <input type="text" value={planSearchTerm} onChange={(e) => { setPlanSearchTerm(e.target.value); setIsPlanDropdownOpen(true); }} onClick={(e) => { setIsPlanDropdownOpen(true); e.target.select(); }} placeholder="요금제 검색..." className="bg-gray-50 border border-gray-200 text-gray-800 rounded-xl px-3 py-2 outline-none focus:bg-white focus:border-transparent focus:ring-2 focus:ring-blue-400 transition-all shadow-sm h-[38px]" />
+              <input type="text" value={planSearchTerm} onChange={(e) => { setPlanSearchTerm(e.target.value); setIsPlanDropdownOpen(true); }} onClick={(e) => { setIsPlanDropdownOpen(true); e.target.select(); }} placeholder="요금제 검색..." className="w-full bg-gray-50 border border-gray-200 text-gray-800 rounded-xl px-3 py-2 outline-none focus:bg-white focus:border-transparent focus:ring-2 focus:ring-blue-400 transition-all shadow-sm h-[38px]" />
               {isPlanDropdownOpen && (
                 <div className="absolute z-[60] w-max min-w-full mt-1 bg-white border border-gray-300 rounded shadow-lg max-h-60 overflow-y-auto">
                   {filteredPlans.length > 0 ? (
@@ -1171,7 +1191,7 @@ const totalCost2_Selective = installMonths === 0
               )}
             </div>
           </div>
-          <select value={installMonths} onChange={e=>setInstallMonths(Number(e.target.value))} className="bg-gray-50 border border-gray-200 text-gray-800 rounded-xl px-3 py-2 outline-none focus:bg-white focus:border-transparent focus:ring-2 focus:ring-blue-400 transition-all shadow-sm h-[38px] shrink-0">
+          <select value={installMonths} onChange={e=>setInstallMonths(Number(e.target.value))} className="w-[85px] md:w-28 text-center shrink-0 px-1 bg-gray-50 border border-gray-200 text-gray-800 rounded-xl py-2 outline-none focus:bg-white focus:border-transparent focus:ring-2 focus:ring-blue-400 transition-all shadow-sm h-[38px] shrink-0">
             {[0,3,6,9,10,12,18,24,30,36,48].map(m=><option key={m} value={m}>{m===0?'일시불':m+'개월'}</option>)}
           </select>
         </div>
@@ -1221,7 +1241,7 @@ const totalCost2_Selective = installMonths === 0
             <h3 className="text-xl font-bold text-red-600 pb-2 shrink-0">6개월 후 변경할 요금제 ▶</h3>
             <div className="flex flex-col w-[420px] max-w-full">
               <div className="relative w-full" ref={planDropdownRef2}>
-                <input type="text" value={planSearchTerm2} onChange={(e) => { setPlanSearchTerm2(e.target.value); setIsPlanDropdownOpen2(true); }} onClick={(e) => { setIsPlanDropdownOpen2(true); e.target.select(); }} placeholder="요금제 검색..." className="bg-gray-50 border border-gray-200 text-gray-800 rounded-xl px-3 py-2 outline-none focus:bg-white focus:border-transparent focus:ring-2 focus:ring-blue-400 transition-all shadow-sm h-[38px]" />
+                <input type="text" value={planSearchTerm2} onChange={(e) => { setPlanSearchTerm2(e.target.value); setIsPlanDropdownOpen2(true); }} onClick={(e) => { setIsPlanDropdownOpen2(true); e.target.select(); }} placeholder="요금제 검색..." className="w-full bg-gray-50 border border-gray-200 text-gray-800 rounded-xl px-3 py-2 outline-none focus:bg-white focus:border-transparent focus:ring-2 focus:ring-blue-400 transition-all shadow-sm h-[38px]" />
                 {isPlanDropdownOpen2 && (
                   <div className="absolute z-[60] min-w-full w-max mt-1 bg-white border border-gray-300 rounded shadow-lg max-h-60 overflow-y-auto">
                     {filteredPlans2.length > 0 ? (
@@ -1578,7 +1598,7 @@ const winnerMain = total24_Public < total24_Selective ? '공통지원' : (total2
     <div className="pt-2 pb-6 px-4 max-w-4xl mx-auto">
       <div className="mb-3 flex flex-nowrap gap-1.5 md:gap-2 items-center w-full">
         <div className="flex gap-1 shrink-0 relative w-[50%] md:w-[45%]" ref={colorDropdownRef}>
-          <select value={selectedDevice} onChange={e=>setSelectedDevice(e.target.value)} className="bg-gray-50 border border-gray-200 text-gray-800 rounded-xl px-3 py-2 outline-none focus:bg-white focus:border-transparent focus:ring-2 focus:ring-blue-400 transition-all shadow-sm h-[38px]">
+          <select value={selectedDevice} onChange={e=>setSelectedDevice(e.target.value)} className="flex-1 min-w-0 bg-gray-50 border border-gray-200 text-gray-800 rounded-xl px-3 py-2 outline-none focus:bg-white focus:border-transparent focus:ring-2 focus:ring-blue-400 transition-all shadow-sm h-[38px]">
             {CATEGORIZED_DEVICE_LIST.map(group => (
               <optgroup key={group.category} label={group.category}>
                 {group.devices.map(d => (
@@ -1614,7 +1634,7 @@ const winnerMain = total24_Public < total24_Selective ? '공통지원' : (total2
         </div>
         
         <div className="relative flex-1 min-w-[100px]" ref={planDropdownRef}>
-          <input type="text" value={planSearchTerm} onChange={(e) => { setPlanSearchTerm(e.target.value); setIsPlanDropdownOpen(true); }} onClick={(e) => { setIsPlanDropdownOpen(true); e.target.select(); }} placeholder="요금제 검색..." className="bg-gray-50 border border-gray-200 text-gray-800 rounded-xl px-3 py-2 outline-none focus:bg-white focus:border-transparent focus:ring-2 focus:ring-blue-400 transition-all shadow-sm h-[38px]" />
+          <input type="text" value={planSearchTerm} onChange={(e) => { setPlanSearchTerm(e.target.value); setIsPlanDropdownOpen(true); }} onClick={(e) => { setIsPlanDropdownOpen(true); e.target.select(); }} placeholder="요금제 검색..." className="w-full bg-gray-50 border border-gray-200 text-gray-800 rounded-xl px-3 py-2 outline-none focus:bg-white focus:border-transparent focus:ring-2 focus:ring-blue-400 transition-all shadow-sm h-[38px]" />
           {isPlanDropdownOpen && (
             <div className="absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded shadow-lg max-h-60 overflow-y-auto">
               {filteredPlans.length > 0 ? (
@@ -1627,7 +1647,7 @@ const winnerMain = total24_Public < total24_Selective ? '공통지원' : (total2
             </div>
           )}
         </div>
-        <select value={installMonths} onChange={e=>setInstallMonths(Number(e.target.value))} className="bg-gray-50 border border-gray-200 text-gray-800 rounded-xl px-3 py-2 outline-none focus:bg-white focus:border-transparent focus:ring-2 focus:ring-blue-400 transition-all shadow-sm shrink-0 h-[38px]">
+        <select value={installMonths} onChange={e=>setInstallMonths(Number(e.target.value))} className="w-[85px] md:w-28 text-center shrink-0 px-1 bg-gray-50 border border-gray-200 text-gray-800 rounded-xl py-2 outline-none focus:bg-white focus:border-transparent focus:ring-2 focus:ring-blue-400 transition-all shadow-sm shrink-0 h-[38px]">
           {[0,3,6,9,10,12,18,24,30,36,48].map(m=><option key={m} value={m}>{m===0?'일시불':m+'개월'}</option>)}
         </select>
       </div>
