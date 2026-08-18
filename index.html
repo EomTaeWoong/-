@@ -2057,25 +2057,116 @@ const initialInventory = useMemo(() => {
 
         if (updateCount > 0) {
           setInventory(updatedInventory); // 로컬 화면 즉시 업데이트
-          
-          // 서버(Worker)에도 즉시 저장
-          fetch(`${workerUrl}/save-inventory`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(updatedInventory)
-          }).catch(err => console.error("서버 저장 실패:", err));
+  // 👇 [재고 엑셀 자동 반영 기능] 2. 엑셀/CSV 파일을 읽고 서버와 화면에 적용하는 로직 (에러 완벽대응 버전)
+  const handleInventoryUpload = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
 
-          alert(`✅ ${updateCount}건의 재고가 성공적으로 반영되었습니다.`);
-        } else {
-          alert('엑셀에서 일치하는 단말기/통신사 데이터를 찾을 수 없습니다.');
+    const fileName = file.name.toLowerCase();
+
+    // 데이터를 분석해서 화면에 뿌려주는 공통 함수
+    const processInventoryData = (rows) => {
+      let updatedInventory = {
+        SK: { ...inventory.SK },
+        KT: { ...inventory.KT },
+        'U+': { ...inventory['U+'] }
+      };
+
+      let updateCount = 0;
+      let carrierIdx = -1, modelIdx = -1, qtyIdx = -1;
+
+      // 상위 5줄 안에서 헤더(통신사, 모델, 창고수량) 위치 자동 찾기
+      for (let i = 0; i < Math.min(rows.length, 5); i++) {
+        const row = rows[i] || [];
+        const cIdx = row.findIndex(c => typeof c === 'string' && c.includes('통신사'));
+        const mIdx = row.findIndex(c => typeof c === 'string' && c.includes('모델'));
+        const qIdx = row.findIndex(c => typeof c === 'string' && (c.includes('창고') || c.includes('수량')));
+        
+        if (cIdx !== -1 && mIdx !== -1 && qIdx !== -1) {
+          carrierIdx = cIdx; modelIdx = mIdx; qtyIdx = qIdx;
+          break;
         }
-
-      } catch (err) {
-        console.error(err);
-        alert("파일 처리에 실패했습니다. 엑셀 파일 형식을 확인해주세요.");
       }
-      e.target.value = null; // 인풋 초기화
+
+      // 헤더를 못 찾았을 경우 강제로 0, 1, 2번째 칸 지정
+      if (carrierIdx === -1) { carrierIdx = 0; modelIdx = 1; qtyIdx = 2; }
+
+      rows.forEach((row, index) => {
+        if (index === 0 && row.includes('통신사')) return; // 헤더 건너뛰기
+
+        let carrier = String(row[carrierIdx] || '').trim().toUpperCase();
+        let model = String(row[modelIdx] || '').trim().toUpperCase();
+        let qty = String(row[qtyIdx] || '').trim();
+
+        if (!carrier || !model) return;
+
+        // 통신사 이름 정규화
+        if (carrier === 'SKT') carrier = 'SK';
+        if (carrier === 'LGU+' || carrier === 'LG') carrier = 'U+';
+
+        // 매칭되는 단말기가 있다면 수량 업데이트
+        if (updatedInventory[carrier]) {
+          const internalKey = copyTextToKeyMap[model];
+          if (internalKey) {
+            updatedInventory[carrier][internalKey] = qty;
+            updateCount++;
+          }
+        }
+      });
+
+      if (updateCount > 0) {
+        setInventory(updatedInventory); // 로컬 화면 즉시 업데이트
+        
+        // 서버(Worker)에도 즉시 저장
+        fetch(`${workerUrl}/save-inventory`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(updatedInventory)
+        }).catch(err => console.error("서버 저장 실패:", err));
+
+        alert(`✅ ${updateCount}건의 재고가 성공적으로 반영되었습니다.`);
+      } else {
+        alert('엑셀에서 일치하는 단말기/통신사 데이터를 찾을 수 없습니다. (모델명이 정확한지 확인해주세요)');
+      }
     };
+
+    // 💡 파일 확장자에 따라 다르게 읽도록 분기 처리 (CSV, TXT, 가짜 엑셀 완벽 호환)
+    if (fileName.endsWith('.xlsx') || fileName.endsWith('.xls')) {
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        try {
+          const data = new Uint8Array(event.target.result);
+          // window.XLSX 대신 기존에 호환성이 검증된 XLSX 전역 객체 사용
+          const workbook = XLSX.read(data, { type: 'array' });
+          const worksheet = workbook.Sheets[workbook.SheetNames[0]];
+          const rows = XLSX.utils.sheet_to_json(worksheet, { header: 1, raw: false });
+          processInventoryData(rows);
+        } catch (err) {
+          console.error(err);
+          alert("엑셀 파일(.xlsx, .xls) 처리에 실패했습니다. 파일이 손상되었거나 암호가 걸려있을 수 있습니다.");
+        }
+      };
+      reader.readAsArrayBuffer(file);
+    } else {
+      // CSV나 TXT 파일일 경우 (한글 깨짐 방지를 위해 euc-kr 인코딩 처리)
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        try {
+          const text = event.target.result;
+          const delimiter = text.includes('\t') ? '\t' : ','; // 콤마 또는 탭으로 데이터 분리
+          const rows = text.split(/\r?\n/).map(row => row.split(delimiter).map(cell => cell.trim().replace(/"/g, '')));
+          processInventoryData(rows);
+        } catch (err) {
+          console.error(err);
+          alert("텍스트/CSV 파일 처리에 실패했습니다.");
+        }
+      };
+      reader.readAsText(file, 'euc-kr');
+    }
+    
+    e.target.value = null; // 똑같은 파일을 다시 올릴 수 있게 인풋 초기화
+  };
+
     
     reader.readAsArrayBuffer(file);
   };
