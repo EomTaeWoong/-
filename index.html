@@ -43,6 +43,20 @@
     .hide-scroll-bar::-webkit-scrollbar { height: 6px; }
     .hide-scroll-bar::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 3px; }
     .hide-scroll-bar::-webkit-scrollbar-track { background: transparent; }
+	    /* 👇 다크모드 전용 글로벌 스타일 (여기부터) 👇 */
+    body.dark-mode { background-color: #0f172a !important; color: #f8fafc !important; }
+    body.dark-mode .bg-white { background-color: #1e293b !important; border-color: #334155 !important; }
+    body.dark-mode .bg-gray-50 { background-color: #0f172a !important; }
+    body.dark-mode .bg-gray-100 { background-color: #334155 !important; color: #f8fafc !important; }
+    body.dark-mode .text-gray-900, body.dark-mode .text-gray-800 { color: #f8fafc !important; }
+    body.dark-mode .text-gray-700 { color: #e2e8f0 !important; }
+    body.dark-mode .text-gray-600, body.dark-mode .text-gray-500 { color: #94a3b8 !important; }
+    body.dark-mode .border-gray-100, body.dark-mode .border-gray-200, body.dark-mode .border-gray-300 { border-color: #334155 !important; }
+    body.dark-mode input, body.dark-mode select { background-color: #0f172a !important; color: #f8fafc !important; border-color: #334155 !important; }
+    body.dark-mode .bg-slate-50, body.dark-mode .bg-slate-100 { background-color: #1e293b !important; }
+    body.dark-mode .bg-blue-50\/50 { background-color: rgba(30, 64, 175, 0.2) !important; border: 1px solid rgba(59, 130, 246, 0.3) !important; }
+    /* 👆 다크모드 전용 글로벌 스타일 (여기까지) 👆 */
+
   </style>
 </head>
 <body class="bg-slate-50">
@@ -2060,6 +2074,20 @@ const initialInventory = useMemo(() => {
     </div>
   );
 }function App() {
+  // 👇 라이트/다크모드 상태 관리 로직 (여기부터) 👇
+  const [isDarkMode, setIsDarkMode] = useState(() => localStorage.getItem('theme') === 'dark');
+
+  useEffect(() => {
+    if (isDarkMode) {
+      document.body.classList.add('dark-mode');
+      localStorage.setItem('theme', 'dark');
+    } else {
+      document.body.classList.remove('dark-mode');
+      localStorage.setItem('theme', 'light');
+    }
+  }, [isDarkMode]);
+  // 👆 라이트/다크모드 상태 관리 로직 (여기까지) 👆
+
 
 const handleFileUpload = (e) => {
     const file = e.target.files[0];
@@ -2580,6 +2608,15 @@ const plans = useMemo(() => operator === 'SK' ? PLAN_LIST_SK : (operator === 'KT
       {showDraggablePopup && <DraggablePopup onClose={() => setShowDraggablePopup(false)} />}
 
       <input type="file" accept=".csv, .txt, .crdownload, .xls, .xlsx" ref={fileInputRef} onChange={handleFileUpload} style={{ display: 'none' }} />
+	        {/* 👇 화면 우측 하단 다크모드 토글 버튼 👇 */}
+      <button
+        onClick={() => setIsDarkMode(!isDarkMode)}
+        className="fixed bottom-6 right-6 z-[9999] bg-gray-800 text-white p-3 rounded-full shadow-[0_10px_25px_rgba(0,0,0,0.3)] hover:scale-110 transition-transform flex items-center justify-center w-14 h-14 text-2xl border-2 border-gray-700"
+        title="라이트/다크 모드 전환"
+      >
+        {isDarkMode ? '☀️' : '🌙'}
+      </button>
+
     </div>
   );
 }
