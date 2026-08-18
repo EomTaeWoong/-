@@ -43,7 +43,7 @@
     .hide-scroll-bar::-webkit-scrollbar { height: 6px; }
     .hide-scroll-bar::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 3px; }
     .hide-scroll-bar::-webkit-scrollbar-track { background: transparent; }
-	    /* 👇 다크모드 전용 글로벌 스타일 (여기부터) 👇 */
+	        /* 👇 다크모드 전용 글로벌 스타일 (여기부터) 👇 */
     body.dark-mode { background-color: #0f172a !important; color: #f8fafc !important; }
     body.dark-mode .bg-white { background-color: #1e293b !important; border-color: #334155 !important; }
     body.dark-mode .bg-gray-50 { background-color: #0f172a !important; }
@@ -54,8 +54,32 @@
     body.dark-mode .border-gray-100, body.dark-mode .border-gray-200, body.dark-mode .border-gray-300 { border-color: #334155 !important; }
     body.dark-mode input, body.dark-mode select { background-color: #0f172a !important; color: #f8fafc !important; border-color: #334155 !important; }
     body.dark-mode .bg-slate-50, body.dark-mode .bg-slate-100 { background-color: #1e293b !important; }
-    body.dark-mode .bg-blue-50\/50 { background-color: rgba(30, 64, 175, 0.2) !important; border: 1px solid rgba(59, 130, 246, 0.3) !important; }
+    body.dark-mode .bg-blue-50\/50 { background-color: rgba(30, 64, 175, 0.15) !important; border-color: rgba(59, 130, 246, 0.3) !important; }
+
+    /* 💡 추가된 부분: 파란색, 빨간색 등 원색 글씨를 다크모드용 '파스텔/형광톤'으로 밝게 보정 */
+    body.dark-mode .text-blue-800, body.dark-mode .text-blue-700, body.dark-mode .text-blue-600 { color: #60a5fa !important; }
+    body.dark-mode .text-red-600, body.dark-mode .text-red-500 { color: #f87171 !important; }
+    body.dark-mode .text-pink-600, body.dark-mode .text-pink-500 { color: #f472b6 !important; }
+    body.dark-mode .text-emerald-600, body.dark-mode .text-emerald-500 { color: #34d399 !important; }
+    body.dark-mode .text-purple-700, body.dark-mode .text-purple-600 { color: #c084fc !important; }
+    body.dark-mode .text-indigo-600 { color: #818cf8 !important; }
+    body.dark-mode .text-teal-600 { color: #2dd4bf !important; }
+    body.dark-mode .text-amber-700, body.dark-mode .text-amber-600 { color: #fbbf24 !important; }
+
+    /* 💡 추가된 부분: 상단 버튼과 뱃지 등의 은은한 파스텔 배경들도 다크모드에 맞춰 어둡게 톤다운 */
+    body.dark-mode .bg-red-50 { background-color: rgba(239, 68, 68, 0.15) !important; }
+    body.dark-mode .bg-blue-50 { background-color: rgba(59, 130, 246, 0.15) !important; }
+    body.dark-mode .bg-emerald-50 { background-color: rgba(16, 185, 129, 0.15) !important; }
+    body.dark-mode .bg-indigo-50 { background-color: rgba(99, 102, 241, 0.15) !important; }
+    body.dark-mode .bg-teal-50 { background-color: rgba(20, 184, 166, 0.15) !important; }
+    body.dark-mode .bg-pink-50 { background-color: rgba(236, 72, 153, 0.15) !important; }
+    body.dark-mode .bg-amber-100, body.dark-mode .bg-amber-50 { background-color: rgba(245, 158, 11, 0.15) !important; }
+    
+    /* 유리한 조건 강조(초록색 링) 보정 */
+    body.dark-mode .bg-green-50 { background-color: rgba(16, 185, 129, 0.1) !important; }
+    body.dark-mode .ring-green-500 { --tw-ring-color: #34d399 !important; }
     /* 👆 다크모드 전용 글로벌 스타일 (여기까지) 👆 */
+
 
   </style>
 </head>
