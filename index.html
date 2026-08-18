@@ -1979,6 +1979,108 @@ const initialInventory = useMemo(() => {
   };
   const handleMouseUp = () => setIsDragging(false);
 
+    // 👇 [재고 엑셀 자동 반영 기능] 1. 모델명(copyText) -> 고유 키 변환용 맵 생성
+  const copyTextToKeyMap = useMemo(() => {
+    const map = {};
+    Object.entries(DEVICE_COLORS_MAP).forEach(([device, colors]) => {
+      if (device.includes('(사전예약)')) return;
+      colors.forEach(colorObj => {
+        map[colorObj.copyText.toUpperCase()] = `${device}_${colorObj.name}`;
+      });
+    });
+    return map;
+  }, []);
+
+  const inventoryUploadRef = useRef(null);
+
+  // 👇 [재고 엑셀 자동 반영 기능] 2. 엑셀 파일을 읽고 서버와 화면에 적용하는 로직
+  const handleInventoryUpload = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      try {
+        const data = new Uint8Array(event.target.result);
+        const workbook = window.XLSX.read(data, { type: 'array' });
+        const worksheet = workbook.Sheets[workbook.SheetNames[0]];
+        const rows = window.XLSX.utils.sheet_to_json(worksheet, { header: 1 });
+
+        // 기존 재고 상태 복사
+        let updatedInventory = {
+          SK: { ...inventory.SK },
+          KT: { ...inventory.KT },
+          'U+': { ...inventory['U+'] }
+        };
+
+        let updateCount = 0;
+        let carrierIdx = -1, modelIdx = -1, qtyIdx = -1;
+
+        // 상위 5줄 안에서 헤더(통신사, 모델, 창고수량) 위치 자동 찾기
+        for (let i = 0; i < Math.min(rows.length, 5); i++) {
+          const row = rows[i] || [];
+          const cIdx = row.findIndex(c => typeof c === 'string' && c.includes('통신사'));
+          const mIdx = row.findIndex(c => typeof c === 'string' && c.includes('모델'));
+          const qIdx = row.findIndex(c => typeof c === 'string' && (c.includes('창고') || c.includes('수량')));
+          
+          if (cIdx !== -1 && mIdx !== -1 && qIdx !== -1) {
+            carrierIdx = cIdx; modelIdx = mIdx; qtyIdx = qIdx;
+            break;
+          }
+        }
+
+        // 헤더를 못 찾았을 경우 사진 양식대로 0, 1, 2열이라고 강제 지정
+        if (carrierIdx === -1) { carrierIdx = 0; modelIdx = 1; qtyIdx = 2; }
+
+        rows.forEach((row, index) => {
+          if (index === 0 && row.includes('통신사')) return; // 헤더 행 건너뛰기
+
+          let carrier = String(row[carrierIdx] || '').trim().toUpperCase();
+          let model = String(row[modelIdx] || '').trim().toUpperCase();
+          let qty = String(row[qtyIdx] || '').trim();
+
+          if (!carrier || !model) return;
+
+          // 통신사 이름 정규화 (SKT -> SK, LGU+ -> U+)
+          if (carrier === 'SKT') carrier = 'SK';
+          if (carrier === 'LGU+' || carrier === 'LG') carrier = 'U+';
+
+          // 해당하는 데이터가 있으면 상태 업데이트
+          if (updatedInventory[carrier]) {
+            const internalKey = copyTextToKeyMap[model];
+            if (internalKey) {
+              updatedInventory[carrier][internalKey] = qty;
+              updateCount++;
+            }
+          }
+        });
+
+        if (updateCount > 0) {
+          setInventory(updatedInventory); // 로컬 화면 즉시 업데이트
+          
+          // 서버(Worker)에도 즉시 저장
+          fetch(`${workerUrl}/save-inventory`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(updatedInventory)
+          }).catch(err => console.error("서버 저장 실패:", err));
+
+          alert(`✅ ${updateCount}건의 재고가 성공적으로 반영되었습니다.`);
+        } else {
+          alert('엑셀에서 일치하는 단말기/통신사 데이터를 찾을 수 없습니다.');
+        }
+
+      } catch (err) {
+        console.error(err);
+        alert("파일 처리에 실패했습니다. 엑셀 파일 형식을 확인해주세요.");
+      }
+      e.target.value = null; // 인풋 초기화
+    };
+    
+    reader.readAsArrayBuffer(file);
+  };
+
+	
   React.useEffect(() => {
     if (isDragging) {
       window.addEventListener('mousemove', handleMouseMove);
@@ -1998,15 +2100,28 @@ const initialInventory = useMemo(() => {
       style={{ left: position.x, top: position.y, position: 'fixed', zIndex: 9999 }}
       className="bg-white rounded-lg shadow-2xl border-2 border-gray-400 w-[550px] max-h-[85vh] flex flex-col overflow-hidden"
     >
-      <div
+            <div
         onMouseDown={handleMouseDown}
         className="bg-amber-500 px-4 py-2 cursor-move flex justify-between items-center shrink-0"
       >
         <span className="font-bold text-white text-[15px]">
           📦 실시간 재고 현황 {loading && "🔄 로딩중..."}
         </span>
-        <button onClick={onClose} className="text-white hover:text-amber-200 font-bold text-2xl leading-none">&times;</button>
+        
+        {/* 👇 엑셀 업로드 UI 추가 부분 👇 */}
+        <div className="flex items-center gap-2" onMouseDown={(e) => e.stopPropagation()}>
+          <input type="file" accept=".xlsx, .xls, .csv, .txt" ref={inventoryUploadRef} onChange={handleInventoryUpload} className="hidden" />
+          <button 
+            onClick={() => inventoryUploadRef.current.click()} 
+            className="bg-white/20 hover:bg-white/30 text-white px-2 py-1 rounded text-xs font-bold transition-colors shadow-sm"
+          >
+            엑셀 업로드
+          </button>
+          <button onClick={onClose} className="text-white hover:text-amber-200 font-bold text-2xl leading-none ml-2">&times;</button>
+        </div>
+        {/* 👆 엑셀 업로드 UI 추가 부분 끝 👆 */}
       </div>
+
 
       {/* 탭 버튼 영역 */}
       <div className="flex border-b border-gray-300 bg-gray-100 shrink-0">
