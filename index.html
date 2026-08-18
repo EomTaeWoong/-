@@ -1933,7 +1933,6 @@ function DraggablePopup({ onClose }) {
       const currentReq = parseInt(prev[activeTab]?.[`${deviceKey}_req`] || '0', 10);
 
       let newReq = currentReq + delta;
-      if (newReq < 0) newReq = 0; 
 
       if (newReq > currentStock) {
         setTimeout(() => alert('잔여 재고가 없습니다.'), 10);
@@ -2269,16 +2268,18 @@ function DraggablePopup({ onClose }) {
                             </button>
                             
                             <button 
-                              onClick={() => handleConfirmRequest(key)}
-                              disabled={currentReq === 0}
-                              className={`ml-1 px-2 py-1 text-[12px] font-bold rounded shadow-sm transition-all whitespace-nowrap ${
-                                currentReq > 0 
-                                  ? 'bg-red-500 text-white hover:bg-red-600 active:scale-95 cursor-pointer' 
-                                  : 'bg-gray-200 text-gray-400 cursor-not-allowed'
-                              }`}
-                            >
-                              확정
-                            </button>
+  onClick={() => handleConfirmRequest(key)}
+  disabled={currentReq === 0}
+  className={`ml-1 px-2 py-1 text-[12px] font-bold rounded shadow-sm transition-all whitespace-nowrap ${
+    currentReq > 0 
+      ? 'bg-red-500 text-white hover:bg-red-600 active:scale-95 cursor-pointer' // 양수면 빨간 확정버튼
+      : currentReq < 0 
+      ? 'bg-blue-500 text-white hover:bg-blue-600 active:scale-95 cursor-pointer' // 음수면 파란 복구버튼
+      : 'bg-gray-200 text-gray-400 cursor-not-allowed' // 0이면 회색 비활성화
+  }`}
+>
+  {currentReq < 0 ? '복구' : '확정'}
+</button>
                           </div>
                         </td>
                       </tr>
