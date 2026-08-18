@@ -1845,16 +1845,12 @@ function DraggablePopup({ onClose }) {
     'U+': '3333'
   };
 
-  // 초기엔 아무 탭도 열려있지 않음 (null)
   const [activeTab, setActiveTab] = useState(null);
-  // 각 탭의 잠금 해제 상태 기록
   const [unlockedTabs, setUnlockedTabs] = useState({ SK: false, KT: false, 'U+': false });
   const [loading, setLoading] = useState(true);
 
-  // Cloudflare Worker URL
   const workerUrl = 'https://shiny-surf-3362.xodnd9733.workers.dev';
 
-  // 초기 재고 구조
   const initialInventory = useMemo(() => {
     const init = { SK: {}, KT: {}, 'U+': {} };
     Object.keys(DEVICE_COLORS_MAP)
@@ -1872,11 +1868,9 @@ function DraggablePopup({ onClose }) {
 
   const [inventory, setInventory] = useState(initialInventory);
 
-  // 💡 입력 씹힘 방지용 방어막 변수
   const isEditingRef = useRef(false);
   const lastSaveTimeRef = useRef(0);
 
-  // 서버에서 최신 재고 불러오기 (백그라운드에서 진행)
   React.useEffect(() => {
     const fetchLatestInventory = () => {
       fetch(`${workerUrl}/get-inventory`)
@@ -1918,7 +1912,6 @@ function DraggablePopup({ onClose }) {
     return () => clearInterval(intervalId);
   }, [initialInventory]);
 
-  // 실시간 수정 및 서버에 저장
   const handleStockChange = (deviceKey, value) => {
     lastSaveTimeRef.current = Date.now();
     const newInventory = {
@@ -1937,7 +1930,6 @@ function DraggablePopup({ onClose }) {
     }).catch(err => console.error("서버 저장 실패:", err));
   };
 
-  // 💡 [탭 클릭 로직]
   const handleTabClick = (tab) => {
     if (unlockedTabs[tab]) {
       setActiveTab(tab);
@@ -1952,7 +1944,6 @@ function DraggablePopup({ onClose }) {
     }
   };
 
-  // --- 드래그 로직 ---
   const handleMouseDown = (e) => {
     setIsDragging(true);
     setDragOffset({ x: e.clientX - position.x, y: e.clientY - position.y });
@@ -1977,7 +1968,6 @@ function DraggablePopup({ onClose }) {
     };
   }, [isDragging, dragOffset]);
 
-  // 👇 [재고 엑셀 자동 반영 기능] 1. 모델명(copyText) -> 고유 키 변환용 맵 생성
   const copyTextToKeyMap = useMemo(() => {
     const map = {};
     Object.entries(DEVICE_COLORS_MAP).forEach(([device, colors]) => {
@@ -1991,14 +1981,13 @@ function DraggablePopup({ onClose }) {
 
   const inventoryUploadRef = useRef(null);
 
-  // 👇 [재고 엑셀 자동 반영 기능] 2. 엑셀/CSV 파일을 읽고 서버와 화면에 적용하는 로직 (에러 완벽대응 버전)
+  // 👇 [완벽 호환 파일 업로드 로직] 👇
   const handleInventoryUpload = (e) => {
     const file = e.target.files[0];
     if (!file) return;
 
     const fileName = file.name.toLowerCase();
 
-    // 데이터를 분석해서 화면에 뿌려주는 공통 함수
     const processInventoryData = (rows) => {
       let updatedInventory = {
         SK: { ...inventory.SK },
@@ -2009,7 +1998,6 @@ function DraggablePopup({ onClose }) {
       let updateCount = 0;
       let carrierIdx = -1, modelIdx = -1, qtyIdx = -1;
 
-      // 상위 5줄 안에서 헤더(통신사, 모델, 창고수량) 위치 자동 찾기
       for (let i = 0; i < Math.min(rows.length, 5); i++) {
         const row = rows[i] || [];
         const cIdx = row.findIndex(c => typeof c === 'string' && c.includes('통신사'));
@@ -2022,11 +2010,10 @@ function DraggablePopup({ onClose }) {
         }
       }
 
-      // 헤더를 못 찾았을 경우 강제로 0, 1, 2번째 칸 지정
       if (carrierIdx === -1) { carrierIdx = 0; modelIdx = 1; qtyIdx = 2; }
 
       rows.forEach((row, index) => {
-        if (index === 0 && row.includes('통신사')) return; // 헤더 건너뛰기
+        if (index === 0 && row.includes('통신사')) return;
 
         let carrier = String(row[carrierIdx] || '').trim().toUpperCase();
         let model = String(row[modelIdx] || '').trim().toUpperCase();
@@ -2034,11 +2021,9 @@ function DraggablePopup({ onClose }) {
 
         if (!carrier || !model) return;
 
-        // 통신사 이름 정규화
         if (carrier === 'SKT') carrier = 'SK';
         if (carrier === 'LGU+' || carrier === 'LG') carrier = 'U+';
 
-        // 매칭되는 단말기가 있다면 수량 업데이트
         if (updatedInventory[carrier]) {
           const internalKey = copyTextToKeyMap[model];
           if (internalKey) {
@@ -2049,9 +2034,8 @@ function DraggablePopup({ onClose }) {
       });
 
       if (updateCount > 0) {
-        setInventory(updatedInventory); // 로컬 화면 즉시 업데이트
+        setInventory(updatedInventory);
         
-        // 서버(Worker)에도 즉시 저장
         fetch(`${workerUrl}/save-inventory`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -2064,41 +2048,63 @@ function DraggablePopup({ onClose }) {
       }
     };
 
-    // 💡 파일 확장자에 따라 다르게 읽도록 분기 처리 (CSV, TXT, 가짜 엑셀 완벽 호환)
+    const readAsTextFallback = (fileObj) => {
+      const textReader = new FileReader();
+      textReader.onload = (txtEvent) => {
+        try {
+          const text = txtEvent.target.result;
+          
+          if (text.includes('<table') || text.includes('<html')) {
+            const tempDiv = document.createElement('div');
+            tempDiv.innerHTML = text;
+            const table = tempDiv.querySelector('table');
+            const rows = [];
+            if (table) {
+              table.querySelectorAll('tr').forEach(tr => {
+                const row = [];
+                tr.querySelectorAll('th, td').forEach(td => row.push(td.innerText.trim()));
+                rows.push(row);
+              });
+              processInventoryData(rows);
+              return;
+            }
+          }
+
+          const delimiter = text.includes('\t') ? '\t' : ',';
+          const rows = text.split(/\r?\n/).map(row => row.split(delimiter).map(cell => cell.trim().replace(/"/g, '')));
+          processInventoryData(rows);
+
+        } catch (err) {
+          console.error(err);
+          alert("파일 처리에 실패했습니다. 형식을 다시 확인해주세요.");
+        }
+      };
+      textReader.readAsText(fileObj, 'euc-kr');
+    };
+
     if (fileName.endsWith('.xlsx') || fileName.endsWith('.xls')) {
       const reader = new FileReader();
       reader.onload = (event) => {
         try {
           const data = new Uint8Array(event.target.result);
-          // window.XLSX 대신 기존에 호환성이 검증된 XLSX 전역 객체 사용
           const workbook = XLSX.read(data, { type: 'array' });
           const worksheet = workbook.Sheets[workbook.SheetNames[0]];
           const rows = XLSX.utils.sheet_to_json(worksheet, { header: 1, raw: false });
+          
+          if (!rows || rows.length === 0) throw new Error("Empty Excel");
+          
           processInventoryData(rows);
         } catch (err) {
-          console.error(err);
-          alert("엑셀 파일(.xlsx, .xls) 처리에 실패했습니다. 파일이 손상되었거나 암호가 걸려있을 수 있습니다.");
+          console.warn("표준 엑셀 파싱 실패, 텍스트 파싱으로 전환합니다.", err);
+          readAsTextFallback(file);
         }
       };
       reader.readAsArrayBuffer(file);
     } else {
-      // CSV나 TXT 파일일 경우 (한글 깨짐 방지를 위해 euc-kr 인코딩 처리)
-      const reader = new FileReader();
-      reader.onload = (event) => {
-        try {
-          const text = event.target.result;
-          const delimiter = text.includes('\t') ? '\t' : ','; // 콤마 또는 탭으로 데이터 분리
-          const rows = text.split(/\r?\n/).map(row => row.split(delimiter).map(cell => cell.trim().replace(/"/g, '')));
-          processInventoryData(rows);
-        } catch (err) {
-          console.error(err);
-          alert("텍스트/CSV 파일 처리에 실패했습니다.");
-        }
-      };
-      reader.readAsText(file, 'euc-kr');
+      readAsTextFallback(file);
     }
     
-    e.target.value = null; // 똑같은 파일을 다시 올릴 수 있게 인풋 초기화
+    e.target.value = null;
   };
 
   return (
@@ -2114,7 +2120,6 @@ function DraggablePopup({ onClose }) {
           📦 실시간 재고 현황 {loading && "🔄 로딩중..."}
         </span>
         
-        {/* 👇 엑셀 업로드 UI 추가 부분 👇 */}
         <div className="flex items-center gap-2" onMouseDown={(e) => e.stopPropagation()}>
           <input type="file" accept=".xlsx, .xls, .csv, .txt" ref={inventoryUploadRef} onChange={handleInventoryUpload} className="hidden" />
           <button 
@@ -2125,10 +2130,8 @@ function DraggablePopup({ onClose }) {
           </button>
           <button onClick={onClose} className="text-white hover:text-amber-200 font-bold text-2xl leading-none ml-2">&times;</button>
         </div>
-        {/* 👆 엑셀 업로드 UI 추가 부분 끝 👆 */}
       </div>
 
-      {/* 탭 버튼 영역 */}
       <div className="flex border-b border-gray-300 bg-gray-100 shrink-0">
         {['SK', 'KT', 'U+'].map(tab => (
           <button
@@ -2145,7 +2148,6 @@ function DraggablePopup({ onClose }) {
         ))}
       </div>
 
-      {/* 내부 데이터 영역 */}
       <div className="overflow-y-auto flex-1 custom-scrollbar bg-white relative">
         {activeTab ? (
           <table className="w-full text-[14px] text-left border-collapse">
@@ -2163,8 +2165,6 @@ function DraggablePopup({ onClose }) {
                 .map(([device, colors]) => {
                   return colors.map((colorObj, idx) => {
                     const key = `${device}_${colorObj.name}`;
-                    
-                    // 💡 현재 입력된 수량이 '0'인지 확인하는 변수
                     const isZero = inventory[activeTab]?.[key] === '0';
 
                     return (
@@ -2174,23 +2174,20 @@ function DraggablePopup({ onClose }) {
                             {device}
                           </td>
                         )}
-                        
-                        {/* 💡 수량이 '0'이면 색상 칸 배경이 연한 빨간색으로 변하고 빨간 글씨 + [품절] 표시 */}
                         <td className={`py-1 px-3 border-r border-gray-300 text-center whitespace-nowrap transition-colors ${
                           isZero ? 'bg-red-100 text-red-600 font-bold' : 'text-gray-600'
                         }`}>
                           {colorObj.name} {isZero && <span className="text-xs ml-1 font-extrabold text-red-500">[품절]</span>}
                         </td>
-
                         <td className="p-0 bg-white">
                           <input 
                             type="text" 
                             value={inventory[activeTab]?.[key] || ''}
                             onChange={(e) => handleStockChange(key, e.target.value)}
-                            onFocus={() => isEditingRef.current = true} // 💡 클릭해서 입력 시작할 때 덮어쓰기 잠금
+                            onFocus={() => isEditingRef.current = true}
                             onBlur={() => {
-                              isEditingRef.current = false; // 💡 입력 끝날 때 잠금 해제
-                              lastSaveTimeRef.current = Date.now(); // 해제 시점부터 3초간 다시 방어막 유지
+                              isEditingRef.current = false;
+                              lastSaveTimeRef.current = Date.now();
                             }}
                             onKeyDown={(e) => {
                               if (e.key === 'Enter') {
@@ -2209,7 +2206,6 @@ function DraggablePopup({ onClose }) {
             </tbody>          
           </table>
         ) : (
-          // 아무 탭도 열려있지 않을 때 (잠금화면)
           <div className="flex flex-col items-center justify-center h-full text-gray-400 py-20">
             <span className="text-5xl mb-4">🔒</span>
             <p className="font-bold text-lg">열람할 통신사 탭을 선택해 주세요.</p>
@@ -2218,6 +2214,7 @@ function DraggablePopup({ onClose }) {
       </div>
     </div>
   );
+}
 
              
 }function App() {
