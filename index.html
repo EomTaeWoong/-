@@ -1842,7 +1842,7 @@ function DraggablePopup({ onClose }) {
   const [isDragging, setIsDragging] = useState(false);
   const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
 
-  // 💡 [비밀번호 설정] 통신사별 비밀번호
+  // 💡 [비밀번호 설정]
   const TAB_PASSWORDS = {
     'SK': '1111',
     'KT': '2222',
@@ -1855,20 +1855,46 @@ function DraggablePopup({ onClose }) {
 
   const workerUrl = 'https://shiny-surf-3362.xodnd9733.workers.dev';
 
+  // 💡 모델명/색상 매핑 사전 및 초기 순서 배열 생성
+  const keyInfoMap = useMemo(() => {
+    const map = {};
+    Object.entries(DEVICE_COLORS_MAP).forEach(([device, colors]) => {
+      if (device.includes('(사전예약)')) return;
+      colors.forEach(colorObj => {
+        const key = `${device}_${colorObj.name}`;
+        map[key] = { device, color: colorObj.name };
+      });
+    });
+    return map;
+  }, []);
+
+  const initialOrder = useMemo(() => {
+    const order = { SK: [], KT: [], 'U+': [] };
+    Object.entries(DEVICE_COLORS_MAP).forEach(([device, colors]) => {
+      if (device.includes('(사전예약)')) return;
+      colors.forEach(colorObj => {
+        const key = `${device}_${colorObj.name}`;
+        order.SK.push(key);
+        order.KT.push(key);
+        order['U+'].push(key);
+      });
+    });
+    return order;
+  }, []);
+
+  // 💡 화면에 표시될 '순서'를 담는 상태 (업로드 시 원본 파일 순서로 덮어씌워짐)
+  const [displayOrder, setDisplayOrder] = useState(initialOrder);
+
   // 초기 재고 구조
   const initialInventory = useMemo(() => {
     const init = { SK: {}, KT: {}, 'U+': {} };
-    Object.keys(DEVICE_COLORS_MAP)
-      .filter(device => !device.includes('(사전예약)'))
-      .forEach(device => {
-      DEVICE_COLORS_MAP[device].forEach(colorObj => {
+    Object.entries(DEVICE_COLORS_MAP).forEach(([device, colors]) => {
+      if (device.includes('(사전예약)')) return;
+      colors.forEach(colorObj => {
         const key = `${device}_${colorObj.name}`;
-        init.SK[key] = '0'; 
-        init.SK[`${key}_req`] = '0'; 
-        init.KT[key] = '0';
-        init.KT[`${key}_req`] = '0';
-        init['U+'][key] = '0';
-        init['U+'][`${key}_req`] = '0';
+        init.SK[key] = '0'; init.SK[`${key}_req`] = '0'; 
+        init.KT[key] = '0'; init.KT[`${key}_req`] = '0';
+        init['U+'][key] = '0'; init['U+'][`${key}_req`] = '0';
       });
     });
     return init;
@@ -1877,22 +1903,20 @@ function DraggablePopup({ onClose }) {
   const [inventory, setInventory] = useState(initialInventory);
   const lastSaveTimeRef = useRef(0);
 
-  // 💡 실시간 재고 갱신 (저장/업로드 후 10초간은 로컬 화면 강제 보호)
+  // 실시간 재고 갱신
   React.useEffect(() => {
     const fetchLatestInventory = () => {
       fetch(`${workerUrl}/get-inventory`)
         .then(res => res.json())
         .then(data => {
           if (data && Object.keys(data).length > 0) {
-            if (Date.now() - lastSaveTimeRef.current < 10000) return; // 10초 덮어쓰기 방어막
+            if (Date.now() - lastSaveTimeRef.current < 10000) return;
 
             const cleanData = (tabData) => {
               if (!tabData) return {};
               const cleaned = {};
               Object.keys(tabData).forEach(key => {
-                if (!key.includes('(사전예약)')) {
-                  cleaned[key] = tabData[key];
-                }
+                if (!key.includes('(사전예약)')) cleaned[key] = tabData[key];
               });
               return cleaned;
             };
@@ -1926,13 +1950,12 @@ function DraggablePopup({ onClose }) {
     return () => clearInterval(intervalId);
   }, [initialInventory]);
 
-  // 👇 [-] [+] 버튼 클릭 시 (장바구니 담기 및 복구 수량 조절)
+  // [-] [+] 버튼 클릭 시
   const handleRequestChange = (deviceKey, delta) => {
     setInventory(prev => {
       const currentStock = parseInt(prev[activeTab]?.[deviceKey] || '0', 10);
       const currentReq = parseInt(prev[activeTab]?.[`${deviceKey}_req`] || '0', 10);
 
-      // 음수(복구)도 마음껏 될 수 있도록 막아두었던 제한을 해제했습니다.
       let newReq = currentReq + delta;
 
       if (newReq > currentStock) {
@@ -1950,15 +1973,13 @@ function DraggablePopup({ onClose }) {
     });
   };
 
-  // 👇 [확정 / 복구] 버튼 클릭 시 (실제 보유 수량 증감 및 서버 반영)
+  // [확정/복구] 버튼 클릭 시
   const handleConfirmRequest = (deviceKey) => {
     const currentStock = parseInt(inventory[activeTab]?.[deviceKey] || '0', 10);
     const currentReq = parseInt(inventory[activeTab]?.[`${deviceKey}_req`] || '0', 10);
 
-    // 🚨 수량이 0일 때만 멈추고, 음수(-1, -2)일 때는 통과하도록 수정했습니다.
     if (currentReq === 0) return; 
 
-    // 양수인지 음수인지에 따라 알림창 메시지가 똑똑하게 바뀝니다.
     const confirmMessage = currentReq > 0 
       ? `보유 수량에서 ${currentReq}개를 차감 확정하시겠습니까?`
       : `차감했던 ${Math.abs(currentReq)}개를 보유 수량으로 다시 복구하시겠습니까?`;
@@ -1966,7 +1987,6 @@ function DraggablePopup({ onClose }) {
     if (window.confirm(confirmMessage)) {
       lastSaveTimeRef.current = Date.now();
 
-      // 수학적으로 10 - (-2) = 12 가 되므로 복구가 완벽하게 처리됩니다.
       const newStock = currentStock - currentReq;
       const newInventory = {
         ...inventory,
@@ -2039,6 +2059,7 @@ function DraggablePopup({ onClose }) {
 
   const inventoryUploadRef = useRef(null);
 
+  // 👇 [기능 1] 메모장 업로드 시 "원본 순서 유지" 및 "미등록 단말기 처리" 완벽 반영
   const handleInventoryUpload = (e) => {
     const file = e.target.files[0];
     if (!file) return;
@@ -2052,6 +2073,7 @@ function DraggablePopup({ onClose }) {
         'U+': { ...inventory['U+'] }
       };
 
+      let newOrder = { SK: [], KT: [], 'U+': [] };
       let updateCount = 0;
       let carrierIdx = -1, modelIdx = -1, qtyIdx = -1;
 
@@ -2071,10 +2093,11 @@ function DraggablePopup({ onClose }) {
 
       rows.forEach((row) => {
         let rawCarrier = String(row[carrierIdx] || '').trim().toUpperCase().replace(/\s+/g, '');
-        let model = String(row[modelIdx] || '').trim().toUpperCase().replace(/\s+/g, '');
+        let rawModel = String(row[modelIdx] || '').trim(); 
+        let cleanModel = rawModel.toUpperCase().replace(/\s+/g, '');
         let qty = String(row[qtyIdx] || '').trim();
 
-        if (!rawCarrier || !model || rawCarrier.includes('통신사') || model.includes('모델')) return;
+        if (!rawCarrier || !rawModel || rawCarrier.includes('통신사') || rawModel.includes('모델')) return;
 
         let carrier = rawCarrier;
         if (carrier.includes('SK')) carrier = 'SK';
@@ -2082,25 +2105,38 @@ function DraggablePopup({ onClose }) {
         else if (carrier.includes('LG') || carrier.includes('U+') || carrier.includes('유플')) carrier = 'U+';
 
         if (updatedInventory[carrier]) {
-          const internalKey = copyTextToKeyMap[model];
-          if (internalKey) {
-            updatedInventory[carrier][internalKey] = qty;
-            updateCount++;
+          const internalKey = copyTextToKeyMap[cleanModel];
+          // 맵핑된 키가 없으면 원본 이름 그대로(UNMAPPED_ 접두사 추가) 사용
+          const finalKey = internalKey ? internalKey : `UNMAPPED_${rawModel}`;
+          
+          updatedInventory[carrier][finalKey] = qty;
+          updateCount++;
+
+          // 원본 파일에 등장한 순서대로 배열에 차곡차곡 담습니다.
+          if (!newOrder[carrier].includes(finalKey)) {
+            newOrder[carrier].push(finalKey);
           }
         }
       });
 
       if (updateCount > 0) {
+        // 기존 요청 수량 전체 리셋 & 원본 파일에 없는 기존 단말기 항목들은 파일 하단에 덧붙여 숨김 방지
         ['SK', 'KT', 'U+'].forEach(carrier => {
           Object.keys(updatedInventory[carrier]).forEach(key => {
             if (key.endsWith('_req')) {
               updatedInventory[carrier][key] = '0';
             }
           });
+          initialOrder[carrier].forEach(defaultKey => {
+            if (!newOrder[carrier].includes(defaultKey)) {
+              newOrder[carrier].push(defaultKey);
+            }
+          });
         });
 
         lastSaveTimeRef.current = Date.now();
         setInventory(updatedInventory);
+        setDisplayOrder(newOrder); // 💡 화면 및 엑셀 다운로드 순서를 "원본 순서"로 완전히 교체!
         
         fetch(`${workerUrl}/save-inventory`, {
           method: 'POST',
@@ -2108,9 +2144,9 @@ function DraggablePopup({ onClose }) {
           body: JSON.stringify(updatedInventory)
         }).catch(err => console.error("서버 저장 실패:", err));
 
-        alert(`✅ ${updateCount}건의 재고가 성공적으로 반영되었습니다.`);
+        alert(`✅ ${updateCount}건의 재고가 원본 순서대로 성공적으로 반영되었습니다.`);
       } else {
-        alert('엑셀에서 일치하는 단말기/통신사 데이터를 찾을 수 없습니다.\n통신사(SKT/KT/LGU+), 모델명(SM-...)을 확인해주세요.');
+        alert('파일에서 일치하는 단말기/통신사 데이터를 찾을 수 없습니다.');
       }
     };
 
@@ -2119,28 +2155,27 @@ function DraggablePopup({ onClose }) {
       textReader.onload = (txtEvent) => {
         try {
           const text = txtEvent.target.result;
+          let rows = [];
           if (text.includes('<table') || text.includes('<html')) {
             const tempDiv = document.createElement('div');
             tempDiv.innerHTML = text;
             const table = tempDiv.querySelector('table');
-            const rows = [];
             if (table) {
               table.querySelectorAll('tr').forEach(tr => {
                 const row = [];
                 tr.querySelectorAll('th, td').forEach(td => row.push(td.innerText.trim()));
                 rows.push(row);
               });
-              processInventoryData(rows);
-              return;
             }
           }
-
-          const delimiter = text.includes('\t') ? '\t' : ',';
-          const rows = text.split(/\r?\n/).map(row => row.split(delimiter).map(cell => cell.trim().replace(/"/g, '')));
+          if (rows.length === 0) {
+            const delimiter = text.includes('\t') ? '\t' : ',';
+            rows = text.split(/\r?\n/).map(row => row.split(delimiter).map(cell => cell.trim().replace(/"/g, '')));
+          }
           processInventoryData(rows);
         } catch (err) {
           console.error(err);
-          alert("파일 처리에 실패했습니다. 형식을 다시 확인해주세요.");
+          alert("파일 처리에 실패했습니다.");
         }
       };
       textReader.readAsText(fileObj, 'euc-kr');
@@ -2154,7 +2189,6 @@ function DraggablePopup({ onClose }) {
           const workbook = window.XLSX.read(data, { type: 'array' });
           const worksheet = workbook.Sheets[workbook.SheetNames[0]];
           const rows = window.XLSX.utils.sheet_to_json(worksheet, { header: 1, raw: false });
-          
           if (!rows || rows.length === 0) throw new Error("Empty Excel");
           processInventoryData(rows);
         } catch (err) {
@@ -2166,8 +2200,67 @@ function DraggablePopup({ onClose }) {
     } else {
       readAsTextFallback(file);
     }
-    
     e.target.value = null;
+  };
+
+  // 👇 [기능 2] 화면 순서(원본 순서) 그대로 통신사별 가로 병합 엑셀 다운로드 (0은 품절 표기)
+  const handleExportExcel = () => {
+    try {
+      const wsData = [
+        ['SK 단말기', '색상', '보유 수량', '', 'KT 단말기', '색상', '보유 수량', '', 'U+ 단말기', '색상', '보유 수량']
+      ];
+
+      const formatQty = (qty) => {
+        const num = parseInt(qty, 10);
+        return (isNaN(num) || num <= 0) ? '[품절]' : String(num);
+      };
+
+      // 세 통신사 중 가장 긴 배열의 길이 구하기
+      const maxLen = Math.max(displayOrder.SK.length, displayOrder.KT.length, displayOrder['U+'].length);
+
+      for (let i = 0; i < maxLen; i++) {
+        const row = [];
+        ['SK', 'KT', 'U+'].forEach(carrier => {
+          const key = displayOrder[carrier][i];
+          if (key) {
+            const info = keyInfoMap[key] || { device: key.replace('UNMAPPED_', ''), color: '' };
+            
+            // 바로 윗줄과 단말기 이름이 같으면 공백 처리 (병합된 것처럼 보이게)
+            let deviceLabel = info.device;
+            if (i > 0) {
+              const prevKey = displayOrder[carrier][i-1];
+              if (prevKey) {
+                const prevInfo = keyInfoMap[prevKey] || { device: prevKey.replace('UNMAPPED_', ''), color: '' };
+                if (prevInfo.device === info.device) deviceLabel = '';
+              }
+            }
+
+            const qty = formatQty(inventory[carrier][key]);
+            row.push(deviceLabel, info.color, qty);
+          } else {
+            // 해당 통신사는 더 이상 데이터가 없음
+            row.push('', '', '');
+          }
+          if (carrier !== 'U+') row.push(''); // 빈 기둥(여백) 추가
+        });
+        wsData.push(row);
+      }
+
+      const ws = window.XLSX.utils.aoa_to_sheet(wsData);
+      ws['!cols'] = [
+        { wch: 25 }, { wch: 15 }, { wch: 10 }, { wch: 2 }, // SK
+        { wch: 25 }, { wch: 15 }, { wch: 10 }, { wch: 2 }, // KT
+        { wch: 25 }, { wch: 15 }, { wch: 10 }              // U+
+      ];
+
+      const wb = window.XLSX.utils.book_new();
+      window.XLSX.utils.book_append_sheet(wb, ws, '가로_재고현황');
+      window.XLSX.writeFile(wb, '통신사별_재고현황표.xlsx');
+
+    } catch (err) {
+      console.error(err);
+      alert("엑셀 저장 중 오류가 발생했습니다.");
+    }
   };
 
   return (
@@ -2183,15 +2276,22 @@ function DraggablePopup({ onClose }) {
           📦 실시간 재고 현황 {loading && "🔄 로딩중..."}
         </span>
         
-        <div className="flex items-center gap-2" onMouseDown={(e) => e.stopPropagation()}>
-          <input type="file" accept=".xlsx, .xls, .csv, .txt" ref={inventoryUploadRef} onChange={handleInventoryUpload} className="hidden" />
+        <div className="flex items-center gap-1.5" onMouseDown={(e) => e.stopPropagation()}>
+          <input type="file" accept=".txt, .csv, .xlsx, .xls" ref={inventoryUploadRef} onChange={handleInventoryUpload} className="hidden" />
           <button 
             onClick={() => inventoryUploadRef.current.click()} 
-            className="bg-white/20 hover:bg-white/30 text-white px-2 py-1 rounded text-xs font-bold transition-colors shadow-sm"
+            className="bg-white/20 hover:bg-white/30 text-white px-2 py-1 rounded text-[13px] font-bold transition-colors shadow-sm"
           >
             재고 업로드
           </button>
-          <button onClick={onClose} className="text-white hover:text-amber-200 font-bold text-2xl leading-none ml-2">&times;</button>
+
+          <button 
+            onClick={handleExportExcel} 
+            className="bg-emerald-500 hover:bg-emerald-600 text-white px-2 py-1 rounded text-[13px] font-bold transition-colors shadow-sm"
+          >
+            엑셀로 저장
+          </button>
+          <button onClick={onClose} className="text-white hover:text-amber-200 font-bold text-2xl leading-none ml-1">&times;</button>
         </div>
       </div>
 
@@ -2224,72 +2324,75 @@ function DraggablePopup({ onClose }) {
             </thead>
 
             <tbody>
-              {Object.entries(DEVICE_COLORS_MAP)
-                .filter(([device]) => !device.includes('(사전예약)'))
-                .map(([device, colors]) => {
-                  return colors.map((colorObj, idx) => {
-                    const key = `${device}_${colorObj.name}`;
-                    
-                    const stockVal = inventory[activeTab]?.[key];
-                    const isZero = !stockVal || parseInt(stockVal, 10) <= 0;
-                    const currentReq = parseInt(inventory[activeTab]?.[`${key}_req`] || '0', 10);
+              {/* 💡 업로드된 원본 순서(또는 기본 순서)를 완벽하게 반영하여 렌더링 */}
+              {displayOrder[activeTab].map((key, idx) => {
+                const currentOrder = displayOrder[activeTab];
+                const info = keyInfoMap[key] || { device: key.replace('UNMAPPED_', ''), color: '' };
+                const stockVal = inventory[activeTab]?.[key];
+                const isZero = !stockVal || parseInt(stockVal, 10) <= 0;
+                const currentReq = parseInt(inventory[activeTab]?.[`${key}_req`] || '0', 10);
 
-                    return (
-                      <tr key={key} className={`transition-colors ${isZero ? 'bg-red-50/50' : 'hover:bg-amber-50'} ${idx === colors.length - 1 ? 'border-b-2 border-gray-400' : 'border-b border-gray-300'}`}>
-                        {idx === 0 && (
-                          <td rowSpan={colors.length} className="py-1 px-2 border-r border-gray-300 bg-gray-50 font-bold text-gray-800 align-middle">
-                            {device}
-                          </td>
-                        )}
-                        <td className={`py-1 px-2 border-r border-gray-300 text-center whitespace-nowrap transition-colors ${
-                          isZero ? 'bg-red-100 text-red-600 font-bold' : 'text-gray-600'
-                        }`}>
-                          {colorObj.name} {isZero && <span className="text-xs ml-0.5 font-extrabold text-red-500">[품절]</span>}
-                        </td>
+                // 병합 효과(rowSpan)를 주기 위한 그룹 확인
+                let isFirstOfGroup = false;
+                if (idx === 0) isFirstOfGroup = true;
+                else {
+                  const prevKey = currentOrder[idx - 1];
+                  const prevInfo = keyInfoMap[prevKey] || { device: prevKey.replace('UNMAPPED_', ''), color: '' };
+                  if (prevInfo.device !== info.device) isFirstOfGroup = true;
+                }
+
+                let rowSpan = 1;
+                if (isFirstOfGroup) {
+                  for (let i = idx + 1; i < currentOrder.length; i++) {
+                    const nextKey = currentOrder[i];
+                    const nextInfo = keyInfoMap[nextKey] || { device: nextKey.replace('UNMAPPED_', ''), color: '' };
+                    if (nextInfo.device === info.device) rowSpan++;
+                    else break;
+                  }
+                }
+
+                // 맵핑 안 된 항목과 기본 항목의 렌더링 스타일 살짝 구분
+                const isUnmapped = key.startsWith('UNMAPPED_');
+
+                return (
+                  <tr key={key} className={`transition-colors ${isZero ? 'bg-red-50/50' : 'hover:bg-amber-50'} border-b border-gray-300`}>
+                    {isFirstOfGroup && (
+                      <td rowSpan={rowSpan} className="py-1 px-2 border-r border-gray-300 bg-gray-50 font-bold text-gray-800 align-middle">
+                        {info.device}
+                      </td>
+                    )}
+                    <td className={`py-1 px-2 border-r border-gray-300 text-center whitespace-nowrap transition-colors ${isZero ? 'bg-red-100 text-red-600 font-bold' : 'text-gray-600'}`}>
+                      {info.color || (isZero ? '-' : '')} {isZero && <span className="text-xs ml-0.5 font-extrabold text-red-500">[품절]</span>}
+                    </td>
+                    
+                    <td className="py-1 px-2 border-r border-gray-300 bg-gray-50 text-center font-extrabold text-blue-700 align-middle">
+                      {stockVal || '0'}
+                    </td>
+                    
+                    <td className="p-1 bg-white text-center align-middle">
+                      <div className="flex items-center justify-center gap-1.5">
+                        <button onClick={() => handleRequestChange(key, -1)} className="w-6 h-6 flex items-center justify-center bg-slate-100 rounded hover:bg-slate-200 text-slate-700 font-black shadow-sm transition-all text-base leading-none active:scale-95">-</button>
+                        <span className="font-extrabold text-red-600 min-w-[16px] text-center text-[15px]">{currentReq}</span>
+                        <button onClick={() => handleRequestChange(key, 1)} className="w-6 h-6 flex items-center justify-center bg-slate-100 rounded hover:bg-slate-200 text-slate-700 font-black shadow-sm transition-all text-base leading-none active:scale-95">+</button>
                         
-                        {/* 🔒 보유 수량 칸 */}
-                        <td className="py-1 px-2 border-r border-gray-300 bg-gray-50 text-center font-extrabold text-blue-700 align-middle">
-                          {stockVal || '0'}
-                        </td>
-                        
-                        {/* 🚀 요청 수량 칸 (- 수량 + 및 확정 버튼) */}
-                        <td className="p-1 bg-white text-center align-middle">
-                          <div className="flex items-center justify-center gap-1.5">
-                            <button 
-                              onClick={() => handleRequestChange(key, -1)}
-                              className="w-6 h-6 flex items-center justify-center bg-slate-100 rounded hover:bg-slate-200 text-slate-700 font-black shadow-sm transition-all text-base leading-none active:scale-95"
-                            >
-                              -
-                            </button>
-                            <span className="font-extrabold text-red-600 min-w-[16px] text-center text-[15px]">
-                              {currentReq}
-                            </span>
-                            <button 
-                              onClick={() => handleRequestChange(key, 1)}
-                              className="w-6 h-6 flex items-center justify-center bg-slate-100 rounded hover:bg-slate-200 text-slate-700 font-black shadow-sm transition-all text-base leading-none active:scale-95"
-                            >
-                              +
-                            </button>
-                            
-                            <button 
-                              onClick={() => handleConfirmRequest(key)}
-                              disabled={currentReq === 0}
-                              className={`ml-1 px-2 py-1 text-[12px] font-bold rounded shadow-sm transition-all whitespace-nowrap ${
-                                currentReq > 0 
-                                  ? 'bg-red-500 text-white hover:bg-red-600 active:scale-95 cursor-pointer' 
-                                  : currentReq < 0 
-                                  ? 'bg-blue-500 text-white hover:bg-blue-600 active:scale-95 cursor-pointer' 
-                                  : 'bg-gray-200 text-gray-400 cursor-not-allowed'
-                              }`}
-                            >
-                              {currentReq < 0 ? '복구' : '확정'}
-                            </button>
-                          </div>
-                        </td>
-                      </tr>
-                    );
-                  });
-                })}
+                        <button 
+                          onClick={() => handleConfirmRequest(key)}
+                          disabled={currentReq === 0}
+                          className={`ml-1 px-2 py-1 text-[12px] font-bold rounded shadow-sm transition-all whitespace-nowrap ${
+                            currentReq > 0 
+                              ? 'bg-red-500 text-white hover:bg-red-600 active:scale-95 cursor-pointer' 
+                              : currentReq < 0 
+                              ? 'bg-blue-500 text-white hover:bg-blue-600 active:scale-95 cursor-pointer' 
+                              : 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                          }`}
+                        >
+                          {currentReq < 0 ? '복구' : '확정'}
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>          
           </table>
         ) : (
@@ -2302,8 +2405,6 @@ function DraggablePopup({ onClose }) {
     </div>
   );
 }
-// 여기까지가 DraggablePopup 끝입니다. 이 아래는 바로 function App() { 이 와야 합니다.
-
              
  function App() {
   // 👇 라이트/다크모드 상태 관리 로직 (여기부터) 👇
