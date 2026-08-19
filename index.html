@@ -2044,6 +2044,18 @@ function DraggablePopup({ onClose }) {
     };
   }, [isDragging, dragOffset]);
 
+  const copyTextToKeyMap = useMemo(() => {
+    const map = {};
+    Object.entries(DEVICE_COLORS_MAP).forEach(([device, colors]) => {
+      if (device.includes('(사전예약)')) return;
+      colors.forEach(colorObj => {
+        const cleanCode = colorObj.copyText.toUpperCase().replace(/\s+/g, '');
+        map[cleanCode] = `${device}_${colorObj.name}`;
+      });
+    });
+    return map;
+  }, []);
+
   const inventoryUploadRef = useRef(null);
 
   // [기능 1] 재고 업로드
@@ -2092,8 +2104,9 @@ function DraggablePopup({ onClose }) {
         else if (carrier.includes('LG') || carrier.includes('U+') || carrier.includes('유플')) carrier = 'U+';
 
         if (updatedInventory[carrier]) {
-          const internalKey = keyInfoMap[cleanModel] ? cleanModel : null;
-          const finalKey = internalKey ? copyTextToKeyMap[internalKey] : `UNMAPPED_${rawModel}`;
+          // 🚨 오타 수정 완료! 영어 모델명을 한글로 정확하게 매칭합니다.
+          const internalKey = copyTextToKeyMap[cleanModel];
+          const finalKey = internalKey ? internalKey : `UNMAPPED_${rawModel}`;
           
           updatedInventory[carrier][finalKey] = qty;
           updateCount++;
@@ -2187,7 +2200,7 @@ function DraggablePopup({ onClose }) {
     e.target.value = null;
   };
 
-// 👇 [기능 2] 화면 순서 그대로 엑셀 다운로드 (구버전 엑셀 2010 완벽 호환성 적용)
+  // 👇 [기능 2] 화면 순서 그대로 엑셀 다운로드 (오류 완벽 수정)
   const handleExportExcel = () => {
     try {
       const wsData = [
@@ -2201,6 +2214,7 @@ function DraggablePopup({ onClose }) {
 
       const maxLen = Math.max(displayOrder.SK.length, displayOrder.KT.length, displayOrder['U+'].length);
 
+      // 이미 displayOrder 배열 안에 맵핑 단말기와 미등록 단말기가 순서대로 다 들어있으므로 하나로 합칩니다.
       for (let i = 0; i < maxLen; i++) {
         const row = [];
         ['SK', 'KT', 'U+'].forEach(carrier => {
@@ -2212,40 +2226,10 @@ function DraggablePopup({ onClose }) {
           } else {
             row.push('', '', '');
           }
-          // 통신사 사이에 2칸 띄우기 (마지막 U+ 뒤에는 제외)
+          // 통신사 사이에 2칸 띄우기
           if (carrier !== 'U+') row.push('', ''); 
         });
         wsData.push(row);
-      }
-
-      // 미등록 단말기 추가
-      const allUnmappedKeys = new Set();
-      ['SK', 'KT', 'U+'].forEach(c => {
-        Object.keys(inventory[c] || {}).forEach(k => {
-          if (k.startsWith('UNMAPPED_') && !k.endsWith('_req')) {
-            allUnmappedKeys.add(k);
-          }
-        });
-      });
-
-      const unmappedArray = Array.from(allUnmappedKeys).sort();
-
-      if (unmappedArray.length > 0) {
-        wsData.push(['', '', '', '', '', '', '', '', '', '', '', '', '']); // 한 줄 띄우기
-        wsData.push(['--- 기타 미등록 단말기 ---', '', '', '', '', '--- 기타 미등록 단말기 ---', '', '', '', '', '--- 기타 미등록 단말기 ---', '', '']);
-        
-        unmappedArray.forEach(key => {
-          const rawModel = key.replace('UNMAPPED_', '');
-          const skQty = formatQty(inventory['SK']?.[key]);
-          const ktQty = formatQty(inventory['KT']?.[key]);
-          const uQty = formatQty(inventory['U+']?.[key]);
-
-          wsData.push([
-            rawModel, '', skQty, '', '',
-            rawModel, '', ktQty, '', '',
-            rawModel, '', uQty
-          ]);
-        });
       }
 
       const ws = window.XLSX.utils.aoa_to_sheet(wsData);
@@ -2256,13 +2240,13 @@ function DraggablePopup({ onClose }) {
         { colOffset: 10, name: 'U+' }
       ];
 
-      // 1. 단말기 이름 셀 병합 계산
+      // 단말기 이름 셀 병합 계산
       carriers.forEach(c => {
         let startRow = 1;
         while(startRow < wsData.length) {
           let devName = wsData[startRow][c.colOffset];
-          // 공백이거나 구분선이면 병합 건너뜀
-          if (!devName || devName.startsWith('---') || devName === '') {
+          // 공백이면 병합 건너뜀
+          if (!devName || devName === '') {
               startRow++;
               continue;
           }
@@ -2272,7 +2256,6 @@ function DraggablePopup({ onClose }) {
           }
           if (endRow > startRow) {
               merges.push({ s: { r: startRow, c: c.colOffset }, e: { r: endRow, c: c.colOffset } });
-              // 값 지우기 (병합 깔끔하게 적용되도록)
               for(let r = startRow + 1; r <= endRow; r++) {
                   wsData[r][c.colOffset] = ''; 
                   let cellRef = window.XLSX.utils.encode_cell({c: c.colOffset, r: r});
@@ -2283,17 +2266,9 @@ function DraggablePopup({ onClose }) {
         }
       });
 
-      // 2. 미등록 단말기 구분선 병합
-      for (let r = 0; r < wsData.length; r++) {
-        if (wsData[r][0] === '--- 기타 미등록 단말기 ---') {
-          merges.push({s: {r: r, c: 0}, e: {r: r, c: 2}});
-          merges.push({s: {r: r, c: 5}, e: {r: r, c: 7}});
-          merges.push({s: {r: r, c: 10}, e: {r: r, c: 12}});
-        }
-      }
       ws['!merges'] = merges;
 
-      // 3. 셀 서식(테두리, 색상, 정렬) 적용
+      // 셀 서식(테두리, 색상, 정렬) 적용
       const borderStyle = {
         top: { style: 'thin', color: { rgb: "000000" } },
         bottom: { style: 'thin', color: { rgb: "000000" } },
@@ -2302,35 +2277,32 @@ function DraggablePopup({ onClose }) {
       };
 
       for (let r = 0; r < wsData.length; r++) {
-        if (wsData[r].every(x => x === '')) continue; // 완전 빈 줄은 스킵
+        if (wsData[r].every(x => x === '')) continue; 
 
         carriers.forEach(c => {
-           let val = wsData[r][c.colOffset];
            let qtyVal = wsData[r][c.colOffset + 2];
            
            let isHeader = (r === 0);
-           let isDivider = (val === '--- 기타 미등록 단말기 ---');
            let hasData = (qtyVal !== '' && qtyVal !== undefined);
 
-           // 데이터가 없는 칸(통신사 리스트 길이가 달라서 남는 셀)은 테두리 안 그림
-           if (!isHeader && !isDivider && !hasData) return;
+           if (!isHeader && !hasData) return;
 
            let isOutOfStock = (qtyVal === '[품절]');
-           let bgColor = "FFFFFF"; // 기본 흰색
+           let bgColor = "FFFFFF"; 
            
-           if (isHeader || isDivider) bgColor = "F1F5F9"; // 헤더는 회색 배경
-           else if (isOutOfStock) bgColor = "FEE2E2"; // 품절은 연한 빨간색 배경
+           if (isHeader) bgColor = "F1F5F9"; 
+           else if (isOutOfStock) bgColor = "FEE2E2"; 
 
            for(let i=0; i<3; i++) {
                let curRef = window.XLSX.utils.encode_cell({c: c.colOffset + i, r: r});
-               if(!ws[curRef]) ws[curRef] = { t: 's', v: '' }; // 셀 강제 생성
+               if(!ws[curRef]) ws[curRef] = { t: 's', v: '' }; 
 
                ws[curRef].s = {
                    fill: { fgColor: { rgb: bgColor } },
                    border: borderStyle,
                    alignment: { horizontal: "center", vertical: "center" },
                    font: { 
-                     bold: isHeader || isDivider,
+                     bold: isHeader,
                      color: (isOutOfStock && i === 2) ? { rgb: "DC2626" } : { rgb: "000000" }
                    }
                };
@@ -2339,19 +2311,17 @@ function DraggablePopup({ onClose }) {
       }
 
       ws['!cols'] = [
-        { wch: 25 }, { wch: 15 }, { wch: 10 }, { wch: 2 }, { wch: 2 }, // SK (25칸/15칸/10칸 + 공백 2칸 + 공백 2칸)
-        { wch: 25 }, { wch: 15 }, { wch: 10 }, { wch: 2 }, { wch: 2 }, // KT
-        { wch: 25 }, { wch: 15 }, { wch: 10 }                          // U+
+        { wch: 25 }, { wch: 15 }, { wch: 10 }, { wch: 2 }, { wch: 2 }, 
+        { wch: 25 }, { wch: 15 }, { wch: 10 }, { wch: 2 }, { wch: 2 }, 
+        { wch: 25 }, { wch: 15 }, { wch: 10 }                          
       ];
 
       const wb = window.XLSX.utils.book_new();
       window.XLSX.utils.book_append_sheet(wb, ws, '가로_재고현황');
-      
-      // 💡 [핵심 변경 포인트] 엑셀 2010 등 구버전 호환성을 극대화하기 위한 안전장치 추가
       window.XLSX.writeFile(wb, '통신사별_재고현황표.xlsx', { 
         bookType: 'xlsx', 
-        bookSST: true,     // Shared String Table 사용: 구버전에서 긴 한글 문자열 깨짐 완벽 방지
-        compression: true  // 파일 압축 활성화: "파일 형식이 손상되었습니다" 경고창 방지
+        bookSST: true,     
+        compression: true  
       });
 
     } catch (err) {
@@ -2359,6 +2329,7 @@ function DraggablePopup({ onClose }) {
       alert("엑셀 저장 중 오류가 발생했습니다. 라이브러리가 올바르게 적용되었는지 확인해주세요.");
     }
   };
+
   return (
     <div
       style={{ left: position.x, top: position.y, position: 'fixed', zIndex: 9999 }}
