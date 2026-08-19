@@ -2187,7 +2187,7 @@ function DraggablePopup({ onClose }) {
     e.target.value = null;
   };
 
-  // 👇 [기능 2] 화면 순서 그대로 엑셀 다운로드 (병합, 테두리, 색상, 간격 완벽 적용)
+// 👇 [기능 2] 화면 순서 그대로 엑셀 다운로드 (구버전 엑셀 2010 완벽 호환성 적용)
   const handleExportExcel = () => {
     try {
       const wsData = [
@@ -2346,14 +2346,19 @@ function DraggablePopup({ onClose }) {
 
       const wb = window.XLSX.utils.book_new();
       window.XLSX.utils.book_append_sheet(wb, ws, '가로_재고현황');
-      window.XLSX.writeFile(wb, '통신사별_재고현황표.xlsx');
+      
+      // 💡 [핵심 변경 포인트] 엑셀 2010 등 구버전 호환성을 극대화하기 위한 안전장치 추가
+      window.XLSX.writeFile(wb, '통신사별_재고현황표.xlsx', { 
+        bookType: 'xlsx', 
+        bookSST: true,     // Shared String Table 사용: 구버전에서 긴 한글 문자열 깨짐 완벽 방지
+        compression: true  // 파일 압축 활성화: "파일 형식이 손상되었습니다" 경고창 방지
+      });
 
     } catch (err) {
       console.error(err);
       alert("엑셀 저장 중 오류가 발생했습니다. 라이브러리가 올바르게 적용되었는지 확인해주세요.");
     }
   };
-
   return (
     <div
       style={{ left: position.x, top: position.y, position: 'fixed', zIndex: 9999 }}
