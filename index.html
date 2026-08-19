@@ -1842,6 +1842,7 @@ function DraggablePopup({ onClose }) {
   const [isDragging, setIsDragging] = useState(false);
   const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
 
+  // 💡 [비밀번호 설정]
   const TAB_PASSWORDS = {
     'SK': '1111',
     'KT': '2222',
@@ -1854,14 +1855,14 @@ function DraggablePopup({ onClose }) {
 
   const workerUrl = 'https://shiny-surf-3362.xodnd9733.workers.dev';
 
-  // 💡 [개선] 맵핑 사전의 모델명 텍스트에서 특수문자를 완벽하게 제거하여 무적 상태로 만듭니다.
+  // 🚨 [핵심 수정 1] 단말기 이름을 예쁘게 쪼개주는 사전의 오타를 완벽히 수정했습니다!
   const keyInfoMap = useMemo(() => {
     const map = {};
     Object.entries(DEVICE_COLORS_MAP).forEach(([device, colors]) => {
       if (device.includes('(사전예약)')) return;
       colors.forEach(colorObj => {
-        const cleanCode = colorObj.copyText.toUpperCase().replace(/[^A-Z0-9-]/g, '');
-        map[cleanCode] = `${device}_${colorObj.name}`;
+        const key = `${device}_${colorObj.name}`;
+        map[key] = { device, color: colorObj.name };
       });
     });
     return map;
@@ -1893,6 +1894,8 @@ function DraggablePopup({ onClose }) {
     return order;
   }, []);
 
+  const [displayOrder, setDisplayOrder] = useState(initialOrder);
+
   const initialInventory = useMemo(() => {
     const init = { SK: {}, KT: {}, 'U+': {} };
     Object.entries(DEVICE_COLORS_MAP).forEach(([device, colors]) => {
@@ -1910,7 +1913,7 @@ function DraggablePopup({ onClose }) {
   const [inventory, setInventory] = useState(initialInventory);
   const lastSaveTimeRef = useRef(0);
 
-  // 💡 [개선] 서버에서 데이터를 받아올 때, 서버가 기억하고 있는 '업로드 순서'를 완벽히 유지합니다.
+  // 🚨 [핵심 수정 2] 서버 통신 시 화면에 출력될 "순서"도 과거 찌꺼기를 지우고 동기화합니다.
   React.useEffect(() => {
     const fetchLatestInventory = () => {
       fetch(`${workerUrl}/get-inventory`)
@@ -1919,20 +1922,27 @@ function DraggablePopup({ onClose }) {
           if (data && Object.keys(data).length > 0) {
             if (Date.now() - lastSaveTimeRef.current < 10000) return;
 
+            let serverOrder = { SK: [], KT: [], 'U+': [] };
+
             setInventory(prev => {
               const mergeCarrier = (carrier) => {
                 let merged = {};
-                // 1. 서버가 기억하는 파일 업로드 순서를 최우선으로 배치
                 if (data[carrier]) {
                   Object.keys(data[carrier]).forEach(k => {
-                    if (!k.includes('(사전예약)')) merged[k] = data[carrier][k];
+                    if (!k.includes('(사전예약)')) {
+                      merged[k] = data[carrier][k];
+                      if (!k.endsWith('_req')) serverOrder[carrier].push(k);
+                    }
                   });
                 }
-                // 2. 혹시 누락된 기본 단말기가 있다면 맨 밑에 추가
+                
                 initialOrder[carrier].forEach(k => {
-                  if (!(k in merged)) merged[k] = initialInventory[carrier][k];
+                  if (!(k in merged)) {
+                    merged[k] = initialInventory[carrier][k];
+                    serverOrder[carrier].push(k);
+                  }
                 });
-                // 3. 내 화면에 띄워둔 '요청 수량' 보호
+                
                 Object.keys(prev[carrier] || {}).forEach(k => {
                   if (k.endsWith('_req')) merged[k] = prev[carrier][k];
                 });
@@ -1941,6 +1951,8 @@ function DraggablePopup({ onClose }) {
 
               return { SK: mergeCarrier('SK'), KT: mergeCarrier('KT'), 'U+': mergeCarrier('U+') };
             });
+
+            setDisplayOrder(serverOrder);
           }
           setLoading(false);
         })
@@ -2017,7 +2029,7 @@ function DraggablePopup({ onClose }) {
 
   const inventoryUploadRef = useRef(null);
 
-  // 👇 [기능 1] 메모장 업로드 시 데이터 정렬 및 서버 영구 저장 로직
+  // [기능 1] 메모장 업로드 시 데이터 정렬 및 서버 영구 저장 로직
   const handleInventoryUpload = (e) => {
     const file = e.target.files[0];
     if (!file) return;
@@ -2041,7 +2053,8 @@ function DraggablePopup({ onClose }) {
       rows.forEach((row) => {
         let rawCarrier = String(row[carrierIdx] || '').trim().toUpperCase().replace(/\s+/g, '');
         let rawModel = String(row[modelIdx] || '').trim(); 
-        // 🚨 [핵심 수정] 텍스트의 숨은 엔터키, 보이지 않는 공백을 100% 분쇄하여 완벽하게 추출
+        
+        // 메모장의 보이지 않는 엔터키나 공백을 100% 파괴하여 무적 매칭 상태로 만듭니다.
         let cleanModel = rawModel.toUpperCase().replace(/[^A-Z0-9-]/g, '');
         let qty = String(row[qtyIdx] || '').trim();
 
@@ -2063,25 +2076,28 @@ function DraggablePopup({ onClose }) {
       if (updateCount > 0) {
         ['SK', 'KT', 'U+'].forEach(carrier => {
           let reorderedCarrier = {};
-          // 1. 메모장에 적힌 순서대로 객체를 새로 생성
+          
           newOrder[carrier].forEach(key => {
             reorderedCarrier[key] = updatedInventory[carrier][key];
             reorderedCarrier[`${key}_req`] = '0';
           });
-          // 2. 메모장에 없는 단말기는 뒤에 덧붙임
+          
           initialOrder[carrier].forEach(defaultKey => {
-            if (!(defaultKey in reorderedCarrier)) {
+            if (!newOrder[carrier].includes(defaultKey)) {
+              newOrder[carrier].push(defaultKey);
               reorderedCarrier[defaultKey] = updatedInventory[carrier][defaultKey] || '0';
               reorderedCarrier[`${defaultKey}_req`] = '0';
             }
           });
-          updatedInventory[carrier] = reorderedCarrier; // 순서가 고정된 새 객체로 덮어쓰기
+          
+          // 💡 [핵심 수정 3] 과거에 꼬였던 유령 단말기들은 새 리스트(reorderedCarrier)에 포함되지 않으므로 여기서 자동으로 싹 삭제(청소)됩니다!
+          updatedInventory[carrier] = reorderedCarrier; 
         });
 
         lastSaveTimeRef.current = Date.now();
         setInventory(updatedInventory);
+        setDisplayOrder(newOrder);
         
-        // 💡 이렇게 서버에 넘기면 서버 통신 후에도 순서가 풀리지 않고 완벽하게 유지됩니다!
         fetch(`${workerUrl}/save-inventory`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -2138,7 +2154,7 @@ function DraggablePopup({ onClose }) {
     e.target.value = null;
   };
 
-  // 👇 [기능 2] 화면 순서 그대로 엑셀 다운로드 
+  // 👇 [기능 2] 화면 순서 그대로 엑셀 다운로드 (중복 코드 완벽 삭제)
   const handleExportExcel = () => {
     try {
       const wsData = [['SK 단말기', '색상', '보유 수량', '', '', 'KT 단말기', '색상', '보유 수량', '', '', 'U+ 단말기', '색상', '보유 수량']];
@@ -2148,22 +2164,20 @@ function DraggablePopup({ onClose }) {
         return (isNaN(num) || num <= 0) ? '[품절]' : String(num);
       };
 
-      const currentKeysSK = Object.keys(inventory.SK).filter(k => !k.endsWith('_req'));
-      const currentKeysKT = Object.keys(inventory.KT).filter(k => !k.endsWith('_req'));
-      const currentKeysU = Object.keys(inventory['U+']).filter(k => !k.endsWith('_req'));
-      const maxLen = Math.max(currentKeysSK.length, currentKeysKT.length, currentKeysU.length);
+      const maxLen = Math.max(displayOrder.SK.length, displayOrder.KT.length, displayOrder['U+'].length);
 
       for (let i = 0; i < maxLen; i++) {
         const row = [];
-        const processColumn = (key, carrierInv) => {
+        ['SK', 'KT', 'U+'].forEach(carrier => {
+          const key = displayOrder[carrier][i];
           if (key) {
             const info = keyInfoMap[key] || { device: key.replace('UNMAPPED_', ''), color: '' };
-            row.push(info.device, info.color, formatQty(carrierInv[key]));
-          } else { row.push('', '', ''); }
-        };
-        processColumn(currentKeysSK[i], inventory.SK); row.push('', '');
-        processColumn(currentKeysKT[i], inventory.KT); row.push('', '');
-        processColumn(currentKeysU[i], inventory['U+']);
+            row.push(info.device, info.color, formatQty(inventory[carrier][key]));
+          } else { 
+            row.push('', '', ''); 
+          }
+          if (carrier !== 'U+') row.push('', ''); 
+        });
         wsData.push(row);
       }
 
@@ -2285,8 +2299,7 @@ function DraggablePopup({ onClose }) {
             </thead>
 
             <tbody>
-              {/* 💡 서버/화면에 저장된 "원본 순서" 그대로 무조건 렌더링 */}
-              {Object.keys(inventory[activeTab]).filter(k => !k.endsWith('_req')).map((key, idx, arr) => {
+              {displayOrder[activeTab].map((key, idx, arr) => {
                 const info = keyInfoMap[key] || { device: key.replace('UNMAPPED_', ''), color: '' };
                 const stockVal = inventory[activeTab]?.[key];
                 const isZero = !stockVal || parseInt(stockVal, 10) <= 0;
