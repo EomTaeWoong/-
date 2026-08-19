@@ -1842,7 +1842,6 @@ function DraggablePopup({ onClose }) {
   const [isDragging, setIsDragging] = useState(false);
   const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
 
-  // 💡 [비밀번호 설정]
   const TAB_PASSWORDS = {
     'SK': '1111',
     'KT': '2222',
@@ -1855,7 +1854,6 @@ function DraggablePopup({ onClose }) {
 
   const workerUrl = 'https://shiny-surf-3362.xodnd9733.workers.dev';
 
-  // 🚨 [핵심 수정 1] 단말기 이름을 예쁘게 쪼개주는 사전의 오타를 완벽히 수정했습니다!
   const keyInfoMap = useMemo(() => {
     const map = {};
     Object.entries(DEVICE_COLORS_MAP).forEach(([device, colors]) => {
@@ -1913,7 +1911,7 @@ function DraggablePopup({ onClose }) {
   const [inventory, setInventory] = useState(initialInventory);
   const lastSaveTimeRef = useRef(0);
 
-  // 🚨 [핵심 수정 2] 서버 통신 시 화면에 출력될 "순서"도 과거 찌꺼기를 지우고 동기화합니다.
+  // 💡 서버 통신 시에도 오직 "서버에 있는 진짜 데이터"만 가져와서 완벽하게 단말기별로 그룹핑합니다.
   React.useEffect(() => {
     const fetchLatestInventory = () => {
       fetch(`${workerUrl}/get-inventory`)
@@ -1923,35 +1921,50 @@ function DraggablePopup({ onClose }) {
             if (Date.now() - lastSaveTimeRef.current < 10000) return;
 
             let serverOrder = { SK: [], KT: [], 'U+': [] };
+            let newInv = { SK: {}, KT: {}, 'U+': {} };
 
-            setInventory(prev => {
-              const mergeCarrier = (carrier) => {
-                let merged = {};
-                if (data[carrier]) {
-                  Object.keys(data[carrier]).forEach(k => {
-                    if (!k.includes('(사전예약)')) {
-                      merged[k] = data[carrier][k];
-                      if (!k.endsWith('_req')) serverOrder[carrier].push(k);
+            ['SK', 'KT', 'U+'].forEach(carrier => {
+              if (data[carrier] && Object.keys(data[carrier]).length > 0) {
+                let deviceAppearanceOrder = [];
+                let groupedKeys = {};
+
+                Object.keys(data[carrier]).forEach(k => {
+                  if (!k.includes('(사전예약)') && !k.endsWith('_req')) {
+                    newInv[carrier][k] = data[carrier][k];
+                    newInv[carrier][`${k}_req`] = data[carrier][`${k}_req`] || '0';
+
+                    const info = keyInfoMap[k] || { device: k.replace('UNMAPPED_', '') };
+                    const devName = info.device;
+
+                    if (!deviceAppearanceOrder.includes(devName)) {
+                      deviceAppearanceOrder.push(devName);
+                      groupedKeys[devName] = [];
                     }
-                  });
-                }
-                
-                initialOrder[carrier].forEach(k => {
-                  if (!(k in merged)) {
-                    merged[k] = initialInventory[carrier][k];
-                    serverOrder[carrier].push(k);
+                    groupedKeys[devName].push(k);
                   }
                 });
-                
-                Object.keys(prev[carrier] || {}).forEach(k => {
-                  if (k.endsWith('_req')) merged[k] = prev[carrier][k];
-                });
-                return merged;
-              };
 
-              return { SK: mergeCarrier('SK'), KT: mergeCarrier('KT'), 'U+': mergeCarrier('U+') };
+                deviceAppearanceOrder.forEach(dev => {
+                  serverOrder[carrier].push(...groupedKeys[dev]);
+                });
+              } else {
+                serverOrder[carrier] = [...initialOrder[carrier]];
+                initialOrder[carrier].forEach(k => {
+                  newInv[carrier][k] = '0';
+                  newInv[carrier][`${k}_req`] = '0';
+                });
+              }
+
+              // 내 화면의 임시 요청 수량(장바구니) 보호
+              setInventory(prev => {
+                Object.keys(prev[carrier] || {}).forEach(k => {
+                  if (k.endsWith('_req')) newInv[carrier][k] = prev[carrier][k];
+                });
+                return prev;
+              });
             });
 
+            setInventory(newInv);
             setDisplayOrder(serverOrder);
           }
           setLoading(false);
@@ -1965,7 +1978,7 @@ function DraggablePopup({ onClose }) {
     fetchLatestInventory();
     const intervalId = setInterval(fetchLatestInventory, 3000);
     return () => clearInterval(intervalId);
-  }, [initialInventory, initialOrder]);
+  }, [initialOrder, keyInfoMap]);
 
   const handleRequestChange = (deviceKey, delta) => {
     setInventory(prev => {
@@ -2029,16 +2042,19 @@ function DraggablePopup({ onClose }) {
 
   const inventoryUploadRef = useRef(null);
 
-  // [기능 1] 메모장 업로드 시 데이터 정렬 및 서버 영구 저장 로직
+  // 👇 [기능 1] 메모장 업로드 시 완전 덮어쓰기 & 흩어진 단말기 완벽 그룹핑
   const handleInventoryUpload = (e) => {
     const file = e.target.files[0];
     if (!file) return;
     const fileName = file.name.toLowerCase();
 
     const processInventoryData = (rows) => {
-      let updatedInventory = { SK: { ...inventory.SK }, KT: { ...inventory.KT }, 'U+': { ...inventory['U+'] } };
+      let updatedInventory = { SK: {}, KT: {}, 'U+': {} };
       let newOrder = { SK: [], KT: [], 'U+': [] };
+      let groupedKeys = { SK: {}, KT: {}, 'U+': {} };
+      let deviceAppearanceOrder = { SK: [], KT: [], 'U+': [] };
       let updateCount = 0;
+
       let carrierIdx = -1, modelIdx = -1, qtyIdx = -1;
 
       for (let i = 0; i < Math.min(rows.length, 10); i++) {
@@ -2053,8 +2069,6 @@ function DraggablePopup({ onClose }) {
       rows.forEach((row) => {
         let rawCarrier = String(row[carrierIdx] || '').trim().toUpperCase().replace(/\s+/g, '');
         let rawModel = String(row[modelIdx] || '').trim(); 
-        
-        // 메모장의 보이지 않는 엔터키나 공백을 100% 파괴하여 무적 매칭 상태로 만듭니다.
         let cleanModel = rawModel.toUpperCase().replace(/[^A-Z0-9-]/g, '');
         let qty = String(row[qtyIdx] || '').trim();
 
@@ -2062,49 +2076,49 @@ function DraggablePopup({ onClose }) {
 
         let carrier = rawCarrier.includes('SK') ? 'SK' : rawCarrier.includes('KT') ? 'KT' : (rawCarrier.includes('LG') || rawCarrier.includes('U+') || rawCarrier.includes('유플')) ? 'U+' : null;
 
-        if (carrier && updatedInventory[carrier]) {
+        if (carrier) {
           const internalKey = copyTextToKeyMap[cleanModel];
           const finalKey = internalKey ? internalKey : `UNMAPPED_${rawModel}`;
           
           updatedInventory[carrier][finalKey] = qty;
+          updatedInventory[carrier][`${finalKey}_req`] = inventory[carrier]?.[`${finalKey}_req`] || '0';
           updateCount++;
 
-          if (!newOrder[carrier].includes(finalKey)) newOrder[carrier].push(finalKey);
+          // 단말기 그룹을 묶기 위한 기준 이름 설정
+          const devName = internalKey ? keyInfoMap[internalKey].device : rawModel; 
+
+          if (!deviceAppearanceOrder[carrier].includes(devName)) {
+            deviceAppearanceOrder[carrier].push(devName);
+            groupedKeys[carrier][devName] = [];
+          }
+          if (!groupedKeys[carrier][devName].includes(finalKey)) {
+            groupedKeys[carrier][devName].push(finalKey);
+          }
         }
       });
 
       if (updateCount > 0) {
         ['SK', 'KT', 'U+'].forEach(carrier => {
-          let reorderedCarrier = {};
-          
-          newOrder[carrier].forEach(key => {
-            reorderedCarrier[key] = updatedInventory[carrier][key];
-            reorderedCarrier[`${key}_req`] = '0';
+          let finalCarrierOrder = [];
+          // 메모장 순서를 따르되, 같은 폰들은 자석처럼 함께 묶어줍니다.
+          deviceAppearanceOrder[carrier].forEach(dev => {
+            finalCarrierOrder.push(...groupedKeys[carrier][dev]);
           });
-          
-          initialOrder[carrier].forEach(defaultKey => {
-            if (!newOrder[carrier].includes(defaultKey)) {
-              newOrder[carrier].push(defaultKey);
-              reorderedCarrier[defaultKey] = updatedInventory[carrier][defaultKey] || '0';
-              reorderedCarrier[`${defaultKey}_req`] = '0';
-            }
-          });
-          
-          // 💡 [핵심 수정 3] 과거에 꼬였던 유령 단말기들은 새 리스트(reorderedCarrier)에 포함되지 않으므로 여기서 자동으로 싹 삭제(청소)됩니다!
-          updatedInventory[carrier] = reorderedCarrier; 
+          newOrder[carrier] = finalCarrierOrder;
         });
 
         lastSaveTimeRef.current = Date.now();
         setInventory(updatedInventory);
-        setDisplayOrder(newOrder);
+        setDisplayOrder(newOrder); 
         
+        // 유령 데이터들은 싹 버려지고 오직 원본 파일 내용만 서버에 영구 덮어쓰기 됩니다.
         fetch(`${workerUrl}/save-inventory`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(updatedInventory)
         }).catch(err => console.error("서버 저장 실패:", err));
 
-        alert(`✅ ${updateCount}건의 재고가 메모장 순서대로 완벽하게 반영되었습니다.`);
+        alert(`✅ ${updateCount}건의 재고가 원본 데이터 기준으로 완벽히 정리되었습니다.`);
       } else {
         alert('파일에서 일치하는 단말기/통신사 데이터를 찾을 수 없습니다.');
       }
@@ -2154,7 +2168,7 @@ function DraggablePopup({ onClose }) {
     e.target.value = null;
   };
 
-  // 👇 [기능 2] 화면 순서 그대로 엑셀 다운로드 (중복 코드 완벽 삭제)
+  // 👇 [기능 2] 화면 순서 그대로 엑셀 다운로드 (잡다한 중복 로직 싹 지움)
   const handleExportExcel = () => {
     try {
       const wsData = [['SK 단말기', '색상', '보유 수량', '', '', 'KT 단말기', '색상', '보유 수량', '', '', 'U+ 단말기', '색상', '보유 수량']];
@@ -2299,6 +2313,7 @@ function DraggablePopup({ onClose }) {
             </thead>
 
             <tbody>
+              {/* 💡 오직 서버(원본파일)에 존재하는 순서대로만 군더더기 없이 출력 */}
               {displayOrder[activeTab].map((key, idx, arr) => {
                 const info = keyInfoMap[key] || { device: key.replace('UNMAPPED_', ''), color: '' };
                 const stockVal = inventory[activeTab]?.[key];
