@@ -1893,6 +1893,7 @@ function NewWindowPortal({ children, onClose, title }) {
   return newWindow ? ReactDOM.createPortal(children, container) : null;
 }
 
+
 // ------------------ 2. 재고 현황 팝업 (새 창 버전) ------------------
 function DraggablePopup({ onClose }) {
   const TAB_PASSWORDS = {
@@ -1904,6 +1905,19 @@ function DraggablePopup({ onClose }) {
   const [activeTab, setActiveTab] = useState(null);
   const [unlockedTabs, setUnlockedTabs] = useState({ SK: false, KT: false, 'U+': false });
   const [loading, setLoading] = useState(true);
+
+  // 👇 새 창 안에서만 뜨는 전용 비밀번호 모달 상태
+  const [showPasswordModal, setShowPasswordModal] = useState(false);
+  const [pendingTab, setPendingTab] = useState(null);
+  const [passwordInput, setPasswordInput] = useState('');
+  const [pwdError, setPwdError] = useState(false);
+  const pwdInputRef = useRef(null);
+
+  useEffect(() => {
+    if (showPasswordModal && pwdInputRef.current) {
+      pwdInputRef.current.focus();
+    }
+  }, [showPasswordModal]);
 
   const workerUrl = 'https://shiny-surf-3362.xodnd9733.workers.dev';
 
@@ -2053,6 +2067,7 @@ function DraggablePopup({ onClose }) {
       ? `보유 수량에서 ${currentReq}개를 차감 확정하시겠습니까?`
       : `차감했던 ${Math.abs(currentReq)}개를 보유 수량으로 다시 복구하시겠습니까?`;
 
+    // 💡 참고: confirm 창은 브라우저 특성 상 무조건 메인 화면(원래 탭) 쪽에 뜹니다!
     if (window.confirm(confirmMessage)) {
       lastSaveTimeRef.current = Date.now();
       const newStock = currentStock - currentReq;
@@ -2069,12 +2084,28 @@ function DraggablePopup({ onClose }) {
     }
   };
 
+  // 👇 기존 prompt 대신 우리가 만든 모달을 띄우도록 변경!
   const handleTabClick = (tab) => {
-    if (unlockedTabs[tab]) { setActiveTab(tab); } 
-    else {
-      const pwd = prompt(`🔒 [${tab}] 비밀번호를 입력하세요.`);
-      if (pwd === TAB_PASSWORDS[tab]) { setUnlockedTabs(prev => ({ ...prev, [tab]: true })); setActiveTab(tab); } 
-      else if (pwd !== null) { alert("❌ 비밀번호가 틀렸습니다."); }
+    if (unlockedTabs[tab]) { 
+      setActiveTab(tab); 
+    } else {
+      setPendingTab(tab);
+      setPasswordInput('');
+      setPwdError(false);
+      setShowPasswordModal(true);
+    }
+  };
+
+  // 👇 비밀번호 확인 로직
+  const handlePasswordSubmit = () => {
+    if (passwordInput === TAB_PASSWORDS[pendingTab]) {
+      setUnlockedTabs(prev => ({ ...prev, [pendingTab]: true }));
+      setActiveTab(pendingTab);
+      setShowPasswordModal(false);
+    } else {
+      setPwdError(true);
+      setPasswordInput('');
+      if (pwdInputRef.current) pwdInputRef.current.focus();
     }
   };
 
@@ -2296,7 +2327,7 @@ function DraggablePopup({ onClose }) {
 
   return (
     <NewWindowPortal onClose={onClose} title="📦 실시간 재고 현황">
-      <div className="flex flex-col h-full bg-white w-full">
+      <div className="flex flex-col h-full bg-white w-full relative">
         {/* 헤더 */}
         <div className="bg-amber-500 px-4 py-3 flex justify-between items-center shrink-0">
           <span className="font-bold text-white text-[16px]">
@@ -2412,6 +2443,32 @@ function DraggablePopup({ onClose }) {
             </div>
           )}
         </div>
+
+        {/* 👇 새로 띄운 창 안에 깔끔하게 뜨는 비밀번호 모달! */}
+        {showPasswordModal && (
+          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-[9999]">
+            <div className="bg-white p-6 rounded-2xl shadow-2xl flex flex-col items-center border border-gray-200">
+              <h3 className="font-extrabold mb-4 text-[17px] text-gray-800">🔒 [{pendingTab}] 탭 비밀번호 입력</h3>
+              <input 
+                type="password" 
+                ref={pwdInputRef}
+                value={passwordInput} 
+                onChange={(e) => { setPasswordInput(e.target.value); setPwdError(false); }}
+                onKeyDown={(e) => { if (e.key === 'Enter') handlePasswordSubmit(); }}
+                className={`border-2 p-3 rounded-xl mb-1 text-center text-2xl w-56 tracking-[0.3em] font-bold outline-none transition-colors ${pwdError ? 'border-red-500 bg-red-50 text-red-600 focus:border-red-500' : 'border-gray-200 focus:border-amber-500 text-gray-800'}`}
+                placeholder="****"
+              />
+              <div className="h-6 mb-3 w-full text-center flex items-center justify-center">
+                {pwdError && <span className="text-red-500 text-[13px] font-bold">❌ 비밀번호가 틀렸습니다.</span>}
+              </div>
+              <div className="flex gap-2 w-full">
+                <button onClick={() => { setShowPasswordModal(false); setPwdError(false); }} className="flex-1 py-2.5 bg-gray-100 rounded-xl font-bold hover:bg-gray-200 text-gray-600 transition-colors text-[14px]">취소</button>
+                <button onClick={handlePasswordSubmit} className="flex-1 py-2.5 bg-amber-500 text-white rounded-xl font-bold hover:bg-amber-600 transition-colors shadow-sm text-[14px]">확인</button>
+              </div>
+            </div>
+          </div>
+        )}
+
       </div>
     </NewWindowPortal>
   );
