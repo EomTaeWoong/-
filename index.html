@@ -131,7 +131,9 @@ const POLICY = {
     '플립8 256G': { SK_COMMON: {}, KT_COMMON: {}, U_COMMON: {}, EXTRA: {} },
     'A37 5G': { SK_COMMON: {}, KT_COMMON: {}, U_COMMON: {}, EXTRA: {} },
     'A36 5G': { SK_COMMON: {}, KT_COMMON: {}, U_COMMON: {}, EXTRA: {} },
-    'A17 LTE': { SK_COMMON: {}, KT_COMMON: {}, U_COMMON: {}, EXTRA: {} }
+    'A17 LTE': { SK_COMMON: {}, KT_COMMON: {}, U_COMMON: {}, EXTRA: {} },
+	'워치9 44mm': { SK_COMMON: {}, KT_COMMON: {}, U_COMMON: {}, EXTRA: {} },
+    '워치9 40mm': { SK_COMMON: {}, KT_COMMON: {}, U_COMMON: {}, EXTRA: {} }
   }
 };
 
@@ -269,6 +271,14 @@ const DEVICE_COLORS_MAP = {
     { name: '그레이', copyText: 'SM-A175NZAAKOD' },
     { name: '라이트 블루', copyText: 'SM-A175NLBAKOD' },
   ],
+   '워치9 44mm': [
+    { name: '실버', copyText: 'SM-L355NZSAKOD' },
+    { name: '그라파이트', copyText: 'SM-L355NZKAKOD' },
+  ],
+	'워치9 40mm': [
+    { name: '크림', copyText: 'SM-L345NZEAKOD' },
+    { name: '그라파이트', copyText: 'SM-L345NZKAKOD' },
+  ],
 };
 
 function pmt(rate, nper, pv) {
@@ -324,6 +334,8 @@ const CATEGORIZED_DEVICE_LIST = [
       { name: 'A37 5G', price: 598400 },
       { name: 'A36 5G', price: 499400 },
       { name: 'A17 LTE', price: 319000 }
+	  { name: '워치9 44mm', price: 569800 },
+      { name: '워치9 40mm', price: 529100 }
     ]
   }
 ];
