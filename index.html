@@ -2378,26 +2378,582 @@ function DraggablePopup({ onClose }) {
                               : currentReq < 0 ? 'bg-blue-500 text-white hover:bg-blue-600 active:scale-95 cursor-pointer' 
                               : 'bg-gray-200 text-gray-400 cursor-not-allowed'
                           }`}
-                        >
-                          {currentReq < 0 ? '복구' : '확정'}
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>          
-          </table>
-        ) : (
-          <div className="flex flex-col items-center justify-center h-full text-gray-400 py-20">
-            <span className="text-5xl mb-4">🔒</span>
-            <p className="font-bold text-lg">열람할 통신사 탭을 선택해 주세요.</p>
+// ------------------ 1. 새 창(다른 모니터)으로 열어주는 마법의 포털 컴포넌트 ------------------
+function NewWindowPortal({ children, onClose, title }) {
+  const [container] = useState(() => document.createElement('div'));
+  const [newWindow, setNewWindow] = useState(null);
+
+  useEffect(() => {
+    // 진짜 독립된 새 창 열기 (가로 650, 세로 750 사이즈)
+    const win = window.open('', '', 'width=650,height=750,left=200,top=200');
+    
+    // 브라우저 팝업 차단에 막힌 경우
+    if (!win) {
+      alert("🚨 팝업 차단이 설정되어 있습니다. 브라우저 주소창 우측에서 팝업 차단을 해제해 주세요!");
+      onClose();
+      return;
+    }
+    
+    win.document.title = title;
+    
+    // 새 창에서도 Tailwind CSS가 깨지지 않도록 스크립트 주입
+    const tailwindScript = win.document.createElement('script');
+    tailwindScript.src = "https://cdn.tailwindcss.com";
+    win.document.head.appendChild(tailwindScript);
+
+    // 새 창 전용 기본 스타일 주입
+    const style = win.document.createElement('style');
+    style.innerHTML = `
+      ::-webkit-scrollbar { width: 8px; height: 8px; }
+      ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+      ::-webkit-scrollbar-track { background: #f1f5f9; }
+      body { margin: 0; background-color: #f8fafc; height: 100vh; overflow: hidden; }
+      #root-container { height: 100%; display: flex; flex-direction: column; }
+    `;
+    win.document.head.appendChild(style);
+
+    container.id = "root-container";
+    win.document.body.appendChild(container);
+    setNewWindow(win);
+
+    // 사용자가 새 창의 X 버튼을 눌러 닫을 때 메인 앱에도 알려줌 (동기화)
+    win.addEventListener('beforeunload', () => onClose());
+
+    // 메인 창이 꺼지면 새 창도 같이 꺼지도록 정리
+    return () => win.close();
+  }, [container, onClose, title]);
+
+  // 포털을 열어 메인 앱의 데이터를 새 창으로 전송
+  return newWindow ? ReactDOM.createPortal(children, container) : null;
+}
+
+// ------------------ 2. 재고 현황 팝업 (새 창 버전) ------------------
+function DraggablePopup({ onClose }) {
+  // 💡 기존의 복잡했던 드래그 좌표(position, dragOffset) 관련 코드는 모두 삭제되었습니다!
+
+  const TAB_PASSWORDS = {
+    'SK': '1111',
+    'KT': '2222',
+    'U+': '3333'
+  };
+
+  const [activeTab, setActiveTab] = useState(null);
+  const [unlockedTabs, setUnlockedTabs] = useState({ SK: false, KT: false, 'U+': false });
+  const [loading, setLoading] = useState(true);
+
+  const workerUrl = 'https://shiny-surf-3362.xodnd9733.workers.dev';
+
+  const keyInfoMap = useMemo(() => {
+    const map = {};
+    Object.entries(DEVICE_COLORS_MAP).forEach(([device, colors]) => {
+      if (device.includes('(사전예약)')) return;
+      colors.forEach(colorObj => {
+        const key = `${device}_${colorObj.name}`;
+        map[key] = { device, color: colorObj.name };
+      });
+    });
+    return map;
+  }, []);
+
+  const copyTextToKeyMap = useMemo(() => {
+    const map = {};
+    Object.entries(DEVICE_COLORS_MAP).forEach(([device, colors]) => {
+      if (device.includes('(사전예약)')) return;
+      colors.forEach(colorObj => {
+        const cleanCode = colorObj.copyText.toUpperCase().replace(/[^A-Z0-9-]/g, '');
+        map[cleanCode] = `${device}_${colorObj.name}`;
+      });
+    });
+    return map;
+  }, []);
+
+  const initialOrder = useMemo(() => {
+    const order = { SK: [], KT: [], 'U+': [] };
+    Object.entries(DEVICE_COLORS_MAP).forEach(([device, colors]) => {
+      if (device.includes('(사전예약)')) return;
+      colors.forEach(colorObj => {
+        const key = `${device}_${colorObj.name}`;
+        order.SK.push(key);
+        order.KT.push(key);
+        order['U+'].push(key);
+      });
+    });
+    return order;
+  }, []);
+
+  const [displayOrder, setDisplayOrder] = useState(initialOrder);
+
+  const initialInventory = useMemo(() => {
+    const init = { SK: {}, KT: {}, 'U+': {} };
+    Object.entries(DEVICE_COLORS_MAP).forEach(([device, colors]) => {
+      if (device.includes('(사전예약)')) return;
+      colors.forEach(colorObj => {
+        const key = `${device}_${colorObj.name}`;
+        init.SK[key] = '0'; init.SK[`${key}_req`] = '0'; 
+        init.KT[key] = '0'; init.KT[`${key}_req`] = '0';
+        init['U+'][key] = '0'; init['U+'][`${key}_req`] = '0';
+      });
+    });
+    return init;
+  }, []);
+
+  const [inventory, setInventory] = useState(initialInventory);
+  const lastSaveTimeRef = useRef(0);
+
+  React.useEffect(() => {
+    const fetchLatestInventory = () => {
+      fetch(`${workerUrl}/get-inventory`)
+        .then(res => res.json())
+        .then(data => {
+          if (data && Object.keys(data).length > 0) {
+            if (Date.now() - lastSaveTimeRef.current < 10000) return;
+
+            let serverOrder = { SK: [], KT: [], 'U+': [] };
+            let newInv = { SK: {}, KT: {}, 'U+': {} };
+
+            ['SK', 'KT', 'U+'].forEach(carrier => {
+              if (data[carrier] && Object.keys(data[carrier]).length > 0) {
+                let deviceAppearanceOrder = [];
+                let groupedKeys = {};
+
+                Object.keys(data[carrier]).forEach(k => {
+                  if (!k.includes('(사전예약)') && !k.endsWith('_req')) {
+                    newInv[carrier][k] = data[carrier][k];
+                    newInv[carrier][`${k}_req`] = data[carrier][`${k}_req`] || '0';
+
+                    const info = keyInfoMap[k] || { device: k.replace('UNMAPPED_', '') };
+                    const devName = info.device;
+
+                    if (!deviceAppearanceOrder.includes(devName)) {
+                      deviceAppearanceOrder.push(devName);
+                      groupedKeys[devName] = [];
+                    }
+                    groupedKeys[devName].push(k);
+                  }
+                });
+
+                deviceAppearanceOrder.forEach(dev => {
+                  serverOrder[carrier].push(...groupedKeys[dev]);
+                });
+              } else {
+                serverOrder[carrier] = [...initialOrder[carrier]];
+                initialOrder[carrier].forEach(k => {
+                  newInv[carrier][k] = '0';
+                  newInv[carrier][`${k}_req`] = '0';
+                });
+              }
+
+              setInventory(prev => {
+                Object.keys(prev[carrier] || {}).forEach(k => {
+                  if (k.endsWith('_req')) newInv[carrier][k] = prev[carrier][k];
+                });
+                return prev;
+              });
+            });
+
+            setInventory(newInv);
+            setDisplayOrder(serverOrder);
+          }
+          setLoading(false);
+        })
+        .catch(err => {
+          console.error("재고 불러오기 실패:", err);
+          setLoading(false);
+        });
+    };
+
+    fetchLatestInventory();
+    const intervalId = setInterval(fetchLatestInventory, 3000);
+    return () => clearInterval(intervalId);
+  }, [initialOrder, keyInfoMap]);
+
+  const handleRequestChange = (deviceKey, delta) => {
+    setInventory(prev => {
+      const currentStock = parseInt(prev[activeTab]?.[deviceKey] || '0', 10);
+      const currentReq = parseInt(prev[activeTab]?.[`${deviceKey}_req`] || '0', 10);
+      let newReq = currentReq + delta;
+      if (newReq > currentStock) {
+        setTimeout(() => alert('잔여 재고가 없습니다.'), 10);
+        return prev;
+      }
+      return { ...prev, [activeTab]: { ...prev[activeTab], [`${deviceKey}_req`]: String(newReq) } };
+    });
+  };
+
+  const handleConfirmRequest = (deviceKey) => {
+    const currentStock = parseInt(inventory[activeTab]?.[deviceKey] || '0', 10);
+    const currentReq = parseInt(inventory[activeTab]?.[`${deviceKey}_req`] || '0', 10);
+
+    if (currentReq === 0) return; 
+    const confirmMessage = currentReq > 0 
+      ? `보유 수량에서 ${currentReq}개를 차감 확정하시겠습니까?`
+      : `차감했던 ${Math.abs(currentReq)}개를 보유 수량으로 다시 복구하시겠습니까?`;
+
+    if (window.confirm(confirmMessage)) {
+      lastSaveTimeRef.current = Date.now();
+      const newStock = currentStock - currentReq;
+      const newInventory = {
+        ...inventory,
+        [activeTab]: { ...inventory[activeTab], [deviceKey]: String(newStock), [`${deviceKey}_req`]: '0' }
+      };
+      setInventory(newInventory);
+      fetch(`${workerUrl}/save-inventory`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(newInventory)
+      }).catch(err => console.error("서버 저장 실패:", err));
+    }
+  };
+
+  const handleTabClick = (tab) => {
+    if (unlockedTabs[tab]) { setActiveTab(tab); } 
+    else {
+      const pwd = prompt(`🔒 [${tab}] 비밀번호를 입력하세요.`);
+      if (pwd === TAB_PASSWORDS[tab]) { setUnlockedTabs(prev => ({ ...prev, [tab]: true })); setActiveTab(tab); } 
+      else if (pwd !== null) { alert("❌ 비밀번호가 틀렸습니다."); }
+    }
+  };
+
+  const inventoryUploadRef = useRef(null);
+
+  const handleInventoryUpload = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const fileName = file.name.toLowerCase();
+
+    const processInventoryData = (rows) => {
+      let updatedInventory = { SK: {}, KT: {}, 'U+': {} };
+      let newOrder = { SK: [], KT: [], 'U+': [] };
+      let groupedKeys = { SK: {}, KT: {}, 'U+': {} };
+      let deviceAppearanceOrder = { SK: [], KT: [], 'U+': [] };
+      let updateCount = 0;
+
+      let carrierIdx = -1, modelIdx = -1, qtyIdx = -1;
+
+      for (let i = 0; i < Math.min(rows.length, 10); i++) {
+        const row = rows[i] || [];
+        const cIdx = row.findIndex(c => c && String(c).trim().includes('통신사'));
+        const mIdx = row.findIndex(c => c && String(c).trim().includes('모델'));
+        const qIdx = row.findIndex(c => c && (String(c).trim().includes('창고') || String(c).trim().includes('수량')));
+        if (cIdx !== -1 && mIdx !== -1 && qIdx !== -1) { carrierIdx = cIdx; modelIdx = mIdx; qtyIdx = qIdx; break; }
+      }
+      if (carrierIdx === -1) { carrierIdx = 0; modelIdx = 1; qtyIdx = 2; }
+
+      rows.forEach((row) => {
+        let rawCarrier = String(row[carrierIdx] || '').trim().toUpperCase().replace(/\s+/g, '');
+        let rawModel = String(row[modelIdx] || '').trim(); 
+        let cleanModel = rawModel.toUpperCase().replace(/[^A-Z0-9-]/g, '');
+        let qty = String(row[qtyIdx] || '').trim();
+
+        if (!rawCarrier || !rawModel || rawCarrier.includes('통신사') || rawModel.includes('모델')) return;
+
+        let carrier = rawCarrier.includes('SK') ? 'SK' : rawCarrier.includes('KT') ? 'KT' : (rawCarrier.includes('LG') || rawCarrier.includes('U+') || rawCarrier.includes('유플')) ? 'U+' : null;
+
+        if (carrier) {
+          const internalKey = copyTextToKeyMap[cleanModel];
+          const finalKey = internalKey ? internalKey : `UNMAPPED_${rawModel}`;
+          
+          updatedInventory[carrier][finalKey] = qty;
+          updatedInventory[carrier][`${finalKey}_req`] = inventory[carrier]?.[`${finalKey}_req`] || '0';
+          updateCount++;
+
+          const devName = internalKey ? keyInfoMap[internalKey].device : rawModel; 
+
+          if (!deviceAppearanceOrder[carrier].includes(devName)) {
+            deviceAppearanceOrder[carrier].push(devName);
+            groupedKeys[carrier][devName] = [];
+          }
+          if (!groupedKeys[carrier][devName].includes(finalKey)) {
+            groupedKeys[carrier][devName].push(finalKey);
+          }
+        }
+      });
+
+      if (updateCount > 0) {
+        ['SK', 'KT', 'U+'].forEach(carrier => {
+          let finalCarrierOrder = [];
+          deviceAppearanceOrder[carrier].forEach(dev => {
+            finalCarrierOrder.push(...groupedKeys[carrier][dev]);
+          });
+          newOrder[carrier] = finalCarrierOrder;
+        });
+
+        lastSaveTimeRef.current = Date.now();
+        setInventory(updatedInventory);
+        setDisplayOrder(newOrder); 
+        
+        fetch(`${workerUrl}/save-inventory`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(updatedInventory)
+        }).catch(err => console.error("서버 저장 실패:", err));
+
+        alert(`✅ ${updateCount}건의 재고가 원본 데이터 기준으로 완벽히 정리되었습니다.`);
+      } else {
+        alert('파일에서 일치하는 단말기/통신사 데이터를 찾을 수 없습니다.');
+      }
+    };
+
+    const readAsTextFallback = (fileObj) => {
+      const textReader = new FileReader();
+      textReader.onload = (txtEvent) => {
+        try {
+          const text = txtEvent.target.result;
+          let rows = [];
+          if (text.includes('<table') || text.includes('<html')) {
+            const tempDiv = document.createElement('div');
+            tempDiv.innerHTML = text;
+            const table = tempDiv.querySelector('table');
+            if (table) {
+              table.querySelectorAll('tr').forEach(tr => {
+                const row = [];
+                tr.querySelectorAll('th, td').forEach(td => row.push(td.innerText.trim()));
+                rows.push(row);
+              });
+            }
+          }
+          if (rows.length === 0) {
+            const delimiter = text.includes('\t') ? '\t' : ',';
+            rows = text.split(/\r?\n/).map(row => row.split(delimiter).map(cell => cell.trim().replace(/"/g, '')));
+          }
+          processInventoryData(rows);
+        } catch (err) { console.error(err); alert("파일 처리에 실패했습니다."); }
+      };
+      textReader.readAsText(fileObj, 'euc-kr');
+    };
+
+    if (fileName.endsWith('.xlsx') || fileName.endsWith('.xls')) {
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        try {
+          const data = new Uint8Array(event.target.result);
+          const workbook = window.XLSX.read(data, { type: 'array' });
+          const rows = window.XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]], { header: 1, raw: false });
+          if (!rows || rows.length === 0) throw new Error("Empty Excel");
+          processInventoryData(rows);
+        } catch (err) { readAsTextFallback(file); }
+      };
+      reader.readAsArrayBuffer(file);
+    } else { readAsTextFallback(file); }
+    e.target.value = null;
+  };
+
+  const handleExportExcel = () => {
+    try {
+      const wsData = [['SK 단말기', '색상', '보유 수량', '', '', 'KT 단말기', '색상', '보유 수량', '', '', 'U+ 단말기', '색상', '보유 수량']];
+
+      const formatQty = (qty) => {
+        const num = parseInt(qty, 10);
+        return (isNaN(num) || num <= 0) ? '[품절]' : String(num);
+      };
+
+      const maxLen = Math.max(displayOrder.SK.length, displayOrder.KT.length, displayOrder['U+'].length);
+
+      for (let i = 0; i < maxLen; i++) {
+        const row = [];
+        ['SK', 'KT', 'U+'].forEach(carrier => {
+          const key = displayOrder[carrier][i];
+          if (key) {
+            const info = keyInfoMap[key] || { device: key.replace('UNMAPPED_', ''), color: '' };
+            row.push(info.device, info.color, formatQty(inventory[carrier][key]));
+          } else { 
+            row.push('', '', ''); 
+          }
+          if (carrier !== 'U+') row.push('', ''); 
+        });
+        wsData.push(row);
+      }
+
+      const ws = window.XLSX.utils.aoa_to_sheet(wsData);
+      const merges = [];
+      const carriers = [{ colOffset: 0 }, { colOffset: 5 }, { colOffset: 10 }];
+
+      carriers.forEach(c => {
+        let startRow = 1;
+        while(startRow < wsData.length) {
+          let devName = wsData[startRow][c.colOffset];
+          if (!devName || devName === '') { startRow++; continue; }
+          let endRow = startRow;
+          while(endRow + 1 < wsData.length && wsData[endRow + 1][c.colOffset] === devName) { endRow++; }
+          if (endRow > startRow) {
+              merges.push({ s: { r: startRow, c: c.colOffset }, e: { r: endRow, c: c.colOffset } });
+              for(let r = startRow + 1; r <= endRow; r++) {
+                  wsData[r][c.colOffset] = ''; 
+                  let cellRef = window.XLSX.utils.encode_cell({c: c.colOffset, r: r});
+                  if(ws[cellRef]) ws[cellRef].v = '';
+              }
+          }
+          startRow = endRow + 1;
+        }
+      });
+      ws['!merges'] = merges;
+
+      const borderStyle = {
+        top: { style: 'thin', color: { rgb: "000000" } }, bottom: { style: 'thin', color: { rgb: "000000" } },
+        left: { style: 'thin', color: { rgb: "000000" } }, right: { style: 'thin', color: { rgb: "000000" } }
+      };
+
+      for (let r = 0; r < wsData.length; r++) {
+        if (wsData[r].every(x => x === '')) continue; 
+        carriers.forEach(c => {
+           let qtyVal = wsData[r][c.colOffset + 2];
+           let isHeader = (r === 0);
+           if (!isHeader && (qtyVal === '' || qtyVal === undefined)) return;
+
+           let isOutOfStock = (qtyVal === '[품절]');
+           let bgColor = isHeader ? "F1F5F9" : (isOutOfStock ? "FEE2E2" : "FFFFFF");
+
+           for(let i=0; i<3; i++) {
+               let curRef = window.XLSX.utils.encode_cell({c: c.colOffset + i, r: r});
+               if(!ws[curRef]) ws[curRef] = { t: 's', v: '' }; 
+               ws[curRef].s = {
+                   fill: { fgColor: { rgb: bgColor } }, border: borderStyle,
+                   alignment: { horizontal: "center", vertical: "center" },
+                   font: { bold: isHeader, color: (isOutOfStock && i === 2) ? { rgb: "DC2626" } : { rgb: "000000" } }
+               };
+           }
+        });
+      }
+
+      ws['!cols'] = [
+        { wch: 25 }, { wch: 15 }, { wch: 10 }, { wch: 2 }, { wch: 2 }, 
+        { wch: 25 }, { wch: 15 }, { wch: 10 }, { wch: 2 }, { wch: 2 }, 
+        { wch: 25 }, { wch: 15 }, { wch: 10 }                          
+      ];
+
+      const wb = window.XLSX.utils.book_new();
+      window.XLSX.utils.book_append_sheet(wb, ws, '가로_재고현황');
+      window.XLSX.writeFile(wb, '통신사별_재고현황표.xlsx', { bookType: 'xlsx', bookSST: true, compression: true });
+
+    } catch (err) {
+      console.error(err); alert("엑셀 저장 중 오류가 발생했습니다.");
+    }
+  };
+
+  // 💡 아래부터는 NewWindowPortal을 이용해 렌더링하도록 구조가 변경되었습니다!
+  return (
+    <NewWindowPortal onClose={onClose} title="📦 실시간 재고 현황">
+      <div className="flex flex-col h-full bg-white w-full">
+        {/* 헤더 */}
+        <div className="bg-amber-500 px-4 py-3 flex justify-between items-center shrink-0">
+          <span className="font-bold text-white text-[16px]">
+            📦 실시간 재고 현황 {loading && "🔄 로딩중..."}
+          </span>
+          
+          <div className="flex items-center gap-2">
+            <input type="file" accept=".txt, .csv, .xlsx, .xls" ref={inventoryUploadRef} onChange={handleInventoryUpload} className="hidden" />
+            <button onClick={() => inventoryUploadRef.current.click()} className="bg-white/20 hover:bg-white/30 text-white px-2.5 py-1.5 rounded text-[13px] font-bold transition-colors shadow-sm">
+              재고 업로드
+            </button>
+            <button onClick={handleExportExcel} className="bg-emerald-500 hover:bg-emerald-600 text-white px-2.5 py-1.5 rounded text-[13px] font-bold transition-colors shadow-sm">
+              엑셀로 저장
+            </button>
           </div>
-        )}
+        </div>
+
+        {/* 통신사 탭 */}
+        <div className="flex border-b border-gray-300 bg-gray-100 shrink-0">
+          {['SK', 'KT', 'U+'].map(tab => (
+            <button
+              key={tab}
+              onClick={() => handleTabClick(tab)}
+              className={`flex-1 py-3 text-[16px] font-bold transition-colors flex justify-center items-center gap-1 ${
+                activeTab === tab ? 'bg-white text-amber-600 border-b-[3px] border-amber-500' : 'text-gray-500 hover:bg-gray-200'
+              }`}
+            >
+              {tab} {unlockedTabs[tab] ? '🔓' : '🔒'}
+            </button>
+          ))}
+        </div>
+
+        {/* 테이블 영역 */}
+        <div className="overflow-y-auto flex-1 custom-scrollbar bg-white relative">
+          {activeTab ? (
+            <table className="w-full text-[15px] text-left border-collapse">
+              <thead className="bg-slate-100 sticky top-0 z-10 shadow-sm border-b-2 border-gray-300">
+                <tr>
+                  <th className="py-2.5 px-3 border-r border-gray-200 font-bold text-gray-700 w-[28%] text-center">단말기 모델명</th>
+                  <th className="py-2.5 px-3 border-r border-gray-200 font-bold text-gray-700 w-[28%] text-center">색상</th>
+                  <th className="py-2.5 px-3 border-r border-gray-200 font-bold text-blue-700 w-[16%] text-center">보유 수량</th>
+                  <th className="py-2.5 px-3 font-bold text-red-600 w-[28%] text-center">요청 수량</th>
+                </tr>
+              </thead>
+              <tbody>
+                {displayOrder[activeTab].map((key, idx, arr) => {
+                  const info = keyInfoMap[key] || { device: key.replace('UNMAPPED_', ''), color: '' };
+                  const stockVal = inventory[activeTab]?.[key];
+                  const isZero = !stockVal || parseInt(stockVal, 10) <= 0;
+                  const currentReq = parseInt(inventory[activeTab]?.[`${key}_req`] || '0', 10);
+
+                  let isFirstOfGroup = false;
+                  if (idx === 0) isFirstOfGroup = true;
+                  else {
+                    const prevKey = arr[idx - 1];
+                    const prevInfo = keyInfoMap[prevKey] || { device: prevKey.replace('UNMAPPED_', ''), color: '' };
+                    if (prevInfo.device !== info.device) isFirstOfGroup = true;
+                  }
+
+                  let rowSpan = 1;
+                  if (isFirstOfGroup) {
+                    for (let i = idx + 1; i < arr.length; i++) {
+                      const nextKey = arr[i];
+                      const nextInfo = keyInfoMap[nextKey] || { device: nextKey.replace('UNMAPPED_', ''), color: '' };
+                      if (nextInfo.device === info.device) rowSpan++;
+                      else break;
+                    }
+                  }
+
+                  return (
+                    <tr key={key} className={`transition-colors ${isZero ? 'bg-red-50/50' : 'hover:bg-amber-50'} border-b border-gray-300`}>
+                      {isFirstOfGroup && (
+                        <td rowSpan={rowSpan} className="py-2 px-2 border-r border-gray-300 bg-gray-50 font-bold text-gray-800 align-middle">
+                          {info.device}
+                        </td>
+                      )}
+                      <td className={`py-2 px-2 border-r border-gray-300 text-center whitespace-nowrap transition-colors ${isZero ? 'bg-red-100 text-red-600 font-bold' : 'text-gray-600'}`}>
+                        {info.color || (isZero ? '-' : '')} {isZero && <span className="text-xs ml-0.5 font-extrabold text-red-500">[품절]</span>}
+                      </td>
+                      
+                      <td className="py-2 px-2 border-r border-gray-300 bg-gray-50 text-center font-extrabold text-blue-700 align-middle text-lg">
+                        {stockVal || '0'}
+                      </td>
+                      
+                      <td className="p-2 bg-white text-center align-middle">
+                        <div className="flex items-center justify-center gap-2">
+                          <button onClick={() => handleRequestChange(key, -1)} className="w-7 h-7 flex items-center justify-center bg-slate-100 rounded hover:bg-slate-200 text-slate-700 font-black shadow-sm transition-all text-lg leading-none active:scale-95">-</button>
+                          <span className="font-extrabold text-red-600 min-w-[20px] text-center text-[16px]">{currentReq}</span>
+                          <button onClick={() => handleRequestChange(key, 1)} className="w-7 h-7 flex items-center justify-center bg-slate-100 rounded hover:bg-slate-200 text-slate-700 font-black shadow-sm transition-all text-lg leading-none active:scale-95">+</button>
+                          
+                          <button 
+                            onClick={() => handleConfirmRequest(key)}
+                            disabled={currentReq === 0}
+                            className={`ml-2 px-3 py-1.5 text-[13px] font-bold rounded shadow-sm transition-all whitespace-nowrap ${
+                              currentReq > 0 ? 'bg-red-500 text-white hover:bg-red-600 active:scale-95 cursor-pointer' 
+                                : currentReq < 0 ? 'bg-blue-500 text-white hover:bg-blue-600 active:scale-95 cursor-pointer' 
+                                : 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                            }`}
+                          >
+                            {currentReq < 0 ? '복구' : '확정'}
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>          
+            </table>
+          ) : (
+            <div className="flex flex-col items-center justify-center h-full text-gray-400 py-20">
+              <span className="text-6xl mb-5">🔒</span>
+              <p className="font-bold text-xl">열람할 통신사 탭을 선택해 주세요.</p>
+            </div>
+          )}
+        </div>
       </div>
-    </div>
+    </NewWindowPortal>
   );
 }
+
 
              
  function App() {
