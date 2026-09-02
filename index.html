@@ -1894,6 +1894,8 @@ function NewWindowPortal({ children, onClose, title }) {
 }
 
 
+
+
 // ------------------ 2. 재고 현황 팝업 (새 창 버전) ------------------
 function DraggablePopup({ onClose }) {
   const TAB_PASSWORDS = {
@@ -1906,12 +1908,27 @@ function DraggablePopup({ onClose }) {
   const [unlockedTabs, setUnlockedTabs] = useState({ SK: false, KT: false, 'U+': false });
   const [loading, setLoading] = useState(true);
 
-  // 👇 새 창 안에서만 뜨는 전용 비밀번호 모달 상태
+  // 💡 새 창 안에서만 뜨는 전용 비밀번호 모달 상태
   const [showPasswordModal, setShowPasswordModal] = useState(false);
   const [pendingTab, setPendingTab] = useState(null);
   const [passwordInput, setPasswordInput] = useState('');
   const [pwdError, setPwdError] = useState(false);
   const pwdInputRef = useRef(null);
+
+  // 💡 새 창 안에서만 뜨는 전용 알림/확인창(Alert/Confirm) 모달 상태 추가!
+  const [customModal, setCustomModal] = useState({ isOpen: false, type: 'alert', message: '', onConfirm: null });
+
+  const showAlert = (message) => {
+    setCustomModal({ isOpen: true, type: 'alert', message, onConfirm: null });
+  };
+
+  const showConfirm = (message, onConfirmCallback) => {
+    setCustomModal({ isOpen: true, type: 'confirm', message, onConfirm: onConfirmCallback });
+  };
+
+  const closeCustomModal = () => {
+    setCustomModal({ isOpen: false, type: 'alert', message: '', onConfirm: null });
+  };
 
   useEffect(() => {
     if (showPasswordModal && pwdInputRef.current) {
@@ -2051,7 +2068,7 @@ function DraggablePopup({ onClose }) {
       const currentReq = parseInt(prev[activeTab]?.[`${deviceKey}_req`] || '0', 10);
       let newReq = currentReq + delta;
       if (newReq > currentStock) {
-        setTimeout(() => alert('잔여 재고가 없습니다.'), 10);
+        showAlert('잔여 재고가 없습니다.'); // 💡 커스텀 알림창으로 변경
         return prev;
       }
       return { ...prev, [activeTab]: { ...prev[activeTab], [`${deviceKey}_req`]: String(newReq) } };
@@ -2067,8 +2084,8 @@ function DraggablePopup({ onClose }) {
       ? `보유 수량에서 ${currentReq}개를 차감 확정하시겠습니까?`
       : `차감했던 ${Math.abs(currentReq)}개를 보유 수량으로 다시 복구하시겠습니까?`;
 
-    // 💡 참고: confirm 창은 브라우저 특성 상 무조건 메인 화면(원래 탭) 쪽에 뜹니다!
-    if (window.confirm(confirmMessage)) {
+    // 💡 브라우저 기본 window.confirm 대신 커스텀 컨펌창 호출
+    showConfirm(confirmMessage, () => {
       lastSaveTimeRef.current = Date.now();
       const newStock = currentStock - currentReq;
       const newInventory = {
@@ -2081,10 +2098,9 @@ function DraggablePopup({ onClose }) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(newInventory)
       }).catch(err => console.error("서버 저장 실패:", err));
-    }
+    });
   };
 
-  // 👇 기존 prompt 대신 우리가 만든 모달을 띄우도록 변경!
   const handleTabClick = (tab) => {
     if (unlockedTabs[tab]) { 
       setActiveTab(tab); 
@@ -2096,7 +2112,6 @@ function DraggablePopup({ onClose }) {
     }
   };
 
-  // 👇 비밀번호 확인 로직
   const handlePasswordSubmit = () => {
     if (passwordInput === TAB_PASSWORDS[pendingTab]) {
       setUnlockedTabs(prev => ({ ...prev, [pendingTab]: true }));
@@ -2183,9 +2198,9 @@ function DraggablePopup({ onClose }) {
           body: JSON.stringify(updatedInventory)
         }).catch(err => console.error("서버 저장 실패:", err));
 
-        alert(`✅ ${updateCount}건의 재고가 원본 데이터 기준으로 완벽히 정리되었습니다.`);
+        showAlert(`✅ ${updateCount}건의 재고가 원본 데이터 기준으로 완벽히 정리되었습니다.`); // 💡 커스텀 알림창
       } else {
-        alert('파일에서 일치하는 단말기/통신사 데이터를 찾을 수 없습니다.');
+        showAlert('파일에서 일치하는 단말기/통신사 데이터를 찾을 수 없습니다.'); // 💡 커스텀 알림창
       }
     };
 
@@ -2212,7 +2227,7 @@ function DraggablePopup({ onClose }) {
             rows = text.split(/\r?\n/).map(row => row.split(delimiter).map(cell => cell.trim().replace(/"/g, '')));
           }
           processInventoryData(rows);
-        } catch (err) { console.error(err); alert("파일 처리에 실패했습니다."); }
+        } catch (err) { console.error(err); showAlert("파일 처리에 실패했습니다."); } // 💡 커스텀 알림창
       };
       textReader.readAsText(fileObj, 'euc-kr');
     };
@@ -2321,7 +2336,7 @@ function DraggablePopup({ onClose }) {
       window.XLSX.writeFile(wb, '통신사별_재고현황표.xlsx', { bookType: 'xlsx', bookSST: true, compression: true });
 
     } catch (err) {
-      console.error(err); alert("엑셀 저장 중 오류가 발생했습니다.");
+      console.error(err); showAlert("엑셀 저장 중 오류가 발생했습니다."); // 💡 커스텀 알림창
     }
   };
 
@@ -2444,7 +2459,7 @@ function DraggablePopup({ onClose }) {
           )}
         </div>
 
-        {/* 👇 새로 띄운 창 안에 깔끔하게 뜨는 비밀번호 모달! */}
+        {/* 🔒 비밀번호 입력 모달 */}
         {showPasswordModal && (
           <div className="absolute inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-[9999]">
             <div className="bg-white p-6 rounded-2xl shadow-2xl flex flex-col items-center border border-gray-200">
@@ -2469,10 +2484,35 @@ function DraggablePopup({ onClose }) {
           </div>
         )}
 
+        {/* 💡 커스텀 알림창(Alert/Confirm) 모달! 메인 화면으로 안 넘어가고 여기서 다 처리됩니다! */}
+        {customModal.isOpen && (
+          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-[9999]">
+            <div className="bg-white p-6 rounded-2xl shadow-2xl flex flex-col items-center border border-gray-200 min-w-[300px] max-w-sm text-center">
+              <h3 className="font-extrabold mb-5 text-[16px] text-gray-800 whitespace-pre-wrap leading-relaxed">{customModal.message}</h3>
+              <div className="flex gap-2 w-full">
+                {customModal.type === 'confirm' && (
+                  <button onClick={closeCustomModal} className="flex-1 py-2.5 bg-gray-100 rounded-xl font-bold hover:bg-gray-200 text-gray-600 transition-colors text-[14px]">취소</button>
+                )}
+                <button 
+                  onClick={() => {
+                    if (customModal.onConfirm) customModal.onConfirm();
+                    closeCustomModal();
+                  }} 
+                  className="flex-1 py-2.5 bg-amber-500 text-white rounded-xl font-bold hover:bg-amber-600 transition-colors shadow-sm text-[14px]"
+                >
+                  확인
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
       </div>
     </NewWindowPortal>
   );
 }
+
+
 				  
 
              
