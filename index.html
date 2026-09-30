@@ -320,18 +320,18 @@ const CATEGORIZED_DEVICE_LIST = [
   {
     category: 'S25 시리즈',
     devices: [
-      { name: 'S25 엣지 256G', price: 1353000 },
-      { name: 'S25 울트라 256G', price: 1698400 },
-      { name: 'S25+ 256G', price: 1353000 },
-      { name: 'S25 256G', price: 1155000 },
-      { name: 'S25 FE', price: 946000 }
+      { name: 'S25 엣지 256G', price: 1353000, isSoldOut: true },
+      { name: 'S25 울트라 256G', price: 1698400, isSoldOut: true },
+      { name: 'S25+ 256G', price: 1353000, isSoldOut: true },
+      { name: 'S25 256G', price: 1155000, isSoldOut: true },
+      { name: 'S25 FE', price: 946000, isSoldOut: true }
     ]
   },
   {
     category: 'A 시리즈',
     devices: [
       { name: 'A37 5G', price: 598400 },
-      { name: 'A36 5G', price: 499400 },
+      { name: 'A36 5G', price: 499400, isSoldOut: true },
       { name: 'A17 LTE', price: 319000 }
     ]
   }
@@ -1380,7 +1380,7 @@ const totalCost2_Selective = installMonths === 0
 // ------------------ 요금제 정리 팝업 ------------------
 function PlanSummaryPopup({ operator, onClose }) {
   const skImage = "https://img1.daumcdn.net/thumb/R1280x0/?scode=mtistory2&fname=https%3A%2F%2Fblog.kakaocdn.net%2Fdna%2FoofXs%2FdJMcaae9m5r%2FAAAAAAAAAAAAAAAAAAAAAOJ7dJJ1Hc2MEB7pHVNvIJ9TB_qCoHDshj1A9_snjwjV%2Fimg.png%3Fcredential%3DyqXZFxpELC7KVnFOS48ylbz2pIh7yKj8%26expires%3D1785509999%26allow_ip%3D%26allow_referer%3D%26signature%3DO0j62v2btBgCHHUuxjQnUqtIAgc%253D";
-  const ktImage = "https://img1.daumcdn.net/thumb/R1280x0/?scode=mtistory2&fname=https%3A%2F%2Fblog.kakaocdn.net%2Fdna%2F2TUVC%2FdJMcacwUsyE%2FAAAAAAAAAAAAAAAAAAAAALi1HtT2CLd_h6ZFveGowtjFHFYbHhIGqCS05bVUYsnm%2Fimg.png%3Fcredential%3DyqXZFxpELC7KVnFOS48ylbz2pIh7yKj8%26expires%3D1785509999%26allow_ip%3D%26allow_referer%3D%26signature%3DvQKFw3%252BNnc9aLcBTEWkAXtjFdWo%253D";
+  const ktImage = "https://img1.daumcdn.net/thumb/R1280x0/?scode=mtistory2&fname=https%3A%2F%2Fblog.kakaocdn.net%2Fdna%2FNMf9M%2FdJMcaa8a8zo%2FAAAAAAAAAAAAAAAAAAAAAMxiWgf9f5ZGbzvnr20_STaJFACRe9sHZyGPV4bwewKo%2Fimg.png%3Fcredential%3DyqXZFxpELC7KVnFOS48ylbz2pIh7yKj8%26expires%3D1793458799%26allow_ip%3D%26allow_referer%3D%26signature%3Dw%252B%252F3rMGSE6%252Bh1EHSJnpqmEUJL3o%253D";
   const uImage = "https://img1.daumcdn.net/thumb/R1280x0/?scode=mtistory2&fname=https%3A%2F%2Fblog.kakaocdn.net%2Fdna%2F64YaW%2FdJMcafOFoJZ%2FAAAAAAAAAAAAAAAAAAAAAEKJkx1o1KIJB19QdFhF72XnQw9yu_2F8r4wiptOAg3a%2Fimg.png%3Fcredential%3DyqXZFxpELC7KVnFOS48ylbz2pIh7yKj8%26expires%3D1788188399%26allow_ip%3D%26allow_referer%3D%26signature%3DpCyPYlusgqNDadbO7U7Qu2Co5TI%253D";
 const imageSrc = operator === 'SK' ? skImage : (operator === 'KT' ? ktImage : uImage);
 
@@ -1427,7 +1427,7 @@ function RequestFormPopup({ onClose }) {
 
 // ------------------ 닷컴 혜택 이미지 팝업 컴포넌트 ------------------
 function DeviceColorPopup({ onClose }) {
-  const imageSrc = "https://img1.daumcdn.net/thumb/R1280x0/?scode=mtistory2&fname=https%3A%2F%2Fblog.kakaocdn.net%2Fdna%2Fdj8SDz%2FdJMcagte2KF%2FAAAAAAAAAAAAAAAAAAAAAMr6J7rs1D1RjlN1JsNU-nhVxXgzNUhh_nnOuZGPGk6s%2Fimg.png%3Fcredential%3DyqXZFxpELC7KVnFOS48ylbz2pIh7yKj8%26expires%3D1790780399%26allow_ip%3D%26allow_referer%3D%26signature%3DffIBCddnOdhMRrOTsr%252BZRA5NjrI%253D"; 
+  const imageSrc = "https://img1.daumcdn.net/thumb/R1280x0/?scode=mtistory2&fname=https%3A%2F%2Fblog.kakaocdn.net%2Fdna%2FeeTQd4%2FdJMcaf9cKaI%2FAAAAAAAAAAAAAAAAAAAAAIUPQw6embnlfMH8tRpYN0LiHXyL32kNWXuw5rbPXJpH%2Fimg.png%3Fcredential%3DyqXZFxpELC7KVnFOS48ylbz2pIh7yKj8%26expires%3D1793458799%26allow_ip%3D%26allow_referer%3D%26signature%3DgZ8RWg05GUYSPPO8GXFloXC9ohc%253D"; 
 
   return (
     <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50 p-4">
@@ -1516,10 +1516,16 @@ function Calculator({
     setSelectedPlan(plans[0]?.name || ''); 
   }, [plans]);
 
+  const [isDeviceDropdownOpen, setIsDeviceDropdownOpen] = useState(false);
+  const deviceDropdownRef = useRef(null);
+
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (colorDropdownRef.current && !colorDropdownRef.current.contains(event.target)) {
         setIsColorDropdownOpen(false);
+      }
+if (deviceDropdownRef.current && !deviceDropdownRef.current.contains(event.target)) {
+        setIsDeviceDropdownOpen(false);
       }
     };
     document.addEventListener("mousedown", handleClickOutside);
@@ -1647,21 +1653,55 @@ const winnerMain = total24_Public < total24_Selective ? '공통지원' : (total2
     <div className="pt-2 pb-6 px-4 max-w-4xl mx-auto">
       <div className="mb-3 flex flex-nowrap gap-1.5 md:gap-2 items-center w-full">
         <div className="flex gap-1 shrink-0 relative w-[50%] md:w-[45%]" ref={colorDropdownRef}>
-          <select value={selectedDevice} onChange={e=>setSelectedDevice(e.target.value)} className="flex-1 min-w-0 bg-gray-50 border border-gray-200 text-gray-800 rounded-xl px-3 py-2 outline-none focus:bg-white focus:border-transparent focus:ring-2 focus:ring-blue-400 transition-all shadow-sm h-[38px]">
-            {CATEGORIZED_DEVICE_LIST.map(group => (
-              <optgroup key={group.category} label={group.category}>
-                {group.devices.map(d => (
-                  <option 
-                    key={d.name} 
-                    value={d.name} 
-                    style={d.isHighlight ? { fontWeight: 'bold', color: '#1D4ED8' } : d.isGreen ? { fontWeight: 'bold', color: '#059669' } : d.isPurple ? { fontWeight: 'bold', color: '#9333EA' } : {}}
-                  >
-                    {d.name} ({d.price.toLocaleString()}원)
-                  </option>
-                ))}
-              </optgroup>
-            ))}
-          </select>
+<div className="relative flex-1 min-w-0 w-full" ref={deviceDropdownRef}>
+  <div
+    onClick={() => setIsDeviceDropdownOpen(!isDeviceDropdownOpen)}
+    className="w-full flex items-center justify-between bg-gray-50 border border-gray-200 text-gray-800 rounded-xl px-3 py-2 cursor-pointer outline-none hover:bg-white focus:ring-2 focus:ring-blue-400 transition-all shadow-sm h-[38px] truncate"
+  >
+    <span className="truncate font-semibold text-[14px]">
+      {selectedDevice}
+    </span>
+    <span className="text-gray-400 text-[10px] ml-1">▼</span>
+  </div>
+
+  {isDeviceDropdownOpen && (
+    <div className="absolute z-[60] w-max min-w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-xl max-h-[400px] overflow-y-auto left-0">
+      {CATEGORIZED_DEVICE_LIST.map((group) => (
+        <div key={group.category}>
+          {/* 그룹 헤더 */}
+          <div className="px-3 py-1.5 bg-slate-100 text-xs font-bold text-gray-500 sticky top-0 border-b border-gray-200">
+            {group.category}
+          </div>
+          {/* 단말기 목록 */}
+          {group.devices.map(d => {
+            let textColor = 'text-gray-700';
+            if (d.isHighlight) textColor = 'text-blue-700 font-extrabold';
+            else if (d.isGreen) textColor = 'text-emerald-600 font-bold';
+            else if (d.isPurple) textColor = 'text-purple-600 font-bold';
+
+            return (
+              <div
+                key={d.name}
+                onClick={() => {
+                  setSelectedDevice(d.name);
+                  setIsDeviceDropdownOpen(false);
+                }}
+                className={`px-3 py-2.5 cursor-pointer hover:bg-blue-50 text-sm border-b border-gray-100 last:border-b-0 whitespace-nowrap flex justify-between items-center gap-6 ${selectedDevice === d.name ? 'bg-blue-100' : ''}`}
+              >
+                <span className={textColor}>{d.name}</span>
+                <div className="flex items-center gap-2">
+                  <span className="text-gray-500">({d.price.toLocaleString()}원)</span>
+                  {/* 👇 isSoldOut이 true일 때만 '판매 중단' 텍스트 표시 👇 */}
+                  {d.isSoldOut && <span className="text-red-600 font-extrabold text-[13px]">판매 중단</span>}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      ))}
+    </div>
+  )}
+</div>
           <button type="button" onClick={() => setIsColorDropdownOpen(!isColorDropdownOpen)} className="bg-gray-500 text-white px-2.5 md:px-3 rounded hover:bg-gray-600 text-[13px] font-medium whitespace-nowrap shrink-0 h-[38px]">
             복사
           </button>
