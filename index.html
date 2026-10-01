@@ -512,14 +512,34 @@ function getSupportAmounts({ selectedDevice, selectedPlanPrice, operator, joinTy
     return { commonSupport: 0, additionalSupport: 0, selectiveAdditionalSupport: 0 };
   }
 
-  // 💡 1. 공통지원금 로직 (기존 유지)
+  // 💡 1. 공통지원금 로직 (기기변경/번호이동 분리 적용)
   let commonSupport = 0;
-  if (operator === 'SK' && devicePolicy.SK_COMMON && devicePolicy.SK_COMMON[selectedPlanPrice] !== undefined) {
-    commonSupport = devicePolicy.SK_COMMON[selectedPlanPrice];
-  } else if (operator === 'U' && devicePolicy.U_COMMON && devicePolicy.U_COMMON[selectedPlanPrice] !== undefined) {
-    commonSupport = devicePolicy.U_COMMON[selectedPlanPrice];
-  } else if (operator === 'KT' && devicePolicy.KT_COMMON && devicePolicy.KT_COMMON[selectedPlanPrice] !== undefined) {
-    commonSupport = devicePolicy.KT_COMMON[selectedPlanPrice];
+
+  const getCommonAmt = (commonData, planPrice, jType) => {
+    if (!commonData) return 0;
+    
+    // 1순위: 엑셀에 사용자가 선택한 가입유형(기기변경/번호이동)이 명시된 경우
+    if (commonData[jType] && commonData[jType][planPrice] !== undefined) {
+      return commonData[jType][planPrice];
+    }
+    // 2순위: 엑셀에 가입유형 구분이 없는 '공통'으로 작성된 경우
+    if (commonData['공통'] && commonData['공통'][planPrice] !== undefined) {
+      return commonData['공통'][planPrice];
+    }
+    // 3순위: 기존 양식 하위 호환 (가입유형 열이 없어서 바로 요금제가 들어간 경우)
+    if (commonData[planPrice] !== undefined) {
+      return commonData[planPrice];
+    }
+    
+    return 0;
+  };
+
+  if (operator === 'SK') {
+    commonSupport = getCommonAmt(devicePolicy.SK_COMMON, selectedPlanPrice, joinType);
+  } else if (operator === 'U') {
+    commonSupport = getCommonAmt(devicePolicy.U_COMMON, selectedPlanPrice, joinType);
+  } else if (operator === 'KT') {
+    commonSupport = getCommonAmt(devicePolicy.KT_COMMON, selectedPlanPrice, joinType);
   }
 
   // 💡 2. 추가지원금 로직 시작
@@ -1471,7 +1491,7 @@ function NoticePopup({ onClose }) {
       <div className="bg-white p-6 rounded-3xl shadow-xl relative w-max max-w-[90vw] text-center mb-[20vh]">
         <button onClick={onClose} className="absolute top-2 right-2 text-gray-400 hover:text-gray-800 text-2xl leading-none">&times;</button>
         <h2 className="text-lg font-bold mb-4 text-blue-600">📢 안내</h2>
-        <p className="text-gray-800 font-medium whitespace-nowrap">정책 기준일 : SK 9월 24일 / KT 9월 24일 / U+ 9월 24일<br />공통지원금이 0원이면 지원금 칸에 직접 입력해야합니다.</p>
+        <p className="text-gray-800 font-medium whitespace-nowrap">정책 기준일 : SK 10월 1일 / KT 9월 24일 / U+ 10월 1일<br />공통지원금이 0원이면 지원금 칸에 직접 입력해야합니다.</p>
         <button onClick={onClose} className="mt-6 bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 w-full font-bold text-sm">확인</button>
       </div>
     </div>
@@ -2895,45 +2915,65 @@ useEffect(() => {
         const wb = XLSX.read(data, { type: 'array' });
 let updatedPolicy = JSON.parse(JSON.stringify(POLICY)); 
 
+
         // SK 공통지원금 파싱 추가
         if (wb.Sheets['SK_공통지원금']) {
           const skData = XLSX.utils.sheet_to_json(wb.Sheets['SK_공통지원금']);
           skData.forEach(row => {
             const modelName = row['모델명'];
+            const type = row['가입유형'] || '공통'; // 💡 가입유형 컬럼 추가 지원
             if (updatedPolicy.DEVICES[modelName]) {
-              updatedPolicy.DEVICES[modelName].SK_COMMON = {};
+              // 최초 데이터 삽입 시 타입별 객체 생성 (기존 데이터 덮어쓰기 방지)
+              if (!updatedPolicy.DEVICES[modelName].SK_COMMON[type]) {
+                updatedPolicy.DEVICES[modelName].SK_COMMON[type] = {};
+              }
               Object.keys(row).forEach(key => {
-                if (key !== '모델명') updatedPolicy.DEVICES[modelName].SK_COMMON[key] = row[key];
+                if (key !== '모델명' && key !== '가입유형') {
+                  updatedPolicy.DEVICES[modelName].SK_COMMON[type][key] = row[key];
+                }
               });
             }
           });
         }
 
+        // KT 공통지원금 파싱 추가
         if (wb.Sheets['KT_공통지원금']) {
           const ktData = XLSX.utils.sheet_to_json(wb.Sheets['KT_공통지원금']);
           ktData.forEach(row => {
             const modelName = row['모델명'];
+            const type = row['가입유형'] || '공통';
             if (updatedPolicy.DEVICES[modelName]) {
-              updatedPolicy.DEVICES[modelName].KT_COMMON = {};
+              if (!updatedPolicy.DEVICES[modelName].KT_COMMON[type]) {
+                updatedPolicy.DEVICES[modelName].KT_COMMON[type] = {};
+              }
               Object.keys(row).forEach(key => {
-                if (key !== '모델명') updatedPolicy.DEVICES[modelName].KT_COMMON[key] = row[key];
+                if (key !== '모델명' && key !== '가입유형') {
+                  updatedPolicy.DEVICES[modelName].KT_COMMON[type][key] = row[key];
+                }
               });
             }
           });
         }
 
+        // U+ 공통지원금 파싱 추가
         if (wb.Sheets['U_공통지원금']) {
           const uData = XLSX.utils.sheet_to_json(wb.Sheets['U_공통지원금']);
           uData.forEach(row => {
             const modelName = row['모델명'];
+            const type = row['가입유형'] || '공통';
             if (updatedPolicy.DEVICES[modelName]) {
-              updatedPolicy.DEVICES[modelName].U_COMMON = {};
+              if (!updatedPolicy.DEVICES[modelName].U_COMMON[type]) {
+                updatedPolicy.DEVICES[modelName].U_COMMON[type] = {};
+              }
               Object.keys(row).forEach(key => {
-                if (key !== '모델명') updatedPolicy.DEVICES[modelName].U_COMMON[key] = row[key];
+                if (key !== '모델명' && key !== '가입유형') {
+                  updatedPolicy.DEVICES[modelName].U_COMMON[type][key] = row[key];
+                }
               });
             }
           });
         }
+
 
         if (wb.Sheets['추가지원금']) {
           const extraData = XLSX.utils.sheet_to_json(wb.Sheets['추가지원금']);
