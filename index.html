@@ -2283,9 +2283,11 @@ function DraggablePopup({ onClose }) {
           showAlert("❌ 서버 전송 실패: " + err.message);
         });
 
-      } catch (err) {
-        showAlert("❌ 엑셀 파일 처리 중 오류가 발생했습니다.");
+            } catch (err) {
+        // 에러의 진짜 이유를 화면에 같이 출력하도록 변경
+        showAlert("❌ 엑셀 오류: " + err.message + "\n\n(사내 문서보안 암호화가 원인일 확률이 높습니다.)");
       }
+
     };
     reader.readAsArrayBuffer(file);
     e.target.value = null; 
