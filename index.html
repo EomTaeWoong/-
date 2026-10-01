@@ -2183,6 +2183,114 @@ function DraggablePopup({ onClose }) {
 
   const inventoryUploadRef = useRef(null);
 
+// 👇👇 여기서부터 추가 (정책 업로드 로직) 👇👇
+  const policyUploadRef = useRef(null);
+
+  const handlePolicyUpload = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      try {
+        const data = new Uint8Array(event.target.result);
+        const wb = window.XLSX.read(data, { type: 'array' });
+        
+        let updatedPolicy = JSON.parse(JSON.stringify(POLICY)); 
+
+        if (wb.Sheets['SK_공통지원금']) {
+          const skData = window.XLSX.utils.sheet_to_json(wb.Sheets['SK_공통지원금']);
+          skData.forEach(row => {
+            const model = row['모델명']; const type = row['가입유형'] || '공통';
+            if (updatedPolicy.DEVICES[model]) {
+              if (!updatedPolicy.DEVICES[model].SK_COMMON[type]) updatedPolicy.DEVICES[model].SK_COMMON[type] = {};
+              Object.keys(row).forEach(k => { if (k !== '모델명' && k !== '가입유형') updatedPolicy.DEVICES[model].SK_COMMON[type][k] = row[k]; });
+            }
+          });
+        }
+
+        if (wb.Sheets['KT_공통지원금']) {
+          const ktData = window.XLSX.utils.sheet_to_json(wb.Sheets['KT_공통지원금']);
+          ktData.forEach(row => {
+            const model = row['모델명']; const type = row['가입유형'] || '공통';
+            if (updatedPolicy.DEVICES[model]) {
+              if (!updatedPolicy.DEVICES[model].KT_COMMON[type]) updatedPolicy.DEVICES[model].KT_COMMON[type] = {};
+              Object.keys(row).forEach(k => { if (k !== '모델명' && k !== '가입유형') updatedPolicy.DEVICES[model].KT_COMMON[type][k] = row[k]; });
+            }
+          });
+        }
+
+        if (wb.Sheets['U_공통지원금']) {
+          const uData = window.XLSX.utils.sheet_to_json(wb.Sheets['U_공통지원금']);
+          uData.forEach(row => {
+            const model = row['모델명']; const type = row['가입유형'] || '공통';
+            if (updatedPolicy.DEVICES[model]) {
+              if (!updatedPolicy.DEVICES[model].U_COMMON[type]) updatedPolicy.DEVICES[model].U_COMMON[type] = {};
+              Object.keys(row).forEach(k => { if (k !== '모델명' && k !== '가입유형') updatedPolicy.DEVICES[model].U_COMMON[type][k] = row[k]; });
+            }
+          });
+        }
+
+        if (wb.Sheets['추가지원금']) {
+          const extraData = window.XLSX.utils.sheet_to_json(wb.Sheets['추가지원금']);
+          extraData.forEach(row => {
+            const model = row['모델명'];
+            if (updatedPolicy.DEVICES[model]) {
+              if (!updatedPolicy.DEVICES[model].EXTRA) updatedPolicy.DEVICES[model].EXTRA = {};
+              const extra = updatedPolicy.DEVICES[model].EXTRA;
+              
+              let ktTier = 'OVER_90K'; let uHighTier = 'OVER_95K'; let uLowTier = 'OVER_61K'; let skTier = 'OVER_99K';
+              if (model.includes('A36') || model.includes('A37')) { ktTier = 'OVER_61K'; uHighTier = 'OVER_61K'; uLowTier = 'OVER_61K'; skTier = 'OVER_50K'; } 
+              else if (model.includes('A17')) { ktTier = 'OVER_33K'; uHighTier = 'OVER_33K'; uLowTier = 'OVER_33K'; skTier = 'OVER_33K'; }
+
+              if(row['KT기변'] !== undefined) extra.KT_CHANGE_DOTCOM = { [ktTier]: { common: row['KT기변'], selective: row['KT기변'] } };
+              if(row['KT기변_갤'] !== undefined) extra.KT_CHANGE_GALCAMS = { [ktTier]: { common: row['KT기변_갤'], selective: row['KT기변_갤'] } };
+              if(row['KT번이'] !== undefined) extra.KT_MNP_DOTCOM = { [ktTier]: { common: row['KT번이'], selective: row['KT번이'] } };
+              if(row['KT번이_갤'] !== undefined) extra.KT_MNP_GALCAMS = { [ktTier]: { common: row['KT번이_갤'], selective: row['KT번이_갤'] } };
+              
+              if(row['SK기변'] !== undefined) extra.SK_CHANGE_DOTCOM = { [skTier]: { common: row['SK기변'], selective: row['SK기변'] } };
+              if(row['SK기변_갤'] !== undefined) extra.SK_CHANGE_GALCAMS = { [skTier]: { common: row['SK기변_갤'], selective: row['SK기변_갤'] } };
+              if(row['SK번이'] !== undefined) extra.SK_MNP_DOTCOM = { [skTier]: { common: row['SK번이'], selective: row['SK번이'] } };
+              if(row['SK번이_갤'] !== undefined) extra.SK_MNP_GALCAMS = { [skTier]: { common: row['SK번이_갤'], selective: row['SK번이_갤'] } };
+
+              const applyUPlus = (highVal, lowVal) => {
+                if (uHighTier === uLowTier) {
+                  const val = highVal !== undefined ? highVal : (lowVal !== undefined ? lowVal : 0);
+                  return { [uHighTier]: { common: val, selective: val } };
+                } else {
+                  return { [uHighTier]: { common: highVal||0, selective: highVal||0 }, [uLowTier]: { common: lowVal||0, selective: lowVal||0 } };
+                }
+              };
+
+              if(row['U+기변(고)'] !== undefined || row['U+기변(저)'] !== undefined) extra.U_CHANGE_DOTCOM = applyUPlus(row['U+기변(고)'], row['U+기변(저)']);
+              if(row['U+기변_갤(고)'] !== undefined || row['U+기변_갤(저)'] !== undefined) extra.U_CHANGE_GALCAMS = applyUPlus(row['U+기변_갤(고)'], row['U+기변_갤(저)']);
+              if(row['U+번이(고)'] !== undefined || row['U+번이(저)'] !== undefined) extra.U_MNP_DOTCOM = applyUPlus(row['U+번이(고)'], row['U+번이(저)']);
+              if(row['U+번이_갤(고)'] !== undefined || row['U+번이_갤(저)'] !== undefined) extra.U_MNP_GALCAMS = applyUPlus(row['U+번이_갤(고)'], row['U+번이_갤(저)']);
+            }
+          });
+        }
+
+        fetch(`${workerUrl}/save-policy`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(updatedPolicy)
+        })
+        .then(res => res.json())
+        .then(result => {
+          showAlert("✅ 정책 데이터가 서버에 저장되었습니다! 새로고침 해주세요.");
+        })
+        .catch(err => {
+          showAlert("❌ 서버 전송 실패: " + err.message);
+        });
+
+      } catch (err) {
+        showAlert("❌ 엑셀 파일 처리 중 오류가 발생했습니다.");
+      }
+    };
+    reader.readAsArrayBuffer(file);
+    e.target.value = null; 
+  };
+
   const handleInventoryUpload = (e) => {
     const file = e.target.files[0];
     if (!file) return;
@@ -2407,10 +2515,17 @@ function DraggablePopup({ onClose }) {
           </span>
           
           <div className="flex items-center gap-2">
+            {/* 👇 여기서부터 추가/교체 👇 */}
+            <input type="file" accept=".xlsx, .xls" ref={policyUploadRef} onChange={handlePolicyUpload} className="hidden" />
+            <button onClick={() => policyUploadRef.current.click()} className="bg-blue-500 hover:bg-blue-600 text-white px-2.5 py-1.5 rounded text-[13px] font-bold transition-colors shadow-sm">
+              정책 업로드
+            </button>
+
             <input type="file" accept=".txt, .csv, .xlsx, .xls" ref={inventoryUploadRef} onChange={handleInventoryUpload} className="hidden" />
             <button onClick={() => inventoryUploadRef.current.click()} className="bg-white/20 hover:bg-white/30 text-white px-2.5 py-1.5 rounded text-[13px] font-bold transition-colors shadow-sm">
               재고 업로드
             </button>
+
             <button onClick={handleExportExcel} className="bg-emerald-500 hover:bg-emerald-600 text-white px-2.5 py-1.5 rounded text-[13px] font-bold transition-colors shadow-sm">
               엑셀로 저장
             </button>
@@ -2896,148 +3011,30 @@ if (verifyData.success) {
   };
  
 
-
 useEffect(() => {
-    // 💡 불러올 엑셀 파일의 이름을 직접 지정합니다.
-    // 주의: 실제 폴더에 있는 엑셀 파일 이름과 똑같이 적어주세요! (예: policy.xlsx)
-    const activeFile = 'policy.xlsx'; 
+    // 👇👇 정책 엑셀 파싱 로직 대신 서버에서 바로 받아오도록 수정 👇👇
+    const workerUrl = 'https://shiny-surf-3362.xodnd9733.workers.dev';
     
-    // 캐시 방지를 위해 뒤에 시간을 붙여서 불러옵니다.
-    const fileUrl = `./${activeFile}?t=${new Date().getTime()}`;
-
-    fetch(fileUrl)
+    fetch(`${workerUrl}/get-policy`)
       .then(response => {
-        if (!response.ok) throw new Error("엑셀 파일을 찾을 수 없습니다.");
-        return response.arrayBuffer();
+        if (!response.ok) throw new Error("서버 응답 오류");
+        return response.json();
       })
-
       .then(data => {
-        const wb = XLSX.read(data, { type: 'array' });
-let updatedPolicy = JSON.parse(JSON.stringify(POLICY)); 
-
-
-        // SK 공통지원금 파싱 추가
-        if (wb.Sheets['SK_공통지원금']) {
-          const skData = XLSX.utils.sheet_to_json(wb.Sheets['SK_공통지원금']);
-          skData.forEach(row => {
-            const modelName = row['모델명'];
-            const type = row['가입유형'] || '공통'; // 💡 가입유형 컬럼 추가 지원
-            if (updatedPolicy.DEVICES[modelName]) {
-              // 최초 데이터 삽입 시 타입별 객체 생성 (기존 데이터 덮어쓰기 방지)
-              if (!updatedPolicy.DEVICES[modelName].SK_COMMON[type]) {
-                updatedPolicy.DEVICES[modelName].SK_COMMON[type] = {};
-              }
-              Object.keys(row).forEach(key => {
-                if (key !== '모델명' && key !== '가입유형') {
-                  updatedPolicy.DEVICES[modelName].SK_COMMON[type][key] = row[key];
-                }
-              });
-            }
-          });
+        if (data && data.DEVICES) {
+          setPolicyData(data);
+        } else {
+          setPolicyData(POLICY);
         }
-
-        // KT 공통지원금 파싱 추가
-        if (wb.Sheets['KT_공통지원금']) {
-          const ktData = XLSX.utils.sheet_to_json(wb.Sheets['KT_공통지원금']);
-          ktData.forEach(row => {
-            const modelName = row['모델명'];
-            const type = row['가입유형'] || '공통';
-            if (updatedPolicy.DEVICES[modelName]) {
-              if (!updatedPolicy.DEVICES[modelName].KT_COMMON[type]) {
-                updatedPolicy.DEVICES[modelName].KT_COMMON[type] = {};
-              }
-              Object.keys(row).forEach(key => {
-                if (key !== '모델명' && key !== '가입유형') {
-                  updatedPolicy.DEVICES[modelName].KT_COMMON[type][key] = row[key];
-                }
-              });
-            }
-          });
-        }
-
-        // U+ 공통지원금 파싱 추가
-        if (wb.Sheets['U_공통지원금']) {
-          const uData = XLSX.utils.sheet_to_json(wb.Sheets['U_공통지원금']);
-          uData.forEach(row => {
-            const modelName = row['모델명'];
-            const type = row['가입유형'] || '공통';
-            if (updatedPolicy.DEVICES[modelName]) {
-              if (!updatedPolicy.DEVICES[modelName].U_COMMON[type]) {
-                updatedPolicy.DEVICES[modelName].U_COMMON[type] = {};
-              }
-              Object.keys(row).forEach(key => {
-                if (key !== '모델명' && key !== '가입유형') {
-                  updatedPolicy.DEVICES[modelName].U_COMMON[type][key] = row[key];
-                }
-              });
-            }
-          });
-        }
-
-
-        if (wb.Sheets['추가지원금']) {
-          const extraData = XLSX.utils.sheet_to_json(wb.Sheets['추가지원금']);
-          extraData.forEach(row => {
-            const modelName = row['모델명'];
-            if (updatedPolicy.DEVICES[modelName]) {
-              if (!updatedPolicy.DEVICES[modelName].EXTRA) updatedPolicy.DEVICES[modelName].EXTRA = {};
-              const extra = updatedPolicy.DEVICES[modelName].EXTRA;
-              
-              let ktTier = 'OVER_90K';    
-              let uHighTier = 'OVER_95K'; 
-              let uLowTier = 'OVER_61K';  
-
-              if (modelName.includes('A36') || modelName.includes('A37')) {
-                ktTier = 'OVER_61K';
-                uHighTier = 'OVER_61K'; 
-                uLowTier = 'OVER_61K';
-              } else if (modelName.includes('A17')) {
-                ktTier = 'OVER_33K';
-                uHighTier = 'OVER_33K'; 
-                uLowTier = 'OVER_33K';
-              }
-              
-              if(row['KT기변'] !== undefined) extra.KT_CHANGE_DOTCOM = { [ktTier]: { common: row['KT기변'], selective: row['KT기변'] } };
-              if(row['KT기변_갤'] !== undefined) extra.KT_CHANGE_GALCAMS = { [ktTier]: { common: row['KT기변_갤'], selective: row['KT기변_갤'] } };
-              if(row['KT번이'] !== undefined) extra.KT_MNP_DOTCOM = { [ktTier]: { common: row['KT번이'], selective: row['KT번이'] } };
-              if(row['KT번이_갤'] !== undefined) extra.KT_MNP_GALCAMS = { [ktTier]: { common: row['KT번이_갤'], selective: row['KT번이_갤'] } };
-              
-              
-              // SK 추가지원금 파싱 추가
-              let skTier = 'OVER_99K';
-              if(row['SK기변'] !== undefined) extra.SK_CHANGE_DOTCOM = { [skTier]: { common: row['SK기변'], selective: row['SK기변'] } };
-              if(row['SK기변_갤'] !== undefined) extra.SK_CHANGE_GALCAMS = { [skTier]: { common: row['SK기변_갤'], selective: row['SK기변_갤'] } };
-              if(row['SK번이'] !== undefined) extra.SK_MNP_DOTCOM = { [skTier]: { common: row['SK번이'], selective: row['SK번이'] } };
-              if(row['SK번이_갤'] !== undefined) extra.SK_MNP_GALCAMS = { [skTier]: { common: row['SK번이_갤'], selective: row['SK번이_갤'] } };
-
-              const applyUPlus = (highVal, lowVal) => {
-                if (uHighTier === uLowTier) {
-                  const val = highVal !== undefined ? highVal : (lowVal !== undefined ? lowVal : 0);
-                  return { [uHighTier]: { common: val, selective: val } };
-                } else {
-                  return { 
-                    [uHighTier]: { common: highVal||0, selective: highVal||0 }, 
-                    [uLowTier]: { common: lowVal||0, selective: lowVal||0 } 
-                  };
-                }
-              };
-
-              if(row['U+기변(고)'] !== undefined || row['U+기변(저)'] !== undefined) extra.U_CHANGE_DOTCOM = applyUPlus(row['U+기변(고)'], row['U+기변(저)']);
-              if(row['U+기변_갤(고)'] !== undefined || row['U+기변_갤(저)'] !== undefined) extra.U_CHANGE_GALCAMS = applyUPlus(row['U+기변_갤(고)'], row['U+기변_갤(저)']);
-              if(row['U+번이(고)'] !== undefined || row['U+번이(저)'] !== undefined) extra.U_MNP_DOTCOM = applyUPlus(row['U+번이(고)'], row['U+번이(저)']);
-              if(row['U+번이_갤(고)'] !== undefined || row['U+번이_갤(저)'] !== undefined) extra.U_MNP_GALCAMS = applyUPlus(row['U+번이_갤(고)'], row['U+번이_갤(저)']);
-            }
-          });
-        }
-
-        setPolicyData(updatedPolicy);
         setIsLoading(false);
       })
       .catch(error => {
-        console.error('구글 시트 데이터를 불러오는데 실패했습니다:', error);
+        console.error('정책 데이터를 불러오는데 실패했습니다:', error);
+        setPolicyData(POLICY); // 에러 발생 시 기본값 사용
         setIsLoading(false); 
       });
   }, []);
+
 
  // 💡 송장번호 검색 함수를 '비밀 스위치'로 개조
   const handleTrackingSearch = () => { 
