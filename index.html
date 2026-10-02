@@ -1951,7 +1951,119 @@ function NewWindowPortal({ children, onClose, title }) {
 }
 
 
+// ------------------ 정책 복사-붙여넣기 팝업 (DRM 우회용) ------------------
+function PolicyPastePopup({ onClose, POLICY, workerUrl, showAlert }) {
+  const [skCommon, setSkCommon] = useState('');
+  const [ktCommon, setKtCommon] = useState('');
+  const [uCommon, setUCommon] = useState('');
+  const [extra, setExtra] = useState('');
 
+  const parseTSV = (tsv) => {
+    if (!tsv || !tsv.trim()) return [];
+    const rows = tsv.trim().split(/\r?\n/);
+    const headers = rows[0].split('\t').map(h => h.trim());
+    const data = [];
+    for (let i = 1; i < rows.length; i++) {
+      const cells = rows[i].split('\t');
+      const rowData = {};
+      headers.forEach((h, idx) => {
+        let val = cells[idx] ? cells[idx].trim() : '';
+        if(val && !isNaN(Number(val.replace(/,/g, '')))) val = Number(val.replace(/,/g, ''));
+        rowData[h] = val;
+      });
+      data.push(rowData);
+    }
+    return data;
+  };
+
+  const handleSave = () => {
+    try {
+      let updatedPolicy = JSON.parse(JSON.stringify(POLICY));
+      const processSheet = (tsvData, targetKey) => {
+        const parsed = parseTSV(tsvData);
+        parsed.forEach(row => {
+          const model = row['모델명']; const type = row['가입유형'] || '공통';
+          if (updatedPolicy.DEVICES[model]) {
+            if (!updatedPolicy.DEVICES[model][targetKey][type]) updatedPolicy.DEVICES[model][targetKey][type] = {};
+            Object.keys(row).forEach(k => { if (k !== '모델명' && k !== '가입유형') updatedPolicy.DEVICES[model][targetKey][type][k] = row[k]; });
+          }
+        });
+      };
+
+      if (skCommon) processSheet(skCommon, 'SK_COMMON');
+      if (ktCommon) processSheet(ktCommon, 'KT_COMMON');
+      if (uCommon) processSheet(uCommon, 'U_COMMON');
+
+      if (extra) {
+        const extraData = parseTSV(extra);
+        extraData.forEach(row => {
+          const model = row['모델명'];
+          if (updatedPolicy.DEVICES[model]) {
+            if (!updatedPolicy.DEVICES[model].EXTRA) updatedPolicy.DEVICES[model].EXTRA = {};
+            const ex = updatedPolicy.DEVICES[model].EXTRA;
+            let ktTier = 'OVER_90K'; let uHighTier = 'OVER_95K'; let uLowTier = 'OVER_61K'; let skTier = 'OVER_99K';
+            if (model.includes('A36') || model.includes('A37')) { ktTier = 'OVER_61K'; uHighTier = 'OVER_61K'; uLowTier = 'OVER_61K'; skTier = 'OVER_50K'; }
+            else if (model.includes('A17')) { ktTier = 'OVER_33K'; uHighTier = 'OVER_33K'; uLowTier = 'OVER_33K'; skTier = 'OVER_33K'; }
+
+            if(row['KT기변'] !== undefined && row['KT기변'] !== '') ex.KT_CHANGE_DOTCOM = { [ktTier]: { common: row['KT기변'], selective: row['KT기변'] } };
+            if(row['KT기변_갤'] !== undefined && row['KT기변_갤'] !== '') ex.KT_CHANGE_GALCAMS = { [ktTier]: { common: row['KT기변_갤'], selective: row['KT기변_갤'] } };
+            if(row['KT번이'] !== undefined && row['KT번이'] !== '') ex.KT_MNP_DOTCOM = { [ktTier]: { common: row['KT번이'], selective: row['KT번이'] } };
+            if(row['KT번이_갤'] !== undefined && row['KT번이_갤'] !== '') ex.KT_MNP_GALCAMS = { [ktTier]: { common: row['KT번이_갤'], selective: row['KT번이_갤'] } };
+            if(row['SK기변'] !== undefined && row['SK기변'] !== '') ex.SK_CHANGE_DOTCOM = { [skTier]: { common: row['SK기변'], selective: row['SK기변'] } };
+            if(row['SK기변_갤'] !== undefined && row['SK기변_갤'] !== '') ex.SK_CHANGE_GALCAMS = { [skTier]: { common: row['SK기변_갤'], selective: row['SK기변_갤'] } };
+            if(row['SK번이'] !== undefined && row['SK번이'] !== '') ex.SK_MNP_DOTCOM = { [skTier]: { common: row['SK번이'], selective: row['SK번이'] } };
+            if(row['SK번이_갤'] !== undefined && row['SK번이_갤'] !== '') ex.SK_MNP_GALCAMS = { [skTier]: { common: row['SK번이_갤'], selective: row['SK번이_갤'] } };
+
+            const applyUPlus = (highVal, lowVal) => {
+              if (uHighTier === uLowTier) {
+                const val = highVal !== undefined && highVal !== '' ? highVal : (lowVal !== undefined && lowVal !== '' ? lowVal : 0);
+                return { [uHighTier]: { common: val, selective: val } };
+              } else {
+                return { [uHighTier]: { common: highVal||0, selective: highVal||0 }, [uLowTier]: { common: lowVal||0, selective: lowVal||0 } };
+              }
+            };
+
+            if((row['U+기변(고)'] !== undefined && row['U+기변(고)'] !== '') || (row['U+기변(저)'] !== undefined && row['U+기변(저)'] !== '')) ex.U_CHANGE_DOTCOM = applyUPlus(row['U+기변(고)'], row['U+기변(저)']);
+            if((row['U+기변_갤(고)'] !== undefined && row['U+기변_갤(고)'] !== '') || (row['U+기변_갤(저)'] !== undefined && row['U+기변_갤(저)'] !== '')) ex.U_CHANGE_GALCAMS = applyUPlus(row['U+기변_갤(고)'], row['U+기변_갤(저)']);
+            if((row['U+번이(고)'] !== undefined && row['U+번이(고)'] !== '') || (row['U+번이(저)'] !== undefined && row['U+번이(저)'] !== '')) ex.U_MNP_DOTCOM = applyUPlus(row['U+번이(고)'], row['U+번이(저)']);
+            if((row['U+번이_갤(고)'] !== undefined && row['U+번이_갤(고)'] !== '') || (row['U+번이_갤(저)'] !== undefined && row['U+번이_갤(저)'] !== '')) ex.U_MNP_GALCAMS = applyUPlus(row['U+번이_갤(고)'], row['U+번이_갤(저)']);
+          }
+        });
+      }
+
+      fetch(`${workerUrl}/save-policy`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(updatedPolicy) })
+      .then(res => res.json())
+      .then(result => { showAlert("✅ 정책 데이터가 서버에 저장되었습니다! 창을 닫고 메인 화면을 새로고침 해주세요."); onClose(); })
+      .catch(err => showAlert("❌ 서버 전송 실패: " + err.message));
+    } catch (err) { showAlert("❌ 데이터 처리 중 오류 발생. 복사한 내용이 올바른지 확인해주세요."); }
+  };
+
+  return (
+    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-[9999] p-4">
+      <div className="bg-white p-5 rounded-2xl shadow-xl w-full max-w-[1000px] flex flex-col h-[85vh]">
+        <div className="flex justify-between items-center mb-4 shrink-0">
+          <h2 className="text-xl font-bold text-gray-800">📋 정책 복사-붙여넣기 (문서보안 완벽 우회)</h2>
+          <button onClick={onClose} className="text-gray-500 hover:text-gray-800 text-3xl font-bold">&times;</button>
+        </div>
+        <p className="text-[13px] text-blue-800 mb-4 bg-blue-50 border border-blue-200 p-3 rounded-lg leading-relaxed">
+          💡 <b>보안 우회 방법:</b> 엑셀에서 각 시트의 <b>표 전체를 복사(Ctrl+C)</b>해서, 아래 빈칸에 각각 <b>붙여넣기(Ctrl+V)</b> 하신 후 하단의 [저장]을 누르시면 됩니다.
+        </p>
+        <div className="flex-1 overflow-y-auto grid grid-cols-1 md:grid-cols-2 gap-4 pb-4">
+          <div className="flex flex-col"><label className="font-extrabold text-red-600 mb-1">1. SK_공통지원금</label><textarea className="flex-1 border p-2 text-[11px] font-mono whitespace-pre bg-gray-50 min-h-[150px]" value={skCommon} onChange={e=>setSkCommon(e.target.value)}></textarea></div>
+          <div className="flex flex-col"><label className="font-extrabold text-blue-600 mb-1">2. KT_공통지원금</label><textarea className="flex-1 border p-2 text-[11px] font-mono whitespace-pre bg-gray-50 min-h-[150px]" value={ktCommon} onChange={e=>setKtCommon(e.target.value)}></textarea></div>
+          <div className="flex flex-col"><label className="font-extrabold text-emerald-600 mb-1">3. U_공통지원금</label><textarea className="flex-1 border p-2 text-[11px] font-mono whitespace-pre bg-gray-50 min-h-[150px]" value={uCommon} onChange={e=>setUCommon(e.target.value)}></textarea></div>
+          <div className="flex flex-col"><label className="font-extrabold text-purple-600 mb-1">4. 추가지원금</label><textarea className="flex-1 border p-2 text-[11px] font-mono whitespace-pre bg-gray-50 min-h-[150px]" value={extra} onChange={e=>setExtra(e.target.value)}></textarea></div>
+        </div>
+        <div className="pt-4 border-t flex justify-end gap-2 shrink-0">
+          <button onClick={onClose} className="px-5 py-2.5 bg-gray-200 rounded-xl font-bold text-gray-700 hover:bg-gray-300">취소</button>
+          <button onClick={handleSave} className="px-5 py-2.5 bg-blue-600 rounded-xl font-bold text-white hover:bg-blue-700 shadow-md">저장 후 반영하기</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+	
 
 // ------------------ 2. 재고 현황 팝업 (새 창 버전) ------------------
 function DraggablePopup({ onClose }) {
@@ -1971,6 +2083,8 @@ function DraggablePopup({ onClose }) {
   const [passwordInput, setPasswordInput] = useState('');
   const [pwdError, setPwdError] = useState(false);
   const pwdInputRef = useRef(null);
+  const [showPolicyPaste, setShowPolicyPaste] = useState(false);
+
 
   // 💡 새 창 안에서만 뜨는 전용 알림/확인창(Alert/Confirm) 모달 상태 추가!
   const [customModal, setCustomModal] = useState({ isOpen: false, type: 'alert', message: '', onConfirm: null });
@@ -2523,10 +2637,10 @@ function DraggablePopup({ onClose }) {
               정책 업로드
             </button>
 
-            <input type="file" accept=".txt, .csv, .xlsx, .xls" ref={inventoryUploadRef} onChange={handleInventoryUpload} className="hidden" />
-            <button onClick={() => inventoryUploadRef.current.click()} className="bg-white/20 hover:bg-white/30 text-white px-2.5 py-1.5 rounded text-[13px] font-bold transition-colors shadow-sm">
-              재고 업로드
+                        <button onClick={() => setShowPolicyPaste(true)} className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1.5 rounded-lg text-[13px] font-bold transition-colors shadow-md">
+              📋 정책 붙여넣기
             </button>
+
 
             <button onClick={handleExportExcel} className="bg-emerald-500 hover:bg-emerald-600 text-white px-2.5 py-1.5 rounded text-[13px] font-bold transition-colors shadow-sm">
               엑셀로 저장
@@ -2658,6 +2772,12 @@ function DraggablePopup({ onClose }) {
           </div>
         )}
 
+        {/* 방금 만든 붙여넣기 팝업을 띄우는 곳 */}
+        {showPolicyPaste && (
+          <PolicyPastePopup onClose={() => setShowPolicyPaste(false)} POLICY={POLICY} workerUrl={workerUrl} showAlert={showAlert} />
+        )}
+
+		  
         {/* 💡 커스텀 알림창(Alert/Confirm) 모달! 메인 화면으로 안 넘어가고 여기서 다 처리됩니다! */}
         {customModal.isOpen && (
           <div className="absolute inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-[9999]">
