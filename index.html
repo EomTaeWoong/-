@@ -2420,7 +2420,6 @@ function DraggablePopup({ onClose }) {
     }
   };
 
-  const inventoryUploadRef = useRef(null);
 
 // 👇👇 여기서부터 추가 (정책 업로드 로직) 👇👇
   const policyUploadRef = useRef(null);
@@ -2532,127 +2531,7 @@ function DraggablePopup({ onClose }) {
     e.target.value = null; 
   };
 
-  const handleInventoryUpload = (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
-    const fileName = file.name.toLowerCase();
-
-    const processInventoryData = (rows) => {
-      let updatedInventory = { SK: {}, KT: {}, 'U+': {} };
-      let newOrder = { SK: [], KT: [], 'U+': [] };
-      let groupedKeys = { SK: {}, KT: {}, 'U+': {} };
-      let deviceAppearanceOrder = { SK: [], KT: [], 'U+': [] };
-      let updateCount = 0;
-
-      let carrierIdx = -1, modelIdx = -1, qtyIdx = -1;
-
-      for (let i = 0; i < Math.min(rows.length, 10); i++) {
-        const row = rows[i] || [];
-        const cIdx = row.findIndex(c => c && String(c).trim().includes('통신사'));
-        const mIdx = row.findIndex(c => c && String(c).trim().includes('모델'));
-        const qIdx = row.findIndex(c => c && (String(c).trim().includes('창고') || String(c).trim().includes('수량')));
-        if (cIdx !== -1 && mIdx !== -1 && qIdx !== -1) { carrierIdx = cIdx; modelIdx = mIdx; qtyIdx = qIdx; break; }
-      }
-      if (carrierIdx === -1) { carrierIdx = 0; modelIdx = 1; qtyIdx = 2; }
-
-      rows.forEach((row) => {
-        let rawCarrier = String(row[carrierIdx] || '').trim().toUpperCase().replace(/\s+/g, '');
-        let rawModel = String(row[modelIdx] || '').trim(); 
-        let cleanModel = rawModel.toUpperCase().replace(/[^A-Z0-9-]/g, '');
-        let qty = String(row[qtyIdx] || '').trim();
-
-        if (!rawCarrier || !rawModel || rawCarrier.includes('통신사') || rawModel.includes('모델')) return;
-
-        let carrier = rawCarrier.includes('SK') ? 'SK' : rawCarrier.includes('KT') ? 'KT' : (rawCarrier.includes('LG') || rawCarrier.includes('U+') || rawCarrier.includes('유플')) ? 'U+' : null;
-
-        if (carrier) {
-          const internalKey = copyTextToKeyMap[cleanModel];
-          const finalKey = internalKey ? internalKey : `UNMAPPED_${rawModel}`;
-          
-          updatedInventory[carrier][finalKey] = qty;
-          updatedInventory[carrier][`${finalKey}_req`] = inventory[carrier]?.[`${finalKey}_req`] || '0';
-          updateCount++;
-
-          const devName = internalKey ? keyInfoMap[internalKey].device : rawModel; 
-
-          if (!deviceAppearanceOrder[carrier].includes(devName)) {
-            deviceAppearanceOrder[carrier].push(devName);
-            groupedKeys[carrier][devName] = [];
-          }
-          if (!groupedKeys[carrier][devName].includes(finalKey)) {
-            groupedKeys[carrier][devName].push(finalKey);
-          }
-        }
-      });
-
-      if (updateCount > 0) {
-        ['SK', 'KT', 'U+'].forEach(carrier => {
-          let finalCarrierOrder = [];
-          deviceAppearanceOrder[carrier].forEach(dev => {
-            finalCarrierOrder.push(...groupedKeys[carrier][dev]);
-          });
-          newOrder[carrier] = finalCarrierOrder;
-        });
-
-        lastSaveTimeRef.current = Date.now();
-        setInventory(updatedInventory);
-        setDisplayOrder(newOrder); 
-        
-        fetch(`${workerUrl}/save-inventory`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(updatedInventory)
-        }).catch(err => console.error("서버 저장 실패:", err));
-
-        showAlert(`✅ ${updateCount}건의 재고가 원본 데이터 기준으로 완벽히 정리되었습니다.`); // 💡 커스텀 알림창
-      } else {
-        showAlert('파일에서 일치하는 단말기/통신사 데이터를 찾을 수 없습니다.'); // 💡 커스텀 알림창
-      }
-    };
-
-    const readAsTextFallback = (fileObj) => {
-      const textReader = new FileReader();
-      textReader.onload = (txtEvent) => {
-        try {
-          const text = txtEvent.target.result;
-          let rows = [];
-          if (text.includes('<table') || text.includes('<html')) {
-            const tempDiv = document.createElement('div');
-            tempDiv.innerHTML = text;
-            const table = tempDiv.querySelector('table');
-            if (table) {
-              table.querySelectorAll('tr').forEach(tr => {
-                const row = [];
-                tr.querySelectorAll('th, td').forEach(td => row.push(td.innerText.trim()));
-                rows.push(row);
-              });
-            }
-          }
-          if (rows.length === 0) {
-            const delimiter = text.includes('\t') ? '\t' : ',';
-            rows = text.split(/\r?\n/).map(row => row.split(delimiter).map(cell => cell.trim().replace(/"/g, '')));
-          }
-          processInventoryData(rows);
-        } catch (err) { console.error(err); showAlert("파일 처리에 실패했습니다."); } // 💡 커스텀 알림창
-      };
-      textReader.readAsText(fileObj, 'euc-kr');
-    };
-
-    if (fileName.endsWith('.xlsx') || fileName.endsWith('.xls')) {
-      const reader = new FileReader();
-      reader.onload = (event) => {
-        try {
-          const data = new Uint8Array(event.target.result);
-          const workbook = window.XLSX.read(data, { type: 'array' });
-          const rows = window.XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]], { header: 1, raw: false });
-          if (!rows || rows.length === 0) throw new Error("Empty Excel");
-          processInventoryData(rows);
-        } catch (err) { readAsTextFallback(file); }
-      };
-      reader.readAsArrayBuffer(file);
-    } else { readAsTextFallback(file); }
-    e.target.value = null;
-  };
+  
 
   const handleExportExcel = () => {
     try {
