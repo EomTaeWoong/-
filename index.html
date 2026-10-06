@@ -2063,6 +2063,129 @@ function PolicyPastePopup({ onClose, POLICY, workerUrl, showAlert }) {
   );
 }
 
+
+// ------------------ 재고 복사-붙여넣기 팝업 (DRM 우회용) ------------------
+function InventoryPastePopup({ onClose, inventory, setInventory, setDisplayOrder, workerUrl, showAlert, keyInfoMap, copyTextToKeyMap }) {
+  const [pasteData, setPasteData] = useState('');
+
+  const handleSave = () => {
+    if (!pasteData.trim()) {
+      showAlert("데이터를 입력해주세요.");
+      return;
+    }
+
+    // 엑셀에서 복사한 데이터를 탭(Tab) 기준으로 파싱
+    const rows = pasteData.trim().split(/\r?\n/).map(row => row.split('\t').map(cell => cell.trim()));
+    
+    let updatedInventory = { SK: {}, KT: {}, 'U+': {} };
+    let newOrder = { SK: [], KT: [], 'U+': [] };
+    let groupedKeys = { SK: {}, KT: {}, 'U+': {} };
+    let deviceAppearanceOrder = { SK: [], KT: [], 'U+': [] };
+    let updateCount = 0;
+
+    let carrierIdx = -1, modelIdx = -1, qtyIdx = -1;
+
+    // 헤더 위치 찾기
+    for (let i = 0; i < Math.min(rows.length, 10); i++) {
+      const row = rows[i] || [];
+      const cIdx = row.findIndex(c => c && String(c).includes('통신사'));
+      const mIdx = row.findIndex(c => c && String(c).includes('모델'));
+      const qIdx = row.findIndex(c => c && (String(c).includes('창고') || String(c).includes('수량') || String(c).includes('재고')));
+      if (cIdx !== -1 && mIdx !== -1 && qIdx !== -1) { carrierIdx = cIdx; modelIdx = mIdx; qtyIdx = qIdx; break; }
+    }
+    if (carrierIdx === -1) { carrierIdx = 0; modelIdx = 1; qtyIdx = 2; }
+
+    rows.forEach((row) => {
+      let rawCarrier = String(row[carrierIdx] || '').trim().toUpperCase().replace(/\s+/g, '');
+      let rawModel = String(row[modelIdx] || '').trim(); 
+      let cleanModel = rawModel.toUpperCase().replace(/[^A-Z0-9-]/g, '');
+      let qty = String(row[qtyIdx] || '').trim();
+
+      if (!rawCarrier || !rawModel || rawCarrier.includes('통신사') || rawModel.includes('모델')) return;
+
+      let carrier = rawCarrier.includes('SK') ? 'SK' : rawCarrier.includes('KT') ? 'KT' : (rawCarrier.includes('LG') || rawCarrier.includes('U+') || rawCarrier.includes('유플')) ? 'U+' : null;
+
+      if (carrier) {
+        const internalKey = copyTextToKeyMap[cleanModel];
+        const finalKey = internalKey ? internalKey : `UNMAPPED_${rawModel}`;
+        
+        updatedInventory[carrier][finalKey] = qty;
+        updatedInventory[carrier][`${finalKey}_req`] = inventory[carrier]?.[`${finalKey}_req`] || '0';
+        updateCount++;
+
+        const devName = internalKey ? keyInfoMap[internalKey].device : rawModel; 
+
+        if (!deviceAppearanceOrder[carrier].includes(devName)) {
+          deviceAppearanceOrder[carrier].push(devName);
+          groupedKeys[carrier][devName] = [];
+        }
+        if (!groupedKeys[carrier][devName].includes(finalKey)) {
+          groupedKeys[carrier][devName].push(finalKey);
+        }
+      }
+    });
+
+    if (updateCount > 0) {
+      ['SK', 'KT', 'U+'].forEach(carrier => {
+        let finalCarrierOrder = [];
+        if(deviceAppearanceOrder[carrier]) {
+          deviceAppearanceOrder[carrier].forEach(dev => {
+            finalCarrierOrder.push(...groupedKeys[carrier][dev]);
+          });
+        }
+        
+        newOrder[carrier] = finalCarrierOrder.length > 0 ? finalCarrierOrder : (inventory[carrier] ? Object.keys(inventory[carrier]).filter(k => !k.endsWith('_req')) : []);
+        
+        // 기존에 있던 재고 항목 중 이번 복사본에 없는 단말기는 수량을 0으로 처리하되 목록에 유지
+        Object.keys(inventory[carrier] || {}).forEach(k => {
+           if (!k.endsWith('_req') && !updatedInventory[carrier][k]) {
+               updatedInventory[carrier][k] = '0';
+               updatedInventory[carrier][`${k}_req`] = inventory[carrier][`${k}_req`] || '0';
+           }
+        });
+      });
+
+      setInventory(updatedInventory);
+      setDisplayOrder(newOrder); 
+      
+      fetch(`${workerUrl}/save-inventory`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(updatedInventory)
+      }).catch(err => console.error("서버 저장 실패:", err));
+
+      showAlert(`✅ ${updateCount}건의 재고가 성공적으로 업데이트되었습니다.`);
+      onClose();
+    } else {
+      showAlert('일치하는 단말기/통신사 데이터를 찾을 수 없거나 양식이 잘못되었습니다.');
+    }
+  };
+
+  return (
+    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-[9999] p-4">
+      <div className="bg-white p-5 rounded-2xl shadow-xl w-full max-w-[800px] flex flex-col h-[70vh]">
+        <div className="flex justify-between items-center mb-4 shrink-0">
+          <h2 className="text-xl font-bold text-gray-800">📦 재고 현황 업로드 (엑셀 복사/붙여넣기)</h2>
+          <button onClick={onClose} className="text-gray-500 hover:text-gray-800 text-3xl font-bold">&times;</button>
+        </div>
+        <p className="text-[13px] text-emerald-800 mb-4 bg-emerald-50 border border-emerald-200 p-3 rounded-lg leading-relaxed">
+          💡 엑셀에서 재고 표 전체(통신사, 모델, 수량)를 <b>드래그하여 복사(Ctrl+C)</b>한 뒤, 아래 빈칸에 <b>붙여넣기(Ctrl+V)</b> 해주세요.
+        </p>
+        <textarea 
+          className="flex-1 border p-3 text-[12px] font-mono whitespace-pre bg-gray-50 rounded-xl mb-4 resize-none outline-none focus:ring-2 focus:ring-emerald-400" 
+          placeholder="여기에 엑셀 데이터를 붙여넣으세요..."
+          value={pasteData} 
+          onChange={e=>setPasteData(e.target.value)}
+        ></textarea>
+        <div className="pt-4 border-t flex justify-end gap-2 shrink-0">
+          <button onClick={onClose} className="px-5 py-2.5 bg-gray-200 rounded-xl font-bold text-gray-700 hover:bg-gray-300">취소</button>
+          <button onClick={handleSave} className="px-5 py-2.5 bg-emerald-600 rounded-xl font-bold text-white hover:bg-emerald-700 shadow-md">저장 후 반영하기</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 	
 
 // ------------------ 2. 재고 현황 팝업 (새 창 버전) ------------------
@@ -2084,6 +2207,8 @@ function DraggablePopup({ onClose }) {
   const [pwdError, setPwdError] = useState(false);
   const pwdInputRef = useRef(null);
   const [showPolicyPaste, setShowPolicyPaste] = useState(false);
+  const [showInventoryPaste, setShowInventoryPaste] = useState(false);
+
 
 
   // 💡 새 창 안에서만 뜨는 전용 알림/확인창(Alert/Confirm) 모달 상태 추가!
@@ -2636,11 +2761,11 @@ function DraggablePopup({ onClose }) {
               📋 정책 업로드
             </button>
 
-            {/* 2. 복구된 재고 업로드 */}
-            <input type="file" accept=".txt, .csv, .xlsx, .xls" ref={inventoryUploadRef} onChange={handleInventoryUpload} className="hidden" />
-            <button onClick={() => inventoryUploadRef.current.click()} className="bg-white/20 hover:bg-white/30 text-white px-2.5 py-1.5 rounded text-[13px] font-bold transition-colors shadow-sm">
-              재고 업로드
+                        {/* 2. 재고 텍스트 업로드 */}
+            <button onClick={() => setShowInventoryPaste(true)} className="bg-white/20 hover:bg-white/30 text-white px-2.5 py-1.5 rounded text-[13px] font-bold transition-colors shadow-sm">
+              📦 재고 업로드
             </button>
+
 
             {/* 3. 엑셀로 저장 */}
             <button onClick={handleExportExcel} className="bg-emerald-500 hover:bg-emerald-600 text-white px-2.5 py-1.5 rounded text-[13px] font-bold transition-colors shadow-sm">
@@ -2779,6 +2904,22 @@ function DraggablePopup({ onClose }) {
           <PolicyPastePopup onClose={() => setShowPolicyPaste(false)} POLICY={POLICY} workerUrl={workerUrl} showAlert={showAlert} />
         )}
 
+
+		        {/* 재고 복사-붙여넣기 팝업 띄우는 곳 */}
+        {showInventoryPaste && (
+          <InventoryPastePopup 
+            onClose={() => setShowInventoryPaste(false)} 
+            inventory={inventory}
+            setInventory={setInventory}
+            setDisplayOrder={setDisplayOrder}
+            workerUrl={workerUrl}
+            showAlert={showAlert}
+            keyInfoMap={keyInfoMap}
+            copyTextToKeyMap={copyTextToKeyMap}
+          />
+        )}
+
+		  
 		  
         {/* 💡 커스텀 알림창(Alert/Confirm) 모달! 메인 화면으로 안 넘어가고 여기서 다 처리됩니다! */}
         {customModal.isOpen && (
