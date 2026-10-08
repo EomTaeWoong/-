@@ -3214,6 +3214,21 @@ const plans = useMemo(() => operator === 'SK' ? PLAN_LIST_SK : (operator === 'KT
 
   return (
     <div className="font-sans text-gray-900 bg-gray-50 min-h-screen flex flex-col">
+	  return (
+    <div className="font-sans text-gray-900 bg-gray-50 min-h-screen flex flex-col">
+      
+      {/* 👇 메인화면 좌측 빈 공간 네이버 지도 모바일뷰 추가 👇 */}
+      <div className="hidden 2xl:block fixed left-6 top-6 bottom-6 w-[390px] rounded-[24px] shadow-xl border border-gray-200 overflow-hidden z-[5] bg-white">
+        <iframe 
+          src="https://m.map.naver.com/" 
+          className="w-full h-full border-0" 
+          title="네이버 지도"
+        ></iframe>
+      </div>
+      {/* 👆 여기까지 👆 */}
+
+      <div className="mt-2 py-2 px-4 mb-3 max-w-4xl mx-auto flex flex-nowrap overflow-x-auto hide-scroll-bar gap-2 items-center bg-white rounded-2xl shadow-[0_2px_10px_rgb(0,0,0,0.02)] border border-gray-100 w-full relative z-10">
+
       <div className="mt-2 py-2 px-4 mb-3 max-w-4xl mx-auto flex flex-nowrap overflow-x-auto hide-scroll-bar gap-2 items-center bg-white rounded-2xl shadow-[0_2px_10px_rgb(0,0,0,0.02)] border border-gray-100 w-full relative z-10">
   
   {/* 통신사 선택 (iOS 스타일 세그먼트 컨트롤) */}
