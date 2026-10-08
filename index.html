@@ -3233,13 +3233,7 @@ const plans = useMemo(() => operator === 'SK' ? PLAN_LIST_SK : (operator === 'KT
   <a href="https://www.samsung.com/sec/smartphones/all-smartphones/?carrier-phone" target="_blank" className="bg-gray-100 text-gray-700 px-3 py-1.5 rounded-xl hover:bg-gray-200 font-bold text-sm shrink-0 transition-colors">닷컴</a>
   <button onClick={() => setShowMaintenancePopup(true)} className="bg-indigo-50 text-indigo-600 px-3 py-1.5 rounded-xl hover:bg-indigo-100 font-bold text-sm shrink-0 transition-colors">유지비</button>
   <button onClick={() => setShowStorePopup(true)} className="bg-teal-50 text-teal-600 px-3 py-1.5 rounded-xl hover:bg-teal-100 font-bold text-sm shrink-0 transition-colors">MVNO</button>
-  <button onClick={() => window.open('https://m.map.naver.com', 'naverMap', 'width=390,height=800,left=50,top=50')} title="네이버 지도" className="bg-[#03c75a]/10 text-[#03c75a] px-2.5 py-1.5 rounded-xl hover:bg-[#03c75a]/20 shrink-0 transition-colors flex items-center justify-center">
-    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor" className="w-5 h-5">
-      <path strokeLinecap="round" strokeLinejoin="round" d="M9 6.75V15m6-6v8.25m.503 3.498l4.875-2.437c.381-.19.622-.58.622-1.006V4.82c0-.836-.88-1.38-1.628-1.006l-3.869 1.934c-.317.159-.69.159-1.006 0L9.503 3.252a1.125 1.125 0 00-1.006 0L3.622 5.689C3.24 5.88 3 6.27 3 6.695V19.18c0 .836.88 1.38 1.628 1.006l3.869-1.934c.317-.159.69-.159 1.006 0l4.994 2.497c.317.158.69.158 1.006 0z" />
-    </svg>
-  </button>
   <button onClick={() => setShowPopup(true)} className="bg-slate-100 text-slate-700 px-3 py-1.5 rounded-xl hover:bg-slate-200 font-bold text-sm shrink-0 transition-colors">전화번호</button>
-  
   <button onClick={handleAdminClick} onContextMenu={(e) => { e.preventDefault(); setShowDraggablePopup(true); }} className="bg-amber-100 text-amber-700 px-3 py-1.5 rounded-xl hover:bg-amber-200 font-bold text-sm shrink-0 transition-colors">관리</button>
   <button onClick={() => setShowDeviceColorPopup(true)} className="bg-pink-50 text-pink-600 px-3 py-1.5 rounded-xl hover:bg-pink-100 font-bold text-sm shrink-0 transition-colors">닷컴 혜택</button>
   
