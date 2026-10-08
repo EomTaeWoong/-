@@ -3214,18 +3214,7 @@ const plans = useMemo(() => operator === 'SK' ? PLAN_LIST_SK : (operator === 'KT
 
     return (
     <div className="font-sans text-gray-900 bg-gray-50 min-h-screen flex flex-col">
-      
-      {/* 👇 메인화면 좌측 빈 공간 네이버 지도 모바일뷰 추가 👇 */}
-      <div className="hidden xl:block fixed left-6 top-6 bottom-6 w-[390px] rounded-[24px] shadow-xl border border-gray-200 overflow-hidden z-[5] bg-white">
-        <iframe 
-          src="https://m.map.naver.com/" 
-          className="w-full h-full border-0" 
-          title="네이버 지도"
-        ></iframe>
-      </div>
-      {/* 👆 여기까지 👆 */}
-
-      <div className="mt-2 py-2 px-4 mb-3 max-w-4xl mx-auto flex flex-nowrap overflow-x-auto hide-scroll-bar gap-2 items-center bg-white rounded-2xl shadow-[0_2px_10px_rgb(0,0,0,0.02)] border border-gray-100 w-full relative z-10">
+    <div className="mt-2 py-2 px-4 mb-3 max-w-4xl mx-auto flex flex-nowrap overflow-x-auto hide-scroll-bar gap-2 items-center bg-white rounded-2xl shadow-[0_2px_10px_rgb(0,0,0,0.02)] border border-gray-100 w-full relative z-10">
   
   {/* 통신사 선택 (iOS 스타일 세그먼트 컨트롤) */}
   <div className="flex bg-gray-100 p-1 rounded-xl shrink-0">
@@ -3244,6 +3233,11 @@ const plans = useMemo(() => operator === 'SK' ? PLAN_LIST_SK : (operator === 'KT
   <a href="https://www.samsung.com/sec/smartphones/all-smartphones/?carrier-phone" target="_blank" className="bg-gray-100 text-gray-700 px-3 py-1.5 rounded-xl hover:bg-gray-200 font-bold text-sm shrink-0 transition-colors">닷컴</a>
   <button onClick={() => setShowMaintenancePopup(true)} className="bg-indigo-50 text-indigo-600 px-3 py-1.5 rounded-xl hover:bg-indigo-100 font-bold text-sm shrink-0 transition-colors">유지비</button>
   <button onClick={() => setShowStorePopup(true)} className="bg-teal-50 text-teal-600 px-3 py-1.5 rounded-xl hover:bg-teal-100 font-bold text-sm shrink-0 transition-colors">MVNO</button>
+  <button onClick={() => window.open('https://m.map.naver.com', 'naverMap', 'width=390,height=800,left=50,top=50')} title="네이버 지도" className="bg-[#03c75a]/10 text-[#03c75a] px-2.5 py-1.5 rounded-xl hover:bg-[#03c75a]/20 shrink-0 transition-colors flex items-center justify-center">
+    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor" className="w-5 h-5">
+      <path strokeLinecap="round" strokeLinejoin="round" d="M9 6.75V15m6-6v8.25m.503 3.498l4.875-2.437c.381-.19.622-.58.622-1.006V4.82c0-.836-.88-1.38-1.628-1.006l-3.869 1.934c-.317.159-.69.159-1.006 0L9.503 3.252a1.125 1.125 0 00-1.006 0L3.622 5.689C3.24 5.88 3 6.27 3 6.695V19.18c0 .836.88 1.38 1.628 1.006l3.869-1.934c.317-.159.69-.159 1.006 0l4.994 2.497c.317.158.69.158 1.006 0z" />
+    </svg>
+  </button>
   <button onClick={() => setShowPopup(true)} className="bg-slate-100 text-slate-700 px-3 py-1.5 rounded-xl hover:bg-slate-200 font-bold text-sm shrink-0 transition-colors">전화번호</button>
   
   <button onClick={handleAdminClick} onContextMenu={(e) => { e.preventDefault(); setShowDraggablePopup(true); }} className="bg-amber-100 text-amber-700 px-3 py-1.5 rounded-xl hover:bg-amber-200 font-bold text-sm shrink-0 transition-colors">관리</button>
