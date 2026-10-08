@@ -3263,8 +3263,20 @@ const plans = useMemo(() => operator === 'SK' ? PLAN_LIST_SK : (operator === 'KT
 
       {showDraggablePopup && <DraggablePopup onClose={() => setShowDraggablePopup(false)} />}
 
-      <input type="file" accept=".csv, .txt, .crdownload, .xls, .xlsx" ref={fileInputRef} onChange={handleFileUpload} style={{ display: 'none' }} />
-	        {/* 👇 화면 우측 하단 다크모드 토글 버튼 👇 */}
+            <input type="file" accept=".csv, .txt, .crdownload, .xls, .xlsx" ref={fileInputRef} onChange={handleFileUpload} style={{ display: 'none' }} />
+      
+      {/* 👇 화면 우측 하단 네이버 지도 팝업 버튼 (다크모드 버튼 바로 위) 👇 */}
+      <button
+        onClick={() => window.open('https://m.map.naver.com', 'naverMap', 'width=390,height=800,left=50,top=50')}
+        className="fixed bottom-24 right-6 z-[9999] bg-white text-[#03c75a] p-3 rounded-full shadow-[0_10px_25px_rgba(0,0,0,0.3)] hover:scale-110 transition-transform flex items-center justify-center w-14 h-14 border-2 border-gray-200"
+        title="네이버 지도 열기"
+      >
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="w-7 h-7">
+          <path strokeLinecap="round" strokeLinejoin="round" d="M9 6.75V15m6-6v8.25m.503 3.498l4.875-2.437c.381-.19.622-.58.622-1.006V4.82c0-.836-.88-1.38-1.628-1.006l-3.869 1.934c-.317.159-.69.159-1.006 0L9.503 3.252a1.125 1.125 0 00-1.006 0L3.622 5.689C3.24 5.88 3 6.27 3 6.695V19.18c0 .836.88 1.38 1.628 1.006l3.869-1.934c.317-.159.69-.159 1.006 0l4.994 2.497c.317.158.69.158 1.006 0z" />
+        </svg>
+      </button>
+
+      {/* 👇 화면 우측 하단 다크모드 토글 버튼 👇 */}
       <button
         onClick={() => setIsDarkMode(!isDarkMode)}
         className="fixed bottom-6 right-6 z-[9999] bg-gray-800 text-white p-3 rounded-full shadow-[0_10px_25px_rgba(0,0,0,0.3)] hover:scale-110 transition-transform flex items-center justify-center w-14 h-14 text-2xl border-2 border-gray-700"
@@ -3276,6 +3288,7 @@ const plans = useMemo(() => operator === 'SK' ? PLAN_LIST_SK : (operator === 'KT
     </div>
   );
 }
+
 
 ReactDOM.createRoot(document.getElementById('root')).render(<App/>);
 </script>
