@@ -2189,6 +2189,19 @@ function InventoryPastePopup({ onClose, inventory, setInventory, setDisplayOrder
 	
 
 // ------------------ 2. 재고 현황 팝업 (새 창 버전) ------------------
+// 👇 여기에 색상 배경 맵핑 함수 추가 👇
+function getColorBgClass(colorName) {
+  if (!colorName) return '';
+  if (colorName.includes('크림') || colorName.includes('옐로우')) return 'bg-amber-50'; 
+  if (colorName.includes('그라파이트') || colorName.includes('블랙') || colorName.includes('차콜')) return 'bg-gray-200/60';
+  if (colorName.includes('바이올렛') || colorName.includes('라벤더')) return 'bg-purple-50';
+  if (colorName.includes('핑크')) return 'bg-pink-50';
+  if (colorName.includes('블루') || colorName.includes('네이비')) return 'bg-blue-50';
+  if (colorName.includes('민트') || colorName.includes('피스타치오')) return 'bg-emerald-50';
+  if (colorName.includes('그레이') || colorName.includes('실버') || colorName.includes('화이트')) return 'bg-slate-100';
+  return '';
+}
+	
 function DraggablePopup({ onClose }) {
   const TAB_PASSWORDS = {
     'SK': '1111',
@@ -2713,7 +2726,7 @@ function DraggablePopup({ onClose }) {
                           {info.device}
                         </td>
                       )}
-                      <td className={`py-2 px-2 border-r border-gray-300 text-center whitespace-nowrap transition-colors ${isZero ? 'bg-red-100 text-red-600 font-bold' : 'text-gray-600'}`}>
+                                            <td className={`py-2 px-2 border-r border-gray-300 text-center whitespace-nowrap transition-colors ${isZero ? 'bg-red-100 text-red-600 font-bold' : `text-gray-600 ${getColorBgClass(info.color)}`}`}>
                         {info.color || (isZero ? '-' : '')} {isZero && <span className="text-xs ml-0.5 font-extrabold text-red-500">[품절]</span>}
                       </td>
                       
