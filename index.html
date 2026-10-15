@@ -2192,13 +2192,13 @@ function InventoryPastePopup({ onClose, inventory, setInventory, setDisplayOrder
 // 👇 여기에 색상 배경 맵핑 함수 추가 👇
 function getColorBgClass(colorName) {
   if (!colorName) return '';
-  if (colorName.includes('크림') || colorName.includes('옐로우')) return 'bg-amber-50'; 
-  if (colorName.includes('그라파이트') || colorName.includes('블랙') || colorName.includes('차콜')) return 'bg-gray-200/60';
-  if (colorName.includes('바이올렛') || colorName.includes('라벤더')) return 'bg-purple-50';
-  if (colorName.includes('핑크')) return 'bg-pink-50';
-  if (colorName.includes('블루') || colorName.includes('네이비')) return 'bg-blue-50';
-  if (colorName.includes('민트') || colorName.includes('피스타치오')) return 'bg-emerald-50';
-  if (colorName.includes('그레이') || colorName.includes('실버') || colorName.includes('화이트')) return 'bg-slate-100';
+  if (colorName.includes('크림') || colorName.includes('옐로우')) return 'bg-amber-100'; 
+  if (colorName.includes('그라파이트') || colorName.includes('블랙') || colorName.includes('차콜')) return 'bg-gray-300';
+  if (colorName.includes('바이올렛') || colorName.includes('라벤더')) return 'bg-purple-100';
+  if (colorName.includes('핑크')) return 'bg-pink-100';
+  if (colorName.includes('블루') || colorName.includes('네이비')) return 'bg-blue-100';
+  if (colorName.includes('민트') || colorName.includes('피스타치오')) return 'bg-emerald-100';
+  if (colorName.includes('그레이') || colorName.includes('실버') || colorName.includes('화이트')) return 'bg-slate-200';
   return '';
 }
 	
