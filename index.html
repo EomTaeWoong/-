@@ -1976,25 +1976,48 @@ function PolicyPastePopup({ onClose, POLICY, workerUrl, showAlert }) {
     return data;
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     try {
+      // 1. 빈 틀 대신 서버에 저장되어 있는 기존 정책을 먼저 불러와서 유지함
       let updatedPolicy = JSON.parse(JSON.stringify(POLICY));
+      try {
+        const res = await fetch(`${workerUrl}/get-policy`);
+        if (res.ok) {
+          const savedData = await res.json();
+          if (savedData && savedData.DEVICES) {
+            Object.keys(savedData.DEVICES).forEach(dev => {
+              if (updatedPolicy.DEVICES[dev]) {
+                updatedPolicy.DEVICES[dev] = savedData.DEVICES[dev];
+              }
+            });
+          }
+        }
+      } catch (e) {
+        console.error("기존 정책 불러오기 실패:", e);
+      }
+
+      // 2. 입력한 칸의 데이터만 골라서 덮어쓰기
       const processSheet = (tsvData, targetKey) => {
         const parsed = parseTSV(tsvData);
         parsed.forEach(row => {
           const model = row['모델명']; const type = row['가입유형'] || '공통';
           if (updatedPolicy.DEVICES[model]) {
+            if (!updatedPolicy.DEVICES[model][targetKey]) updatedPolicy.DEVICES[model][targetKey] = {};
             if (!updatedPolicy.DEVICES[model][targetKey][type]) updatedPolicy.DEVICES[model][targetKey][type] = {};
-            Object.keys(row).forEach(k => { if (k !== '모델명' && k !== '가입유형') updatedPolicy.DEVICES[model][targetKey][type][k] = row[k]; });
+            Object.keys(row).forEach(k => { 
+              if (k !== '모델명' && k !== '가입유형' && row[k] !== '') {
+                updatedPolicy.DEVICES[model][targetKey][type][k] = row[k]; 
+              }
+            });
           }
         });
       };
 
-      if (skCommon) processSheet(skCommon, 'SK_COMMON');
-      if (ktCommon) processSheet(ktCommon, 'KT_COMMON');
-      if (uCommon) processSheet(uCommon, 'U_COMMON');
+      if (skCommon.trim()) processSheet(skCommon, 'SK_COMMON');
+      if (ktCommon.trim()) processSheet(ktCommon, 'KT_COMMON');
+      if (uCommon.trim()) processSheet(uCommon, 'U_COMMON');
 
-      if (extra) {
+      if (extra.trim()) {
         const extraData = parseTSV(extra);
         extraData.forEach(row => {
           const model = row['모델명'];
@@ -2014,19 +2037,21 @@ function PolicyPastePopup({ onClose, POLICY, workerUrl, showAlert }) {
             if(row['SK번이'] !== undefined && row['SK번이'] !== '') ex.SK_MNP_DOTCOM = { [skTier]: { common: row['SK번이'], selective: row['SK번이'] } };
             if(row['SK번이_갤'] !== undefined && row['SK번이_갤'] !== '') ex.SK_MNP_GALCAMS = { [skTier]: { common: row['SK번이_갤'], selective: row['SK번이_갤'] } };
 
-            const applyUPlus = (highVal, lowVal) => {
+            const applyUPlus = (highVal, lowVal, prevObj = {}) => {
               if (uHighTier === uLowTier) {
-                const val = highVal !== undefined && highVal !== '' ? highVal : (lowVal !== undefined && lowVal !== '' ? lowVal : 0);
+                const val = (highVal !== undefined && highVal !== '') ? highVal : ((lowVal !== undefined && lowVal !== '') ? lowVal : (prevObj[uHighTier]?.common || 0));
                 return { [uHighTier]: { common: val, selective: val } };
               } else {
-                return { [uHighTier]: { common: highVal||0, selective: highVal||0 }, [uLowTier]: { common: lowVal||0, selective: lowVal||0 } };
+                const hVal = (highVal !== undefined && highVal !== '') ? highVal : (prevObj[uHighTier]?.common || 0);
+                const lVal = (lowVal !== undefined && lowVal !== '') ? lowVal : (prevObj[uLowTier]?.common || 0);
+                return { [uHighTier]: { common: hVal, selective: hVal }, [uLowTier]: { common: lVal, selective: lVal } };
               }
             };
 
-            if((row['U+기변(고)'] !== undefined && row['U+기변(고)'] !== '') || (row['U+기변(저)'] !== undefined && row['U+기변(저)'] !== '')) ex.U_CHANGE_DOTCOM = applyUPlus(row['U+기변(고)'], row['U+기변(저)']);
-            if((row['U+기변_갤(고)'] !== undefined && row['U+기변_갤(고)'] !== '') || (row['U+기변_갤(저)'] !== undefined && row['U+기변_갤(저)'] !== '')) ex.U_CHANGE_GALCAMS = applyUPlus(row['U+기변_갤(고)'], row['U+기변_갤(저)']);
-            if((row['U+번이(고)'] !== undefined && row['U+번이(고)'] !== '') || (row['U+번이(저)'] !== undefined && row['U+번이(저)'] !== '')) ex.U_MNP_DOTCOM = applyUPlus(row['U+번이(고)'], row['U+번이(저)']);
-            if((row['U+번이_갤(고)'] !== undefined && row['U+번이_갤(고)'] !== '') || (row['U+번이_갤(저)'] !== undefined && row['U+번이_갤(저)'] !== '')) ex.U_MNP_GALCAMS = applyUPlus(row['U+번이_갤(고)'], row['U+번이_갤(저)']);
+            if((row['U+기변(고)'] !== undefined && row['U+기변(고)'] !== '') || (row['U+기변(저)'] !== undefined && row['U+기변(저)'] !== '')) ex.U_CHANGE_DOTCOM = applyUPlus(row['U+기변(고)'], row['U+기변(저)'], ex.U_CHANGE_DOTCOM);
+            if((row['U+기변_갤(고)'] !== undefined && row['U+기변_갤(고)'] !== '') || (row['U+기변_갤(저)'] !== undefined && row['U+기변_갤(저)'] !== '')) ex.U_CHANGE_GALCAMS = applyUPlus(row['U+기변_갤(고)'], row['U+기변_갤(저)'], ex.U_CHANGE_GALCAMS);
+            if((row['U+번이(고)'] !== undefined && row['U+번이(고)'] !== '') || (row['U+번이(저)'] !== undefined && row['U+번이(저)'] !== '')) ex.U_MNP_DOTCOM = applyUPlus(row['U+번이(고)'], row['U+번이(저)'], ex.U_MNP_DOTCOM);
+            if((row['U+번이_갤(고)'] !== undefined && row['U+번이_갤(고)'] !== '') || (row['U+번이_갤(저)'] !== undefined && row['U+번이_갤(저)'] !== '')) ex.U_MNP_GALCAMS = applyUPlus(row['U+번이_갤(고)'], row['U+번이_갤(저)'], ex.U_MNP_GALCAMS);
           }
         });
       }
@@ -2046,7 +2071,7 @@ function PolicyPastePopup({ onClose, POLICY, workerUrl, showAlert }) {
           <button onClick={onClose} className="text-gray-500 hover:text-gray-800 text-3xl font-bold">&times;</button>
         </div>
         <p className="text-[13px] text-blue-800 mb-4 bg-blue-50 border border-blue-200 p-3 rounded-lg leading-relaxed">
-          💡 엑셀에서 각 시트의 <b>표 전체를 복사(Ctrl+C)</b>해서, 아래 빈칸에 각각 <b>붙여넣기(Ctrl+V)</b> 하신 후 하단의 [저장]을 누르시면 됩니다.
+          💡 엑셀에서 각 시트의 <b>표 전체를 복사(Ctrl+C)</b>해서, 아래 빈칸에 각각 <b>붙여넣기(Ctrl+V)</b> 하신 후 하단의 [저장]을 누르시면 됩니다. (바뀐 칸만 붙여넣어도 나머지는 그대로 유지됩니다.)
         </p>
         <div className="flex-1 overflow-y-auto grid grid-cols-1 md:grid-cols-2 gap-4 pb-4">
           <div className="flex flex-col"><label className="font-extrabold text-red-600 mb-1">1. SK_공통지원금</label><textarea className="flex-1 border p-2 text-[11px] font-mono whitespace-pre bg-gray-50 min-h-[150px]" value={skCommon} onChange={e=>setSkCommon(e.target.value)}></textarea></div>
