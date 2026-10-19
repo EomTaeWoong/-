@@ -2005,28 +2005,32 @@ function PolicyPastePopup({ onClose, POLICY, workerUrl, showAlert }) {
             if (model.includes('A36') || model.includes('A37')) { ktTier = 'OVER_61K'; uHighTier = 'OVER_61K'; uLowTier = 'OVER_61K'; skTier = 'OVER_50K'; }
             else if (model.includes('A17')) { ktTier = 'OVER_33K'; uHighTier = 'OVER_33K'; uLowTier = 'OVER_33K'; skTier = 'OVER_33K'; }
 
-            if(row['KT기변'] !== undefined && row['KT기변'] !== '') ex.KT_CHANGE_DOTCOM = { [ktTier]: { common: row['KT기변'], selective: row['KT기변'] } };
-            if(row['KT기변_갤'] !== undefined && row['KT기변_갤'] !== '') ex.KT_CHANGE_GALCAMS = { [ktTier]: { common: row['KT기변_갤'], selective: row['KT기변_갤'] } };
-            if(row['KT번이'] !== undefined && row['KT번이'] !== '') ex.KT_MNP_DOTCOM = { [ktTier]: { common: row['KT번이'], selective: row['KT번이'] } };
-            if(row['KT번이_갤'] !== undefined && row['KT번이_갤'] !== '') ex.KT_MNP_GALCAMS = { [ktTier]: { common: row['KT번이_갤'], selective: row['KT번이_갤'] } };
-            if(row['SK기변'] !== undefined && row['SK기변'] !== '') ex.SK_CHANGE_DOTCOM = { [skTier]: { common: row['SK기변'], selective: row['SK기변'] } };
-            if(row['SK기변_갤'] !== undefined && row['SK기변_갤'] !== '') ex.SK_CHANGE_GALCAMS = { [skTier]: { common: row['SK기변_갤'], selective: row['SK기변_갤'] } };
-            if(row['SK번이'] !== undefined && row['SK번이'] !== '') ex.SK_MNP_DOTCOM = { [skTier]: { common: row['SK번이'], selective: row['SK번이'] } };
-            if(row['SK번이_갤'] !== undefined && row['SK번이_갤'] !== '') ex.SK_MNP_GALCAMS = { [skTier]: { common: row['SK번이_갤'], selective: row['SK번이_갤'] } };
+            
+            if(row['KT기변_공시'] !== undefined || row['KT기변_선약'] !== undefined) ex.KT_CHANGE_DOTCOM = { [ktTier]: { common: row['KT기변_공시']||0, selective: row['KT기변_선약']||0 } };
+            if(row['KT기변_갤_공시'] !== undefined || row['KT기변_갤_선약'] !== undefined) ex.KT_CHANGE_GALCAMS = { [ktTier]: { common: row['KT기변_갤_공시']||0, selective: row['KT기변_갤_선약']||0 } };
+            if(row['KT번이_공시'] !== undefined || row['KT번이_선약'] !== undefined) ex.KT_MNP_DOTCOM = { [ktTier]: { common: row['KT번이_공시']||0, selective: row['KT번이_선약']||0 } };
+            if(row['KT번이_갤_공시'] !== undefined || row['KT번이_갤_선약'] !== undefined) ex.KT_MNP_GALCAMS = { [ktTier]: { common: row['KT번이_갤_공시']||0, selective: row['KT번이_갤_선약']||0 } };
 
-            const applyUPlus = (highVal, lowVal) => {
+            if(row['SK기변_공시'] !== undefined || row['SK기변_선약'] !== undefined) ex.SK_CHANGE_DOTCOM = { [skTier]: { common: row['SK기변_공시']||0, selective: row['SK기변_선약']||0 } };
+            if(row['SK기변_갤_공시'] !== undefined || row['SK기변_갤_선약'] !== undefined) ex.SK_CHANGE_GALCAMS = { [skTier]: { common: row['SK기변_갤_공시']||0, selective: row['SK기변_갤_선약']||0 } };
+            if(row['SK번이_공시'] !== undefined || row['SK번이_선약'] !== undefined) ex.SK_MNP_DOTCOM = { [skTier]: { common: row['SK번이_공시']||0, selective: row['SK번이_선약']||0 } };
+            if(row['SK번이_갤_공시'] !== undefined || row['SK번이_갤_선약'] !== undefined) ex.SK_MNP_GALCAMS = { [skTier]: { common: row['SK번이_갤_공시']||0, selective: row['SK번이_갤_선약']||0 } };
+
+            const applyUPlus = (hC, hS, lC, lS) => {
               if (uHighTier === uLowTier) {
-                const val = highVal !== undefined && highVal !== '' ? highVal : (lowVal !== undefined && lowVal !== '' ? lowVal : 0);
-                return { [uHighTier]: { common: val, selective: val } };
+                const valC = (hC !== undefined && hC !== '') ? hC : ((lC !== undefined && lC !== '') ? lC : 0);
+                const valS = (hS !== undefined && hS !== '') ? hS : ((lS !== undefined && lS !== '') ? lS : 0);
+                return { [uHighTier]: { common: valC, selective: valS } };
               } else {
-                return { [uHighTier]: { common: highVal||0, selective: highVal||0 }, [uLowTier]: { common: lowVal||0, selective: lowVal||0 } };
+                return { [uHighTier]: { common: hC||0, selective: hS||0 }, [uLowTier]: { common: lC||0, selective: lS||0 } };
               }
             };
 
-            if((row['U+기변(고)'] !== undefined && row['U+기변(고)'] !== '') || (row['U+기변(저)'] !== undefined && row['U+기변(저)'] !== '')) ex.U_CHANGE_DOTCOM = applyUPlus(row['U+기변(고)'], row['U+기변(저)']);
-            if((row['U+기변_갤(고)'] !== undefined && row['U+기변_갤(고)'] !== '') || (row['U+기변_갤(저)'] !== undefined && row['U+기변_갤(저)'] !== '')) ex.U_CHANGE_GALCAMS = applyUPlus(row['U+기변_갤(고)'], row['U+기변_갤(저)']);
-            if((row['U+번이(고)'] !== undefined && row['U+번이(고)'] !== '') || (row['U+번이(저)'] !== undefined && row['U+번이(저)'] !== '')) ex.U_MNP_DOTCOM = applyUPlus(row['U+번이(고)'], row['U+번이(저)']);
-            if((row['U+번이_갤(고)'] !== undefined && row['U+번이_갤(고)'] !== '') || (row['U+번이_갤(저)'] !== undefined && row['U+번이_갤(저)'] !== '')) ex.U_MNP_GALCAMS = applyUPlus(row['U+번이_갤(고)'], row['U+번이_갤(저)']);
+            if(row['U+기변(고)_공시'] !== undefined || row['U+기변(저)_공시'] !== undefined) ex.U_CHANGE_DOTCOM = applyUPlus(row['U+기변(고)_공시'], row['U+기변(고)_선약'], row['U+기변(저)_공시'], row['U+기변(저)_선약']);
+            if(row['U+기변_갤(고)_공시'] !== undefined || row['U+기변_갤(저)_공시'] !== undefined) ex.U_CHANGE_GALCAMS = applyUPlus(row['U+기변_갤(고)_공시'], row['U+기변_갤(고)_선약'], row['U+기변_갤(저)_공시'], row['U+기변_갤(저)_선약']);
+            if(row['U+번이(고)_공시'] !== undefined || row['U+번이(저)_공시'] !== undefined) ex.U_MNP_DOTCOM = applyUPlus(row['U+번이(고)_공시'], row['U+번이(고)_선약'], row['U+번이(저)_공시'], row['U+번이(저)_선약']);
+            if(row['U+번이_갤(고)_공시'] !== undefined || row['U+번이_갤(저)_공시'] !== undefined) ex.U_MNP_GALCAMS = applyUPlus(row['U+번이_갤(고)_공시'], row['U+번이_갤(고)_선약'], row['U+번이_갤(저)_공시'], row['U+번이_갤(저)_선약']);
+
           }
         });
       }
@@ -2494,29 +2498,32 @@ function DraggablePopup({ onClose }) {
               if (model.includes('A36') || model.includes('A37')) { ktTier = 'OVER_61K'; uHighTier = 'OVER_61K'; uLowTier = 'OVER_61K'; skTier = 'OVER_50K'; } 
               else if (model.includes('A17')) { ktTier = 'OVER_33K'; uHighTier = 'OVER_33K'; uLowTier = 'OVER_33K'; skTier = 'OVER_33K'; }
 
-              if(row['KT기변'] !== undefined) extra.KT_CHANGE_DOTCOM = { [ktTier]: { common: row['KT기변'], selective: row['KT기변'] } };
-              if(row['KT기변_갤'] !== undefined) extra.KT_CHANGE_GALCAMS = { [ktTier]: { common: row['KT기변_갤'], selective: row['KT기변_갤'] } };
-              if(row['KT번이'] !== undefined) extra.KT_MNP_DOTCOM = { [ktTier]: { common: row['KT번이'], selective: row['KT번이'] } };
-              if(row['KT번이_갤'] !== undefined) extra.KT_MNP_GALCAMS = { [ktTier]: { common: row['KT번이_갤'], selective: row['KT번이_갤'] } };
+            
+              if(row['KT기변_공시'] !== undefined || row['KT기변_선약'] !== undefined) extra.KT_CHANGE_DOTCOM = { [ktTier]: { common: row['KT기변_공시']||0, selective: row['KT기변_선약']||0 } };
+              if(row['KT기변_갤_공시'] !== undefined || row['KT기변_갤_선약'] !== undefined) extra.KT_CHANGE_GALCAMS = { [ktTier]: { common: row['KT기변_갤_공시']||0, selective: row['KT기변_갤_선약']||0 } };
+              if(row['KT번이_공시'] !== undefined || row['KT번이_선약'] !== undefined) extra.KT_MNP_DOTCOM = { [ktTier]: { common: row['KT번이_공시']||0, selective: row['KT번이_선약']||0 } };
+              if(row['KT번이_갤_공시'] !== undefined || row['KT번이_갤_선약'] !== undefined) extra.KT_MNP_GALCAMS = { [ktTier]: { common: row['KT번이_갤_공시']||0, selective: row['KT번이_갤_선약']||0 } };
               
-              if(row['SK기변'] !== undefined) extra.SK_CHANGE_DOTCOM = { [skTier]: { common: row['SK기변'], selective: row['SK기변'] } };
-              if(row['SK기변_갤'] !== undefined) extra.SK_CHANGE_GALCAMS = { [skTier]: { common: row['SK기변_갤'], selective: row['SK기변_갤'] } };
-              if(row['SK번이'] !== undefined) extra.SK_MNP_DOTCOM = { [skTier]: { common: row['SK번이'], selective: row['SK번이'] } };
-              if(row['SK번이_갤'] !== undefined) extra.SK_MNP_GALCAMS = { [skTier]: { common: row['SK번이_갤'], selective: row['SK번이_갤'] } };
+              if(row['SK기변_공시'] !== undefined || row['SK기변_선약'] !== undefined) extra.SK_CHANGE_DOTCOM = { [skTier]: { common: row['SK기변_공시']||0, selective: row['SK기변_선약']||0 } };
+              if(row['SK기변_갤_공시'] !== undefined || row['SK기변_갤_선약'] !== undefined) extra.SK_CHANGE_GALCAMS = { [skTier]: { common: row['SK기변_갤_공시']||0, selective: row['SK기변_갤_선약']||0 } };
+              if(row['SK번이_공시'] !== undefined || row['SK번이_선약'] !== undefined) extra.SK_MNP_DOTCOM = { [skTier]: { common: row['SK번이_공시']||0, selective: row['SK번이_선약']||0 } };
+              if(row['SK번이_갤_공시'] !== undefined || row['SK번이_갤_선약'] !== undefined) extra.SK_MNP_GALCAMS = { [skTier]: { common: row['SK번이_갤_공시']||0, selective: row['SK번이_갤_선약']||0 } };
 
-              const applyUPlus = (highVal, lowVal) => {
+              const applyUPlus = (hC, hS, lC, lS) => {
                 if (uHighTier === uLowTier) {
-                  const val = highVal !== undefined ? highVal : (lowVal !== undefined ? lowVal : 0);
-                  return { [uHighTier]: { common: val, selective: val } };
+                  const valC = (hC !== undefined && hC !== '') ? hC : ((lC !== undefined && lC !== '') ? lC : 0);
+                  const valS = (hS !== undefined && hS !== '') ? hS : ((lS !== undefined && lS !== '') ? lS : 0);
+                  return { [uHighTier]: { common: valC, selective: valS } };
                 } else {
-                  return { [uHighTier]: { common: highVal||0, selective: highVal||0 }, [uLowTier]: { common: lowVal||0, selective: lowVal||0 } };
+                  return { [uHighTier]: { common: hC||0, selective: hS||0 }, [uLowTier]: { common: lC||0, selective: lS||0 } };
                 }
               };
 
-              if(row['U+기변(고)'] !== undefined || row['U+기변(저)'] !== undefined) extra.U_CHANGE_DOTCOM = applyUPlus(row['U+기변(고)'], row['U+기변(저)']);
-              if(row['U+기변_갤(고)'] !== undefined || row['U+기변_갤(저)'] !== undefined) extra.U_CHANGE_GALCAMS = applyUPlus(row['U+기변_갤(고)'], row['U+기변_갤(저)']);
-              if(row['U+번이(고)'] !== undefined || row['U+번이(저)'] !== undefined) extra.U_MNP_DOTCOM = applyUPlus(row['U+번이(고)'], row['U+번이(저)']);
-              if(row['U+번이_갤(고)'] !== undefined || row['U+번이_갤(저)'] !== undefined) extra.U_MNP_GALCAMS = applyUPlus(row['U+번이_갤(고)'], row['U+번이_갤(저)']);
+              if(row['U+기변(고)_공시'] !== undefined || row['U+기변(저)_공시'] !== undefined) extra.U_CHANGE_DOTCOM = applyUPlus(row['U+기변(고)_공시'], row['U+기변(고)_선약'], row['U+기변(저)_공시'], row['U+기변(저)_선약']);
+              if(row['U+기변_갤(고)_공시'] !== undefined || row['U+기변_갤(저)_공시'] !== undefined) extra.U_CHANGE_GALCAMS = applyUPlus(row['U+기변_갤(고)_공시'], row['U+기변_갤(고)_선약'], row['U+기변_갤(저)_공시'], row['U+기변_갤(저)_선약']);
+              if(row['U+번이(고)_공시'] !== undefined || row['U+번이(저)_공시'] !== undefined) extra.U_MNP_DOTCOM = applyUPlus(row['U+번이(고)_공시'], row['U+번이(고)_선약'], row['U+번이(저)_공시'], row['U+번이(저)_선약']);
+              if(row['U+번이_갤(고)_공시'] !== undefined || row['U+번이_갤(저)_공시'] !== undefined) extra.U_MNP_GALCAMS = applyUPlus(row['U+번이_갤(고)_공시'], row['U+번이_갤(고)_선약'], row['U+번이_갤(저)_공시'], row['U+번이_갤(저)_선약']);
+
             }
           });
         }
