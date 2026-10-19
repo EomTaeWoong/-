@@ -1517,76 +1517,7 @@ function PolicyPastePopup({ onClose, policyData, workerUrl, showAlert }) {
     return data;
   };
 
-  const handleSave = () => {
-    try {
-      let updatedPolicy = JSON.parse(JSON.stringify(policyData || POLICY));
-      
-      const processSheet = (tsvData, targetKey) => {
-        const parsed = parseTSV(tsvData);
-        parsed.forEach(row => {
-          const model = String(row['모델명'] || '').trim();
-          const type = String(row['가입유형'] || '공통').trim();
-          if (model && updatedPolicy.DEVICES[model]) {
-            if (!updatedPolicy.DEVICES[model][targetKey]) updatedPolicy.DEVICES[model][targetKey] = {};
-            if (!updatedPolicy.DEVICES[model][targetKey][type]) updatedPolicy.DEVICES[model][targetKey][type] = {};
-            Object.keys(row).forEach(k => { 
-              if (k !== '모델명' && k !== '가입유형') {
-                updatedPolicy.DEVICES[model][targetKey][type][k] = row[k]; 
-              }
-            });
-          }
-        });
-      };
-
-      if (skCommon) processSheet(skCommon, 'SK_COMMON');
-      if (ktCommon) processSheet(ktCommon, 'KT_COMMON');
-      if (uCommon) processSheet(uCommon, 'U_COMMON');
-
-      if (extra) {
-        const extraData = parseTSV(extra);
-        extraData.forEach(rawRow => {
-          const row = {};
-          Object.keys(rawRow).forEach(k => { row[k.trim()] = rawRow[k]; });
-
-          const model = String(row['모델명'] || '').trim();
-          if (model && updatedPolicy.DEVICES[model]) {
-            if (!updatedPolicy.DEVICES[model].EXTRA) updatedPolicy.DEVICES[model].EXTRA = {};
-            const ex = updatedPolicy.DEVICES[model].EXTRA;
-            
-            let ktTier = 'OVER_90K'; let uHighTier = 'OVER_95K'; let uLowTier = 'OVER_61K'; let skTier = 'OVER_99K';
-            if (model.includes('A36') || model.includes('A37')) { ktTier = 'OVER_61K'; uHighTier = 'OVER_61K'; uLowTier = 'OVER_61K'; skTier = 'OVER_50K'; }
-            else if (model.includes('A17')) { ktTier = 'OVER_33K'; uHighTier = 'OVER_33K'; uLowTier = 'OVER_33K'; skTier = 'OVER_33K'; }
-
-            const parse = (val) => {
-              if (val === undefined || val === null || val === '') return 0;
-              const num = Number(String(val).replace(/,/g, '').trim());
-              return isNaN(num) ? 0 : num;
-            };
-
-            ex.KT_CHANGE_DOTCOM = { [ktTier]: { common: parse(row['KT기변_공시']), selective: parse(row['KT기변_선약']) } };
-            ex.KT_CHANGE_GALCAMS = { [ktTier]: { common: parse(row['KT기변_갤_공시']), selective: parse(row['KT기변_갤_선약']) } };
-            ex.KT_MNP_DOTCOM = { [ktTier]: { common: parse(row['KT번이_공시']), selective: parse(row['KT번이_선약']) } };
-            ex.KT_MNP_GALCAMS = { [ktTier]: { common: parse(row['KT번이_갤_공시']), selective: parse(row['KT번이_갤_선약']) } };
-
-            ex.SK_CHANGE_DOTCOM = { [skTier]: { common: parse(row['SK기변_공시']), selective: parse(row['SK기변_선약']) } };
-            ex.SK_CHANGE_GALCAMS = { [skTier]: { common: parse(row['SK기변_갤_공시']), selective: parse(row['SK기변_갤_선약']) } };
-            ex.SK_MNP_DOTCOM = { [skTier]: { common: parse(row['SK번이_공시']), selective: parse(row['SK번이_선약']) } };
-            ex.SK_MNP_GALCAMS = { [skTier]: { common: parse(row['SK번이_갤_공시']), selective: parse(row['SK번이_갤_선약']) } };
-
-            const applyUPlus = (hC, hS, lC, lS) => {
-              if (uHighTier === uLowTier) {
-                const valC = parse(hC) || parse(lC);
-                const valS = parse(hS) || parse(lS);
-                return { [uHighTier]: { common: valC, selective: valS } };
-              } else {
-                return { [uHighTier]: { common: parse(hC), selective: parse(hS) }, [uLowTier]: { common: parse(lC), selective: parse(lS) } };
-              }
-            };
-
-            ex.U_CHANGE_DOTCOM = applyUPlus(row['U+기변(고)_공시'], row['U+기변(고)_선약'], row['U+기변(저)_공시'], row['U+기변(저)_선약']);
-            ex.U_CHANGE_GALCAMS = applyUPlus(row['U+기변_갤(고)_공시'], row['U+기변_갤(고)_선약'], row['U+기변_갤(저)_공시'], row['U+기변_갤(저)_선약']);
-            ex.U_MNP_DOTCOM = applyUPlus(row['U+번이(고)_공시'], row['U+번이(고)_선약'], row['U+번이(저)_공시'], row['U+번이(저)_선약']);
-  const handleSave = () => {
+   const handleSave = () => {
     try {
       let updatedPolicy = JSON.parse(JSON.stringify(policyData || POLICY));
       
@@ -1630,7 +1561,6 @@ function PolicyPastePopup({ onClose, policyData, workerUrl, showAlert }) {
               return isNaN(num) ? 0 : num;
             };
 
-            // 💡 엑셀 제목이 새것(_공시)이든, 옛날것이든 알아서 찾아주는 꿀기능
             const getAmt = (newKeyCommon, newKeySelective, oldKey) => {
               const hasC = row[newKeyCommon] !== undefined;
               const hasS = row[newKeySelective] !== undefined;
@@ -2332,11 +2262,10 @@ function App() {
     if (!file) return;
 
     const reader = new FileReader();
-    reader.onload = (event) => {
+    reader.ON-LOAD = (event) => {
       try {
         const data = new Uint8Array(event.target.result);
         const wb = window.XLSX.read(data, { type: 'array' });
-
         let updatedPolicy = JSON.parse(JSON.stringify(policyData || POLICY)); 
 
         ['SK_공통지원금', 'KT_공통지원금', 'U_공통지원금'].forEach(sheetName => {
@@ -2416,56 +2345,12 @@ function App() {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(updatedPolicy)
-        })
-        .then(res => res.json())
-        .then(result => {
+        }).then(res => res.json()).then(() => {
           alert("✅ 정책 데이터가 서버에 저장되었습니다! 새로고침 해주세요.");
-        })
-        .catch(err => {
-          alert("❌ 서버 전송 실패: " + err.message);
-        });
-
+        }).catch(err => alert("❌ 서버 전송 실패: " + err.message));
       } catch (err) {
         console.error(err);
-        alert("❌ 엑셀 오류: " + err.message + "\n\n(사내 문서보안 암호화가 원인일 확률이 높습니다.)");
-      }
-    };
-    reader.readAsArrayBuffer(file);
-    e.target.value = null; 
-  };
-
-
-  
-  
-                  return { [uHighTier]: { common: parse(hC), selective: parse(hS) }, [uLowTier]: { common: parse(lC), selective: parse(lS) } };
-                }
-              };
-
-              ex.U_CHANGE_DOTCOM = applyUPlus(row['U+기변(고)_공시'], row['U+기변(고)_선약'], row['U+기변(저)_공시'], row['U+기변(저)_선약']);
-              ex.U_CHANGE_GALCAMS = applyUPlus(row['U+기변_갤(고)_공시'], row['U+기변_갤(고)_선약'], row['U+기변_갤(저)_공시'], row['U+기변_갤(저)_선약']);
-              ex.U_MNP_DOTCOM = applyUPlus(row['U+번이(고)_공시'], row['U+번이(고)_선약'], row['U+번이(저)_공시'], row['U+번이(저)_선약']);
-              ex.U_MNP_GALCAMS = applyUPlus(row['U+번이_갤(고)_공시'], row['U+번이_갤(고)_선약'], row['U+번이_갤(저)_공시'], row['U+번이_갤(저)_선약']);
-            }
-          });
-        }
-
-        const workerUrl = 'https://shiny-surf-3362.xodnd9733.workers.dev';
-        fetch(`${workerUrl}/save-policy`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(updatedPolicy)
-        })
-        .then(res => res.json())
-        .then(result => {
-          alert("✅ 정책 데이터가 서버에 저장되었습니다! 새로고침 해주세요.");
-        })
-        .catch(err => {
-          alert("❌ 서버 전송 실패: " + err.message);
-        });
-
-      } catch (err) {
-        console.error(err);
-        alert("❌ 엑셀 오류: " + err.message + "\n\n(사내 문서보안 암호화가 원인일 확률이 높습니다.)");
+        alert("❌ 엑셀 오류: " + err.message);
       }
     };
     reader.readAsArrayBuffer(file);
