@@ -557,90 +557,96 @@ function getSupportAmounts({ selectedDevice, selectedPlanPrice, operator, joinTy
       let policyBlock = null;
       if (joinType === '기기변경') policyBlock = isGalcams ? extraConfig.KT_CHANGE_GALCAMS : extraConfig.KT_CHANGE_DOTCOM;
       else if (joinType === '번호이동') policyBlock = isGalcams ? extraConfig.KT_MNP_GALCAMS : extraConfig.KT_MNP_DOTCOM;
+// =====================================================================
+// 🛠️ [리팩토링] 공통 요금 정산 바인딩 함수 (지원금 추출 자동 매핑 로직)
+// =====================================================================
+function getSupportAmounts({ selectedDevice, selectedPlanPrice, operator, joinType, isGalcams, policyData }) {
+  const devicePolicy = policyData.DEVICES[selectedDevice];
+  if (!devicePolicy) return { commonSupport: 0, additionalSupport: 0, selectiveAdditionalSupport: 0 };
 
-      if (policyBlock) {
-        if (policyBlock.OVER_90K !== undefined && selectedPlanPrice >= 90000) {
-          additionalSupport = policyBlock.OVER_90K.common; selectiveAdditionalSupport = policyBlock.OVER_90K.selective;
-        } else if (policyBlock.OVER_61K !== undefined && selectedPlanPrice >= 61000) {
-          additionalSupport = policyBlock.OVER_61K.common; selectiveAdditionalSupport = policyBlock.OVER_61K.selective;
-        } else if (policyBlock.OVER_33K !== undefined && selectedPlanPrice >= 33000) {
-          additionalSupport = policyBlock.OVER_33K.common; selectiveAdditionalSupport = policyBlock.OVER_33K.selective;
-        }
-      } else {
-        if (selectedPlanPrice >= policyData.TIERS.KT_TIER_1_MIN) {
-          let baseAdd = isGalcams ? (extraConfig.KT_TIER_1_GALCAMS || 0) : (extraConfig.KT_TIER_1_DOTCOM || 0);
-          additionalSupport = baseAdd; selectiveAdditionalSupport = baseAdd;
-        }
+  let commonSupport = 0;
+  const getCommonAmt = (commonData, planPrice, jType) => {
+    if (!commonData) return 0;
+    if (commonData[jType] && commonData[jType][planPrice] !== undefined) return commonData[jType][planPrice];
+    if (commonData['공통'] && commonData['공통'][planPrice] !== undefined) return commonData['공통'][planPrice];
+    if (commonData[planPrice] !== undefined) return commonData[planPrice];
+    return 0;
+  };
+
+  if (operator === 'SK') commonSupport = getCommonAmt(devicePolicy.SK_COMMON, selectedPlanPrice, joinType);
+  else if (operator === 'U') commonSupport = getCommonAmt(devicePolicy.U_COMMON, selectedPlanPrice, joinType);
+  else if (operator === 'KT') commonSupport = getCommonAmt(devicePolicy.KT_COMMON, selectedPlanPrice, joinType);
+
+  let additionalSupport = 0;
+  let selectiveAdditionalSupport = 0;
+  const extraConfig = devicePolicy.EXTRA || {};
+
+  if (operator === 'SK') {
+    let policyBlock = null;
+    if (joinType === '기기변경') policyBlock = isGalcams ? extraConfig.SK_CHANGE_GALCAMS : extraConfig.SK_CHANGE_DOTCOM;
+    else if (joinType === '번호이동') policyBlock = isGalcams ? extraConfig.SK_MNP_GALCAMS : extraConfig.SK_MNP_DOTCOM;
+
+    let skThreshold = 99000; let tierKey = 'OVER_99K';
+    if (selectedDevice.includes('A36') || selectedDevice.includes('A37')) { skThreshold = 50000; tierKey = 'OVER_50K'; }
+    else if (selectedDevice.includes('A17')) { skThreshold = 33000; tierKey = 'OVER_33K'; }
+
+    if (policyBlock) {
+      if (policyBlock[tierKey] !== undefined && selectedPlanPrice >= skThreshold) {
+        additionalSupport = policyBlock[tierKey].common; selectiveAdditionalSupport = policyBlock[tierKey].selective; 
+      } else if (selectedPlanPrice < skThreshold) {
+        additionalSupport = 50000; selectiveAdditionalSupport = 50000;
       }
+    } else {
+      if (selectedPlanPrice < skThreshold) { additionalSupport = 50000; selectiveAdditionalSupport = 50000; }
     }
-  } else {
-    // 일반 단말기
-    if (operator === 'SK') {
-      let policyBlock = null;
-      if (joinType === '기기변경') policyBlock = isGalcams ? extraConfig.SK_CHANGE_GALCAMS : extraConfig.SK_CHANGE_DOTCOM;
-      else if (joinType === '번호이동') policyBlock = isGalcams ? extraConfig.SK_MNP_GALCAMS : extraConfig.SK_MNP_DOTCOM;
+  } else if (operator === 'U') {
+    let policyBlock = null;
+    if (joinType === '기기변경') policyBlock = isGalcams ? extraConfig.U_CHANGE_GALCAMS : extraConfig.U_CHANGE_DOTCOM;
+    else if (joinType === '번호이동') policyBlock = isGalcams ? extraConfig.U_MNP_GALCAMS : extraConfig.U_MNP_DOTCOM;
 
-      let skThreshold = 99000; 
-      if (selectedDevice.includes('A36') || selectedDevice.includes('A37')) skThreshold = 50000;
-      else if (selectedDevice.includes('A17')) skThreshold = 33000;
-
-      if (policyBlock) {
-        if (policyBlock.OVER_99K !== undefined && selectedPlanPrice >= skThreshold) {
-          additionalSupport = policyBlock.OVER_99K.common; selectiveAdditionalSupport = policyBlock.OVER_99K.selective; 
-        } else if (selectedPlanPrice < skThreshold) {
-          additionalSupport = 50000; selectiveAdditionalSupport = 50000;
-        }
-      } else {
-        if (selectedPlanPrice < skThreshold) { additionalSupport = 50000; selectiveAdditionalSupport = 50000; }
+    if (policyBlock) {
+      if (policyBlock.OVER_95K !== undefined && selectedPlanPrice >= 95000) {
+        additionalSupport = policyBlock.OVER_95K.common; selectiveAdditionalSupport = policyBlock.OVER_95K.selective;
+      } else if (policyBlock.OVER_61K !== undefined && selectedPlanPrice >= 61000) {
+        additionalSupport = policyBlock.OVER_61K.common; selectiveAdditionalSupport = policyBlock.OVER_61K.selective;
+      } else if (policyBlock.OVER_33K !== undefined && selectedPlanPrice >= 33000) {
+        additionalSupport = policyBlock.OVER_33K.common; selectiveAdditionalSupport = policyBlock.OVER_33K.selective;
       }
-    } else if (operator === 'U') {
-      let policyBlock = null;
-      if (joinType === '기기변경') policyBlock = isGalcams ? extraConfig.U_CHANGE_GALCAMS : extraConfig.U_CHANGE_DOTCOM;
-      else if (joinType === '번호이동') policyBlock = isGalcams ? extraConfig.U_MNP_GALCAMS : extraConfig.U_MNP_DOTCOM;
+    } else {
+      let baseAdd = 0;
+      if (extraConfig.U_TIER_A_DOTCOM !== undefined) {
+        if (selectedPlanPrice >= policyData.TIERS.U_TIER_A_MIN) baseAdd = isGalcams ? (extraConfig.U_TIER_A_GALCAMS || 0) : (extraConfig.U_TIER_A_DOTCOM || 0);
+      } else if (selectedPlanPrice >= policyData.TIERS.U_TIER_1_MIN && selectedPlanPrice < policyData.TIERS.U_TIER_1_MAX) {
+        baseAdd = isGalcams ? (extraConfig.U_TIER_1_GALCAMS || 0) : (extraConfig.U_TIER_1_DOTCOM || 0);
+      } else if (selectedPlanPrice >= policyData.TIERS.U_TIER_2_MIN) {
+        baseAdd = isGalcams ? (extraConfig.U_TIER_2_GALCAMS || 0) : (extraConfig.U_TIER_2_DOTCOM || 0);
+      }
+      additionalSupport = baseAdd; selectiveAdditionalSupport = baseAdd;
+    }
+  } else if (operator === 'KT') {
+    let policyBlock = null;
+    if (joinType === '기기변경') policyBlock = isGalcams ? extraConfig.KT_CHANGE_GALCAMS : extraConfig.KT_CHANGE_DOTCOM;
+    else if (joinType === '번호이동') policyBlock = isGalcams ? extraConfig.KT_MNP_GALCAMS : extraConfig.KT_MNP_DOTCOM;
 
-      if (policyBlock) {
-        if (policyBlock.OVER_95K !== undefined && selectedPlanPrice >= 95000) {
-          additionalSupport = policyBlock.OVER_95K.common; selectiveAdditionalSupport = policyBlock.OVER_95K.selective;
-        } else if (policyBlock.OVER_61K !== undefined && selectedPlanPrice >= 61000) {
-          additionalSupport = policyBlock.OVER_61K.common; selectiveAdditionalSupport = policyBlock.OVER_61K.selective;
-        } else if (policyBlock.OVER_33K !== undefined && selectedPlanPrice >= 33000) {
-          additionalSupport = policyBlock.OVER_33K.common; selectiveAdditionalSupport = policyBlock.OVER_33K.selective;
-        }
-      } else {
-        let baseAdd = 0;
-        if (extraConfig.U_TIER_A_DOTCOM !== undefined) {
-          if (selectedPlanPrice >= policyData.TIERS.U_TIER_A_MIN) baseAdd = isGalcams ? (extraConfig.U_TIER_A_GALCAMS || 0) : (extraConfig.U_TIER_A_DOTCOM || 0);
-        } else if (selectedPlanPrice >= policyData.TIERS.U_TIER_1_MIN && selectedPlanPrice < policyData.TIERS.U_TIER_1_MAX) {
-          baseAdd = isGalcams ? (extraConfig.U_TIER_1_GALCAMS || 0) : (extraConfig.U_TIER_1_DOTCOM || 0);
-        } else if (selectedPlanPrice >= policyData.TIERS.U_TIER_2_MIN) {
-          baseAdd = isGalcams ? (extraConfig.U_TIER_2_GALCAMS || 0) : (extraConfig.U_TIER_2_DOTCOM || 0);
-        }
+    if (policyBlock) {
+      if (policyBlock.OVER_90K !== undefined && selectedPlanPrice >= 90000) {
+        additionalSupport = policyBlock.OVER_90K.common; selectiveAdditionalSupport = policyBlock.OVER_90K.selective;
+      } else if (policyBlock.OVER_61K !== undefined && selectedPlanPrice >= 61000) {
+        additionalSupport = policyBlock.OVER_61K.common; selectiveAdditionalSupport = policyBlock.OVER_61K.selective;
+      } else if (policyBlock.OVER_33K !== undefined && selectedPlanPrice >= 33000) {
+        additionalSupport = policyBlock.OVER_33K.common; selectiveAdditionalSupport = policyBlock.OVER_33K.selective;
+      }
+    } else {
+      if (selectedPlanPrice >= policyData.TIERS.KT_TIER_1_MIN) {
+        let baseAdd = isGalcams ? (extraConfig.KT_TIER_1_GALCAMS || 0) : (extraConfig.KT_TIER_1_DOTCOM || 0);
         additionalSupport = baseAdd; selectiveAdditionalSupport = baseAdd;
-      }
-    } else if (operator === 'KT') {
-      let policyBlock = null;
-      if (joinType === '기기변경') policyBlock = isGalcams ? extraConfig.KT_CHANGE_GALCAMS : extraConfig.KT_CHANGE_DOTCOM;
-      else if (joinType === '번호이동') policyBlock = isGalcams ? extraConfig.KT_MNP_GALCAMS : extraConfig.KT_MNP_DOTCOM;
-
-      if (policyBlock) {
-        if (policyBlock.OVER_90K !== undefined && selectedPlanPrice >= 90000) {
-          additionalSupport = policyBlock.OVER_90K.common; selectiveAdditionalSupport = policyBlock.OVER_90K.selective;
-        } else if (policyBlock.OVER_61K !== undefined && selectedPlanPrice >= 61000) {
-          additionalSupport = policyBlock.OVER_61K.common; selectiveAdditionalSupport = policyBlock.OVER_61K.selective;
-        } else if (policyBlock.OVER_33K !== undefined && selectedPlanPrice >= 33000) {
-          additionalSupport = policyBlock.OVER_33K.common; selectiveAdditionalSupport = policyBlock.OVER_33K.selective;
-        }
-      } else {
-        if (selectedPlanPrice >= policyData.TIERS.KT_TIER_1_MIN) {
-          let baseAdd = isGalcams ? (extraConfig.KT_TIER_1_GALCAMS || 0) : (extraConfig.KT_TIER_1_DOTCOM || 0);
-          additionalSupport = baseAdd; selectiveAdditionalSupport = baseAdd;
-        }
       }
     }
   }
 
   return { commonSupport, additionalSupport, selectiveAdditionalSupport };
 }
+
 
 function CostCard({
   operator, title, type, planName, planPrice, planDiscount = 0, devicePrice,
@@ -1580,7 +1586,80 @@ function PolicyPastePopup({ onClose, policyData, workerUrl, showAlert }) {
             ex.U_CHANGE_DOTCOM = applyUPlus(row['U+기변(고)_공시'], row['U+기변(고)_선약'], row['U+기변(저)_공시'], row['U+기변(저)_선약']);
             ex.U_CHANGE_GALCAMS = applyUPlus(row['U+기변_갤(고)_공시'], row['U+기변_갤(고)_선약'], row['U+기변_갤(저)_공시'], row['U+기변_갤(저)_선약']);
             ex.U_MNP_DOTCOM = applyUPlus(row['U+번이(고)_공시'], row['U+번이(고)_선약'], row['U+번이(저)_공시'], row['U+번이(저)_선약']);
-            ex.U_MNP_GALCAMS = applyUPlus(row['U+번이_갤(고)_공시'], row['U+번이_갤(고)_선약'], row['U+번이_갤(저)_공시'], row['U+번이_갤(저)_선약']);
+  const handleSave = () => {
+    try {
+      let updatedPolicy = JSON.parse(JSON.stringify(policyData || POLICY));
+      
+      const processSheet = (tsvData, targetKey) => {
+        const parsed = parseTSV(tsvData);
+        parsed.forEach(row => {
+          const model = String(row['모델명'] || '').trim();
+          const type = String(row['가입유형'] || '공통').trim();
+          if (model && updatedPolicy.DEVICES[model]) {
+            if (!updatedPolicy.DEVICES[model][targetKey]) updatedPolicy.DEVICES[model][targetKey] = {};
+            if (!updatedPolicy.DEVICES[model][targetKey][type]) updatedPolicy.DEVICES[model][targetKey][type] = {};
+            Object.keys(row).forEach(k => { 
+              if (k !== '모델명' && k !== '가입유형') updatedPolicy.DEVICES[model][targetKey][type][k] = row[k]; 
+            });
+          }
+        });
+      };
+
+      if (skCommon) processSheet(skCommon, 'SK_COMMON');
+      if (ktCommon) processSheet(ktCommon, 'KT_COMMON');
+      if (uCommon) processSheet(uCommon, 'U_COMMON');
+
+      if (extra) {
+        const extraData = parseTSV(extra);
+        extraData.forEach(rawRow => {
+          const row = {};
+          Object.keys(rawRow).forEach(k => { row[k.trim()] = rawRow[k]; });
+
+          const model = String(row['모델명'] || '').trim();
+          if (model && updatedPolicy.DEVICES[model]) {
+            if (!updatedPolicy.DEVICES[model].EXTRA) updatedPolicy.DEVICES[model].EXTRA = {};
+            const ex = updatedPolicy.DEVICES[model].EXTRA;
+            
+            let ktTier = 'OVER_90K'; let uHighTier = 'OVER_95K'; let uLowTier = 'OVER_61K'; let skTier = 'OVER_99K';
+            if (model.includes('A36') || model.includes('A37')) { ktTier = 'OVER_61K'; uHighTier = 'OVER_61K'; uLowTier = 'OVER_61K'; skTier = 'OVER_50K'; }
+            else if (model.includes('A17')) { ktTier = 'OVER_33K'; uHighTier = 'OVER_33K'; uLowTier = 'OVER_33K'; skTier = 'OVER_33K'; }
+
+            const parse = (val) => {
+              if (val === undefined || val === null || val === '') return 0;
+              const num = Number(String(val).replace(/,/g, '').trim());
+              return isNaN(num) ? 0 : num;
+            };
+
+            // 💡 엑셀 제목이 새것(_공시)이든, 옛날것이든 알아서 찾아주는 꿀기능
+            const getAmt = (newKeyCommon, newKeySelective, oldKey) => {
+              const hasC = row[newKeyCommon] !== undefined;
+              const hasS = row[newKeySelective] !== undefined;
+              return { common: parse(hasC ? row[newKeyCommon] : row[oldKey]), selective: parse(hasS ? row[newKeySelective] : row[oldKey]) };
+            };
+
+            ex.KT_CHANGE_DOTCOM = { [ktTier]: getAmt('KT기변_공시', 'KT기변_선약', 'KT기변') };
+            ex.KT_CHANGE_GALCAMS = { [ktTier]: getAmt('KT기변_갤_공시', 'KT기변_갤_선약', 'KT기변_갤') };
+            ex.KT_MNP_DOTCOM = { [ktTier]: getAmt('KT번이_공시', 'KT번이_선약', 'KT번이') };
+            ex.KT_MNP_GALCAMS = { [ktTier]: getAmt('KT번이_갤_공시', 'KT번이_갤_선약', 'KT번이_갤') };
+
+            ex.SK_CHANGE_DOTCOM = { [skTier]: getAmt('SK기변_공시', 'SK기변_선약', 'SK기변') };
+            ex.SK_CHANGE_GALCAMS = { [skTier]: getAmt('SK기변_갤_공시', 'SK기변_갤_선약', 'SK기변_갤') };
+            ex.SK_MNP_DOTCOM = { [skTier]: getAmt('SK번이_공시', 'SK번이_선약', 'SK번이') };
+            ex.SK_MNP_GALCAMS = { [skTier]: getAmt('SK번이_갤_공시', 'SK번이_갤_선약', 'SK번이_갤') };
+
+            const applyUPlus = (hC, hS, hOld, lC, lS, lOld) => {
+              if (uHighTier === uLowTier) {
+                const hcVal = getAmt(hC, hS, hOld); const lcVal = getAmt(lC, lS, lOld);
+                return { [uHighTier]: { common: hcVal.common || lcVal.common, selective: hcVal.selective || lcVal.selective } };
+              } else {
+                return { [uHighTier]: getAmt(hC, hS, hOld), [uLowTier]: getAmt(lC, lS, lOld) };
+              }
+            };
+
+            ex.U_CHANGE_DOTCOM = applyUPlus('U+기변(고)_공시', 'U+기변(고)_선약', 'U+기변(고)', 'U+기변(저)_공시', 'U+기변(저)_선약', 'U+기변(저)');
+            ex.U_CHANGE_GALCAMS = applyUPlus('U+기변_갤(고)_공시', 'U+기변_갤(고)_선약', 'U+기변_갤(고)', 'U+기변_갤(저)_공시', 'U+기변_갤(저)_선약', 'U+기변_갤(저)');
+            ex.U_MNP_DOTCOM = applyUPlus('U+번이(고)_공시', 'U+번이(고)_선약', 'U+번이(고)', 'U+번이(저)_공시', 'U+번이(저)_선약', 'U+번이(저)');
+            ex.U_MNP_GALCAMS = applyUPlus('U+번이_갤(고)_공시', 'U+번이_갤(고)_선약', 'U+번이_갤(고)', 'U+번이_갤(저)_공시', 'U+번이_갤(저)_선약', 'U+번이_갤(저)');
           }
         });
       }
@@ -1594,6 +1673,7 @@ function PolicyPastePopup({ onClose, policyData, workerUrl, showAlert }) {
       showAlert("❌ 복사한 내용 처리 중 오류 발생!\n" + err.message); 
     }
   };
+
 
   return (
     <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-[9999] p-4">
@@ -2247,22 +2327,7 @@ function App() {
         reader.readAsArrayBuffer(file);
     } 
     else {
-        const reader = new FileReader();
-        reader.onload = (event) => {
-            try {
-                const text = event.target.result;
-                const records = text.split(/(?=202\d{10})/); 
-                const delimiter = text.includes('\t') ? '\t' : ',';
-                processRecords(records, delimiter);
-            } catch (err) { alert("텍스트 파일 처리에 실패했습니다."); }
-        };
-        reader.readAsText(file, 'euc-kr');
-    }
-    e.target.value = null;
-  };
-
-  
-  const handlePolicyUpload = (e) => {
+          const handlePolicyUpload = (e) => {
     const file = e.target.files[0];
     if (!file) return;
 
@@ -2274,7 +2339,6 @@ function App() {
 
         let updatedPolicy = JSON.parse(JSON.stringify(policyData || POLICY)); 
 
-        // 💡 1. 공통지원금 시트 처리 (자동화로 코드 간소화)
         ['SK_공통지원금', 'KT_공통지원금', 'U_공통지원금'].forEach(sheetName => {
           if (wb.Sheets[sheetName]) {
             const sheetData = window.XLSX.utils.sheet_to_json(wb.Sheets[sheetName]);
@@ -2293,7 +2357,6 @@ function App() {
           }
         });
 
-        // 💡 2. 추가지원금 시트 처리
         if (wb.Sheets['추가지원금']) {
           const rawExtraData = window.XLSX.utils.sheet_to_json(wb.Sheets['추가지원금']);
           rawExtraData.forEach(rawRow => {
@@ -2315,22 +2378,65 @@ function App() {
                 return isNaN(num) ? 0 : num;
               };
 
-              ex.KT_CHANGE_DOTCOM = { [ktTier]: { common: parse(row['KT기변_공시']), selective: parse(row['KT기변_선약']) } };
-              ex.KT_CHANGE_GALCAMS = { [ktTier]: { common: parse(row['KT기변_갤_공시']), selective: parse(row['KT기변_갤_선약']) } };
-              ex.KT_MNP_DOTCOM = { [ktTier]: { common: parse(row['KT번이_공시']), selective: parse(row['KT번이_선약']) } };
-              ex.KT_MNP_GALCAMS = { [ktTier]: { common: parse(row['KT번이_갤_공시']), selective: parse(row['KT번이_갤_선약']) } };
-              
-              ex.SK_CHANGE_DOTCOM = { [skTier]: { common: parse(row['SK기변_공시']), selective: parse(row['SK기변_선약']) } };
-              ex.SK_CHANGE_GALCAMS = { [skTier]: { common: parse(row['SK기변_갤_공시']), selective: parse(row['SK기변_갤_선약']) } };
-              ex.SK_MNP_DOTCOM = { [skTier]: { common: parse(row['SK번이_공시']), selective: parse(row['SK번이_선약']) } };
-              ex.SK_MNP_GALCAMS = { [skTier]: { common: parse(row['SK번이_갤_공시']), selective: parse(row['SK번이_갤_선약']) } };
+              const getAmt = (newKeyCommon, newKeySelective, oldKey) => {
+                const hasC = row[newKeyCommon] !== undefined;
+                const hasS = row[newKeySelective] !== undefined;
+                return { common: parse(hasC ? row[newKeyCommon] : row[oldKey]), selective: parse(hasS ? row[newKeySelective] : row[oldKey]) };
+              };
 
-              const applyUPlus = (hC, hS, lC, lS) => {
+              ex.KT_CHANGE_DOTCOM = { [ktTier]: getAmt('KT기변_공시', 'KT기변_선약', 'KT기변') };
+              ex.KT_CHANGE_GALCAMS = { [ktTier]: getAmt('KT기변_갤_공시', 'KT기변_갤_선약', 'KT기변_갤') };
+              ex.KT_MNP_DOTCOM = { [ktTier]: getAmt('KT번이_공시', 'KT번이_선약', 'KT번이') };
+              ex.KT_MNP_GALCAMS = { [ktTier]: getAmt('KT번이_갤_공시', 'KT번이_갤_선약', 'KT번이_갤') };
+
+              ex.SK_CHANGE_DOTCOM = { [skTier]: getAmt('SK기변_공시', 'SK기변_선약', 'SK기변') };
+              ex.SK_CHANGE_GALCAMS = { [skTier]: getAmt('SK기변_갤_공시', 'SK기변_갤_선약', 'SK기변_갤') };
+              ex.SK_MNP_DOTCOM = { [skTier]: getAmt('SK번이_공시', 'SK번이_선약', 'SK번이') };
+              ex.SK_MNP_GALCAMS = { [skTier]: getAmt('SK번이_갤_공시', 'SK번이_갤_선약', 'SK번이_갤') };
+
+              const applyUPlus = (hC, hS, hOld, lC, lS, lOld) => {
                 if (uHighTier === uLowTier) {
-                  const valC = parse(hC) || parse(lC);
-                  const valS = parse(hS) || parse(lS);
-                  return { [uHighTier]: { common: valC, selective: valS } };
+                  const hcVal = getAmt(hC, hS, hOld); const lcVal = getAmt(lC, lS, lOld);
+                  return { [uHighTier]: { common: hcVal.common || lcVal.common, selective: hcVal.selective || lcVal.selective } };
                 } else {
+                  return { [uHighTier]: getAmt(hC, hS, hOld), [uLowTier]: getAmt(lC, lS, lOld) };
+                }
+              };
+
+              ex.U_CHANGE_DOTCOM = applyUPlus('U+기변(고)_공시', 'U+기변(고)_선약', 'U+기변(고)', 'U+기변(저)_공시', 'U+기변(저)_선약', 'U+기변(저)');
+              ex.U_CHANGE_GALCAMS = applyUPlus('U+기변_갤(고)_공시', 'U+기변_갤(고)_선약', 'U+기변_갤(고)', 'U+기변_갤(저)_공시', 'U+기변_갤(저)_선약', 'U+기변_갤(저)');
+              ex.U_MNP_DOTCOM = applyUPlus('U+번이(고)_공시', 'U+번이(고)_선약', 'U+번이(고)', 'U+번이(저)_공시', 'U+번이(저)_선약', 'U+번이(저)');
+              ex.U_MNP_GALCAMS = applyUPlus('U+번이_갤(고)_공시', 'U+번이_갤(고)_선약', 'U+번이_갤(고)', 'U+번이_갤(저)_공시', 'U+번이_갤(저)_선약', 'U+번이_갤(저)');
+            }
+          });
+        }
+
+        const workerUrl = 'https://shiny-surf-3362.xodnd9733.workers.dev';
+        fetch(`${workerUrl}/save-policy`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(updatedPolicy)
+        })
+        .then(res => res.json())
+        .then(result => {
+          alert("✅ 정책 데이터가 서버에 저장되었습니다! 새로고침 해주세요.");
+        })
+        .catch(err => {
+          alert("❌ 서버 전송 실패: " + err.message);
+        });
+
+      } catch (err) {
+        console.error(err);
+        alert("❌ 엑셀 오류: " + err.message + "\n\n(사내 문서보안 암호화가 원인일 확률이 높습니다.)");
+      }
+    };
+    reader.readAsArrayBuffer(file);
+    e.target.value = null; 
+  };
+
+
+  
+  
                   return { [uHighTier]: { common: parse(hC), selective: parse(hS) }, [uLowTier]: { common: parse(lC), selective: parse(lS) } };
                 }
               };
