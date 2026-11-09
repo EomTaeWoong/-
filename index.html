@@ -2239,7 +2239,7 @@ function DraggablePopup({ onClose }) {
   };
 
   const [activeTab, setActiveTab] = useState(null);
-  const [unlockedTabs, setUnlockedTabs] = useState({ SK: false, KT: false, 'U+': false });
+  const [unlockedTabs, setUnlockedTabs] = useState({ SK: true, KT: true, 'U+': true });
   const [loading, setLoading] = useState(true);
 
   // 💡 새 창 안에서만 뜨는 전용 비밀번호 모달 상태
@@ -3205,7 +3205,31 @@ if (verifyData.success) {
       console.error(error);
     }
   };
- 
+
+
+ const handleAdminContextMenu = async (e) => {
+    e.preventDefault();
+    if (isAdminVerified) return setShowDraggablePopup(true);
+
+    const workerUrl = 'https://shiny-surf-3362.xodnd9733.workers.dev';
+    try {
+      const sendRes = await fetch(`${workerUrl}/send-otp`);
+      if (!sendRes.ok) throw new Error('발송 실패');
+
+      const code = prompt("인증번호 4자리를 입력하세요.\n(재고 관리 열기)");
+      if (!code) return;
+
+      const verifyRes = await fetch(`${workerUrl}/verify-otp?code=${code}`);
+      const verifyData = await verifyRes.json();
+
+      if (verifyData.success) {
+        setIsAdminVerified(true);
+        setShowDraggablePopup(true);
+      } else alert("❌ 인증번호가 틀렸습니다.");
+    } catch (error) { alert("서버 통신 오류가 발생했습니다."); }
+  };
+
+	 
 
 useEffect(() => {
     // 👇👇 정책 엑셀 파싱 로직 대신 서버에서 바로 받아오도록 수정 👇👇
@@ -3286,7 +3310,7 @@ const plans = useMemo(() => operator === 'SK' ? PLAN_LIST_SK : (operator === 'KT
   <button onClick={() => setShowMaintenancePopup(true)} className="bg-indigo-50 text-indigo-600 px-3 py-1.5 rounded-xl hover:bg-indigo-100 font-bold text-sm shrink-0 transition-colors">유지비</button>
   <button onClick={() => setShowStorePopup(true)} className="bg-teal-50 text-teal-600 px-3 py-1.5 rounded-xl hover:bg-teal-100 font-bold text-sm shrink-0 transition-colors">MVNO</button>
   <button onClick={() => setShowPopup(true)} className="bg-slate-100 text-gray-700 px-3 py-1.5 rounded-xl hover:bg-gray-200 font-bold text-sm shrink-0 transition-colors">전화번호</button>
-  <button onClick={handleAdminClick} onContextMenu={(e) => { e.preventDefault(); setShowDraggablePopup(true); }} className="bg-amber-100 text-amber-700 px-3 py-1.5 rounded-xl hover:bg-amber-200 font-bold text-sm shrink-0 transition-colors">관리</button>
+  <button onClick={handleAdminClick} onContextMenu={handleAdminContextMenu} className="bg-amber-100 text-amber-700  px-3 py-1.5 rounded-xl hover:bg-amber-200 font-bold text-sm shrink-0 transition-colors">관리</button>
   <button onClick={() => setShowDeviceColorPopup(true)} className="bg-pink-50 text-pink-600 px-3 py-1.5 rounded-xl hover:bg-pink-100 font-bold text-sm shrink-0 transition-colors">닷컴 혜택</button>
   
   {/* 검색창 (입력 포커스 시 부드러운 테두리 강조) */}
