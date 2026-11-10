@@ -2252,39 +2252,35 @@ function HistoryPopup({ onClose }) {
         </div>
         
         <div className="flex-1 overflow-y-auto custom-scrollbar p-2 bg-gray-50 rounded-xl border border-gray-200">
-          {todayLogs.length === 0 ? (
-            <div className="text-center text-gray-400 mt-20 font-bold">오늘 변경된 이력이 없습니다.</div>
-          ) : (
-            ['SK', 'KT', 'U+'].map(op => {
-              const opLogs = todayLogs.filter(log => log.operator === op);
-              if (opLogs.length === 0) return null;
-              return (
-                <div key={op} className="mb-5">
-                  <h3 className={`font-extrabold text-[15px] mb-2 px-2 ${op==='SK'?'text-red-600':op==='KT'?'text-blue-600':'text-emerald-600'}`}>
-                    [{op} 통신사]
-                  </h3>
-                  <div className="space-y-1.5">
-                    {opLogs.map((log, i) => (
-                      <div key={i} className="flex justify-between items-center bg-white p-2.5 rounded-lg border border-gray-200 shadow-sm text-[13px]">
-                        <div>
-                          <span className="text-gray-400 text-xs mr-2">{log.time}</span>
-                          <span className="font-bold text-gray-700">{log.device}</span>
-                          <span className="text-gray-500 ml-1">({log.color})</span>
-                        </div>
-                        <div className="flex items-center gap-1.5">
-                          <span className="font-extrabold text-gray-800">{log.qty}개</span>
-                          <span className={`px-2 py-0.5 rounded text-xs font-bold ${log.action === '차감' ? 'bg-red-100 text-red-600' : 'bg-blue-100 text-blue-600'}`}>
-                            {log.action}
-                          </span>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              );
-            })
-          )}
-        </div>
+  {!activeTab ? (
+    <div className="text-center text-gray-400 mt-20 font-bold">먼저 열람할 통신사 탭을 선택해 주세요.</div>
+  ) : historyLogs.filter(log => log.date === new Date().toLocaleDateString('ko-KR') && log.operator === activeTab).length === 0 ? (
+    <div className="text-center text-gray-400 mt-20 font-bold">현재 탭에 오늘 변경된 이력이 없습니다.</div>
+  ) : (
+    <div className="mb-5">
+      <h3 className={`font-extrabold text-[15px] mb-2 px-2 ${activeTab==='SK'?'text-red-600':activeTab==='KT'?'text-blue-600':'text-emerald-600'}`}>
+        [{activeTab} 통신사]
+      </h3>
+      <div className="space-y-1.5">
+        {historyLogs.filter(log => log.date === new Date().toLocaleDateString('ko-KR') && log.operator === activeTab).map((log, i) => (
+          <div key={i} className="flex justify-between items-center bg-white p-2.5 rounded-lg border border-gray-200 shadow-sm text-[13px]">
+            <div>
+              <span className="text-gray-400 text-xs mr-2">{log.time}</span>
+              <span className="font-bold text-gray-700">{log.device}</span>
+              <span className="text-gray-500 ml-1">({log.color})</span>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <span className="font-extrabold text-gray-800">{log.qty}개</span>
+              <span className={`px-2 py-0.5 rounded text-xs font-bold ${log.action === '차감' ? 'bg-red-100 text-red-600' : 'bg-blue-100 text-blue-600'}`}>
+                {log.action}
+              </span>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  )}
+</div>
 
         <div className="pt-4 mt-2 border-t flex justify-end shrink-0">
           <button onClick={onClose} className="px-5 py-2 bg-amber-500 text-white rounded-lg text-[13px] font-bold hover:bg-amber-600 shadow-sm">
@@ -2784,7 +2780,7 @@ const parseExtraSheet = (sheetName, isGalcams) => {
             </button>
 
 {/* 👇 수정된 이력 보기 버튼 👇 */}
-<button onClick={() => setShowHistoryModal(true)} className="bg-purple-500 hover:bg-purple-600 text-white px-2.5 py-1.5 rounded text-[13px] font-bold transition-colors shadow-sm">
+<button onClick={() => { setHistoryLogs(JSON.parse(localStorage.getItem('inventory_history') || '[]')); setShowHistoryModal(true); }} className="bg-purple-500 hover:bg-purple-600 text-white px-2.5 py-1.5 rounded text-[13px] font-bold transition-colors shadow-sm">
   🕒 이력 보기
 </button>
 
