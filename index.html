@@ -2093,6 +2093,7 @@ function PolicyPastePopup({ onClose, POLICY, workerUrl, showAlert }) {
   );
 }
 
+
 // ------------------ 재고 복사-붙여넣기 팝업 (DRM 우회용) ------------------
 function InventoryPastePopup({ onClose, inventory, setInventory, setDisplayOrder, workerUrl, showAlert, keyInfoMap, copyTextToKeyMap }) {
   const [pasteData, setPasteData] = useState('');
@@ -2111,6 +2112,7 @@ function InventoryPastePopup({ onClose, inventory, setInventory, setDisplayOrder
     let groupedKeys = { SK: {}, KT: {}, 'U+': {} };
     let deviceAppearanceOrder = { SK: [], KT: [], 'U+': [] };
     let updateCount = 0;
+    let uploadLogs = []; // 💡 업로드 이력을 담을 배열 추가
 
     let carrierIdx = -1, modelIdx = -1, qtyIdx = -1;
 
@@ -2138,6 +2140,27 @@ function InventoryPastePopup({ onClose, inventory, setInventory, setDisplayOrder
         const internalKey = copyTextToKeyMap[cleanModel];
         const finalKey = internalKey ? internalKey : `UNMAPPED_${rawModel}`;
         
+        // 👇👇 기존 수량과 비교하여 이력(로그) 남기기 👇👇
+        const oldQty = parseInt(inventory[carrier]?.[finalKey] || '0', 10);
+        const newQty = parseInt(qty, 10);
+        
+        if (!isNaN(newQty) && oldQty !== newQty) {
+          const diff = newQty - oldQty;
+          const devName = internalKey ? keyInfoMap[internalKey].device : rawModel;
+          const colorName = internalKey ? keyInfoMap[internalKey].color : '';
+          
+          uploadLogs.push({
+            date: new Date().toLocaleDateString('ko-KR'),
+            time: new Date().toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit', second: '2-digit' }),
+            operator: carrier,
+            device: devName,
+            color: colorName,
+            action: diff > 0 ? '업로드' : '차감', // 증가하면 파란색(업로드), 감소하면 빨간색(차감)
+            qty: Math.abs(diff)
+          });
+        }
+        // 👆👆 이력 남기기 끝 👆👆
+
         updatedInventory[carrier][finalKey] = qty;
         updatedInventory[carrier][`${finalKey}_req`] = inventory[carrier]?.[`${finalKey}_req`] || '0';
         updateCount++;
@@ -2168,6 +2191,22 @@ function InventoryPastePopup({ onClose, inventory, setInventory, setDisplayOrder
         // 기존에 있던 재고 항목 중 이번 복사본에 없는 단말기는 수량을 0으로 처리하되 목록에 유지
         Object.keys(inventory[carrier] || {}).forEach(k => {
            if (!k.endsWith('_req') && !updatedInventory[carrier][k]) {
+               // 👇👇 엑셀에 없어서 0으로 리셋되는 항목도 이력 남기기 👇👇
+               const oldQty = parseInt(inventory[carrier][k] || '0', 10);
+               if (oldQty > 0) {
+                 const info = keyInfoMap[k] || { device: k.replace('UNMAPPED_', ''), color: '' };
+                 uploadLogs.push({
+                   date: new Date().toLocaleDateString('ko-KR'),
+                   time: new Date().toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit', second: '2-digit' }),
+                   operator: carrier,
+                   device: info.device,
+                   color: info.color,
+                   action: '차감',
+                   qty: oldQty
+                 });
+               }
+               // 👆👆 이력 남기기 끝 👆👆
+               
                updatedInventory[carrier][k] = '0';
                updatedInventory[carrier][`${k}_req`] = inventory[carrier][`${k}_req`] || '0';
            }
@@ -2177,6 +2216,14 @@ function InventoryPastePopup({ onClose, inventory, setInventory, setDisplayOrder
       setInventory(updatedInventory);
       setDisplayOrder(newOrder); 
       
+      // 👇👇 계산된 업로드 이력을 로컬스토리지에 일괄 저장 👇👇
+      if (uploadLogs.length > 0) {
+        const savedLogs = JSON.parse(localStorage.getItem('inventory_history') || '[]');
+        const newHistory = [...uploadLogs, ...savedLogs].slice(0, 300); // 기존 이력과 합치기 (최대 300건 유지)
+        localStorage.setItem('inventory_history', JSON.stringify(newHistory));
+      }
+      // 👆👆 일괄 저장 끝 👆👆
+
       fetch(`${workerUrl}/save-inventory`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -2195,7 +2242,7 @@ function InventoryPastePopup({ onClose, inventory, setInventory, setDisplayOrder
       <div className="bg-white p-5 rounded-2xl shadow-xl w-full max-w-[800px] flex flex-col h-[70vh]">
         <div className="flex justify-between items-center mb-4 shrink-0">
           <h2 className="text-xl font-bold text-gray-800">📦 재고 현황 업로드 (엑셀 복사/붙여넣기)</h2>
-          <button onClick={onClose} className="text-gray-500 hover:text-gray-800 text-3xl font-bold">&times;</button>
+          <button ON-CLICK={onClose} className="text-gray-500 hover:text-gray-800 text-3xl font-bold">&times;</button>
         </div>
         <p className="text-[13px] text-emerald-800 mb-4 bg-emerald-50 border border-emerald-200 p-3 rounded-lg leading-relaxed">
           💡 엑셀에서 재고 표 전체(통신사, 모델, 수량)를 <b>드래그하여 복사(Ctrl+C)</b>한 뒤, 아래 빈칸에 <b>붙여넣기(Ctrl+V)</b> 해주세요.
@@ -2204,17 +2251,16 @@ function InventoryPastePopup({ onClose, inventory, setInventory, setDisplayOrder
           className="flex-1 border p-3 text-[12px] font-mono whitespace-pre bg-gray-50 rounded-xl mb-4 resize-none outline-none focus:ring-2 focus:ring-emerald-400" 
           placeholder="여기에 엑셀 데이터를 붙여넣으세요..."
           value={pasteData} 
-          onChange={e=>setPasteData(e.target.value)}
+          ON-CHANGE={e=>setPasteData(e.target.value)}
         ></textarea>
         <div className="pt-4 border-t flex justify-end gap-2 shrink-0">
-          <button onClick={onClose} className="px-5 py-2.5 bg-gray-200 rounded-xl font-bold text-gray-700 hover:bg-gray-300">취소</button>
-          <button onClick={handleSave} className="px-5 py-2.5 bg-emerald-600 rounded-xl font-bold text-white hover:bg-emerald-700 shadow-md">저장 후 반영하기</button>
+          <button ON-CLICK={onClose} className="px-5 py-2.5 bg-gray-200 rounded-xl font-bold text-gray-700 hover:bg-gray-300">취소</button>
+          <button ON-CLICK={handleSave} className="px-5 py-2.5 bg-emerald-600 rounded-xl font-bold text-white hover:bg-emerald-700 shadow-md">저장 후 반영하기</button>
         </div>
       </div>
     </div>
   );
 }
-
 	
 
 // ------------------ 2. 재고 현황 팝업 (새 창 버전) ------------------
