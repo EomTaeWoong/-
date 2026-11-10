@@ -2230,6 +2230,71 @@ function getColorBgClass(colorName) {
   if (colorName.includes('그레이') || colorName.includes('실버') || colorName.includes('화이트')) return 'bg-slate-200';
   return '';
 }
+
+// ------------------ 당일 변경 이력 팝업 ------------------
+function HistoryPopup({ onClose }) {
+  const [historyLogs, setHistoryLogs] = useState([]);
+  
+  // 팝업이 열릴 때 로컬 스토리지에서 이력을 가져옴
+  React.useEffect(() => {
+    setHistoryLogs(JSON.parse(localStorage.getItem('inventory_history') || '[]'));
+  }, []);
+
+  const today = new Date().toLocaleDateString('ko-KR');
+  const todayLogs = historyLogs.filter(log => log.date === today);
+
+  return (
+    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-[9999] p-4">
+      <div className="bg-white p-5 rounded-2xl shadow-xl w-full max-w-[600px] flex flex-col h-[70vh]">
+        <div className="flex justify-between items-center mb-4 shrink-0">
+          <h2 className="text-xl font-bold text-gray-800">🕒 오늘 재고 변경 이력</h2>
+          <button ON-CLICK={onClose} className="text-gray-500 hover:text-gray-800 text-3xl font-bold leading-none">&times;</button>
+        </div>
+        
+        <div className="flex-1 overflow-y-auto custom-scrollbar p-2 bg-gray-50 rounded-xl border border-gray-200">
+          {todayLogs.length === 0 ? (
+            <div className="text-center text-gray-400 mt-20 font-bold">오늘 변경된 이력이 없습니다.</div>
+          ) : (
+            ['SK', 'KT', 'U+'].map(op => {
+              const opLogs = todayLogs.filter(log => log.operator === op);
+              if (opLogs.length === 0) return null;
+              return (
+                <div key={op} className="mb-5">
+                  <h3 className={`font-extrabold text-[15px] mb-2 px-2 ${op==='SK'?'text-red-600':op==='KT'?'text-blue-600':'text-emerald-600'}`}>
+                    [{op} 통신사]
+                  </h3>
+                  <div className="space-y-1.5">
+                    {opLogs.map((log, i) => (
+                      <div key={i} className="flex justify-between items-center bg-white p-2.5 rounded-lg border border-gray-200 shadow-sm text-[13px]">
+                        <div>
+                          <span className="text-gray-400 text-xs mr-2">{log.time}</span>
+                          <span className="font-bold text-gray-700">{log.device}</span>
+                          <span className="text-gray-500 ml-1">({log.color})</span>
+                        </div>
+                        <div className="flex items-center gap-1.5">
+                          <span className="font-extrabold text-gray-800">{log.qty}개</span>
+                          <span className={`px-2 py-0.5 rounded text-xs font-bold ${log.action === '차감' ? 'bg-red-100 text-red-600' : 'bg-blue-100 text-blue-600'}`}>
+                            {log.action}
+                          </span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              );
+            })
+          )}
+        </div>
+
+        <div className="pt-4 mt-2 border-t flex justify-end shrink-0">
+          <button ON-CLICK={onClose} className="px-5 py-2 bg-amber-500 text-white rounded-lg text-[13px] font-bold hover:bg-amber-600 shadow-sm">
+            닫기
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
 	
 function DraggablePopup({ onClose }) {
   const TAB_PASSWORDS = {
@@ -2424,28 +2489,29 @@ function DraggablePopup({ onClose }) {
       ? `보유 수량에서 ${currentReq}개를 차감 확정하시겠습니까?`
       : `차감했던 ${Math.abs(currentReq)}개를 보유 수량으로 다시 복구하시겠습니까?`;
 
-    // 💡 브라우저 기본 window.confirm 대신 커스텀 컨펌창 호출
+// 💡 브라우저 기본 window.confirm 대신 커스텀 컨펌창 호출
     showConfirm(confirmMessage, () => {
       lastSaveTimeRef.current = Date.now();
       const newStock = currentStock - currentReq;
 
+      // 👇👇 [추가] 변경 이력 로컬 스토리지에 저장 👇👇
       const info = keyInfoMap[deviceKey] || { device: deviceKey.replace('UNMAPPED_', ''), color: '' };
-	  const newLog = {
-		  date: new Date().toLocaleDateString('ko-KR'), // 오늘 날짜
-		  time: new Date().toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit', second: '2-digit'}),
-		  operator: activeTab,
-		  device: info.device,
-		  color: info.color,
-		  action: currentReq > 0 ? '차감' : '복구',
-		  qty: Math.abs(currentReq)
-	  };
+      const newLog = {
+        date: new Date().toLocaleDateString('ko-KR'),
+        time: new Date().toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit', second: '2-digit' }),
+        operator: activeTab,
+        device: info.device,
+        color: info.color,
+        action: currentReq > 0 ? '차감' : '복구',
+        qty: Math.abs(currentReq)
+      };
+      
+      const savedLogs = JSON.parse(localStorage.getItem('inventory_history') || '[]');
+      savedLogs.unshift(newLog);
+      if (savedLogs.length > 300) savedLogs.pop(); // 최근 300개까지만 저장
+      localStorage.setItem('inventory_history', JSON.stringify(savedLogs));
+      // 👆👆 [추가 끝] 👆👆
 
-	  const savedLogs = JSON.parse(localStorage.getItem('inventory_history') || '[]');
-	  savedLogs.unshift(newLog); // 최신 기록을 맨 위에 배치
-	  if (savedLogs.length > 300) savedLogs.pop(); // 너무 길어지지 않게 최근 300개만 유지
-	  localStorage.setItem('inventory_history', JSON.stringify(savedLogs));
-	  // [추가 끝]
-		
       const newInventory = {
         ...inventory,
         [activeTab]: { ...inventory[activeTab], [deviceKey]: String(newStock), [`${deviceKey}_req`]: '0' }
@@ -2717,12 +2783,10 @@ const parseExtraSheet = (sheetName, isGalcams) => {
               📦 재고 업로드
             </button>
 
-						{/* [추가] 이력 보기 버튼 */}
-			<button onClick={() => {
-		      setHistoryLogs(JSON.parse(localStorage.getItem('inventory_history') || '[]'));
-		      setShowHistoryModal(true);
-	}} className="bg-purple-500 hover:bg-purple-600 text-white px-2.5 py-1.5 rounded text-[13px] font-bold transition-colors shadow-sm">
-			</button>
+{/* 👇 수정된 이력 보기 버튼 👇 */}
+<button ON-CLICK={() => setShowHistoryModal(true)} className="bg-purple-500 hover:bg-purple-600 text-white px-2.5 py-1.5 rounded text-[13px] font-bold transition-colors shadow-sm">
+  🕒 이력 보기
+</button>
 
 
             {/* 3. 엑셀로 저장 */}
