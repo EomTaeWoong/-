@@ -2232,7 +2232,7 @@ function getColorBgClass(colorName) {
 }
 
 // ------------------ 당일 변경 이력 팝업 ------------------
-function HistoryPopup({ onClose }) {
+function HistoryPopup({ onClose, activeTab }) {
   const [historyLogs, setHistoryLogs] = useState([]);
   
   // 팝업이 열릴 때 로컬 스토리지에서 이력을 가져옴
@@ -2962,29 +2962,63 @@ const parseExtraSheet = (sheetName, isGalcams) => {
           </div>
         )}
 
-{/* 👇👇 [수정된] 🕒 당일 변경 이력 모달 👇👇 */}
-        {showHistoryModal && (
-          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-[9999] p-4">
-            <div className="bg-white p-5 rounded-2xl shadow-xl w-full max-w-[600px] flex flex-col h-[70vh]">
-              <div className="flex justify-between items-center mb-4 shrink-0">
-                <h2 className="text-xl font-bold text-gray-800">🕒 오늘 재고 변경 이력</h2>
-                <button 
-                  onClick={(e) => { e.stopPropagation(); setShowHistoryModal(false); }} 
-                  className="text-gray-500 hover:text-gray-800 text-3xl font-bold leading-none"
-                >
-                  &times;
-                </button>
-              </div>
-              
-              <div className="flex-1 overflow-y-auto custom-scrollbar p-2 bg-gray-50 rounded-xl border border-gray-200">
-                {historyLogs.filter(log => log.date === new Date().toLocaleDateString('ko-KR')).length === 0 ? (
-                  <div className="text-center text-gray-400 mt-20 font-bold">오늘 변경된 이력이 없습니다.</div>
-                ) : (
-                  ['SK', 'KT', 'U+'].map(op => {
-                    const opLogs = historyLogs.filter(log => log.date === new Date().toLocaleDateString('ko-KR') && log.operator === op);
-                    if (opLogs.length === 0) return null;
-                    return (
-                      <div key={op} className="mb-5">
+// ✅ 수정 후 (현재 탭 필터링 적용)
+{showHistoryModal && (
+  <div className="absolute inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-[9999] p-4">
+    {/* ... 팝업 헤더 부분 유지 ... */}
+    <div className="bg-white p-5 rounded-2xl shadow-xl w-full max-w-[600px] flex flex-col h-[70vh]">
+      <div className="flex justify-between items-center mb-4 shrink-0">
+        <h2 className="text-xl font-bold text-gray-800">🕒 오늘 재고 변경 이력</h2>
+        <button 
+          onClick={(e) => { e.stopPropagation(); setShowHistoryModal(false); }} 
+          className="text-gray-500 hover:text-gray-800 text-3xl font-bold leading-none"
+        >
+          &times;
+        </button>
+      </div>
+      
+      <div className="flex-1 overflow-y-auto custom-scrollbar p-2 bg-gray-50 rounded-xl border border-gray-200">
+        {!activeTab ? (
+          <div className="text-center text-gray-400 mt-20 font-bold">먼저 열람할 통신사 탭을 선택해 주세요.</div>
+        ) : historyLogs.filter(log => log.date === new Date().toLocaleDateString('ko-KR') && log.operator === activeTab).length === 0 ? (
+          <div className="text-center text-gray-400 mt-20 font-bold">현재 탭에 오늘 변경된 이력이 없습니다.</div>
+        ) : (
+          <div className="mb-5">
+            <h3 className={`font-extrabold text-[15px] mb-2 px-2 ${activeTab==='SK'?'text-red-600':activeTab==='KT'?'text-blue-600':'text-emerald-600'}`}>
+              [{activeTab} 통신사]
+            </h3>
+            <div className="space-y-1.5">
+              {historyLogs.filter(log => log.date === new Date().toLocaleDateString('ko-KR') && log.operator === activeTab).map((log, i) => (
+                <div key={i} className="flex justify-between items-center bg-white p-2.5 rounded-lg border border-gray-200 shadow-sm text-[13px]">
+                  <div>
+                    <span className="text-gray-400 text-xs mr-2">{log.time}</span>
+                    <span className="font-bold text-gray-700">{log.device}</span>
+                    <span className="text-gray-500 ml-1">({log.color})</span>
+                  </div>
+                  <div className="flex items-center gap-1.5">
+                    <span className="font-extrabold text-gray-800">{log.qty}개</span>
+                    <span className={`px-2 py-0.5 rounded text-xs font-bold ${log.action === '차감' ? 'bg-red-100 text-red-600' : 'bg-blue-100 text-blue-600'}`}>
+                      {log.action}
+                    </span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+
+      <div className="pt-4 mt-2 border-t flex justify-end shrink-0">
+        <button 
+          onClick={(e) => { e.stopPropagation(); setShowHistoryModal(false); }} 
+          className="px-5 py-2 bg-amber-500 text-white rounded-lg text-[13px] font-bold hover:bg-amber-600 shadow-sm"
+        >
+          닫기
+        </button>
+      </div>
+    </div>
+  </div>
+)}
                         <h3 className={`font-extrabold text-[15px] mb-2 px-2 ${op==='SK'?'text-red-600':op==='KT'?'text-blue-600':'text-emerald-600'}`}>
                           [{op} 통신사]
                         </h3>
