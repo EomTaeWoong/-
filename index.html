@@ -1904,6 +1904,7 @@ initialData={{
 }
 
 
+
 // ------------------ 1. 새 창(다른 모니터)으로 열어주는 마법의 포털 컴포넌트 ------------------
 function NewWindowPortal({ children, onClose, title }) {
   const [container] = useState(() => document.createElement('div'));
@@ -1952,7 +1953,6 @@ function NewWindowPortal({ children, onClose, title }) {
   // 포털을 열어 메인 앱의 데이터를 새 창으로 전송
   return newWindow ? ReactDOM.createPortal(children, container) : null;
 }
-
 
 // ------------------ 정책 복사-붙여넣기 팝업 (DRM 우회용) ------------------
 function PolicyPastePopup({ onClose, POLICY, workerUrl, showAlert }) {
@@ -2072,27 +2072,26 @@ function PolicyPastePopup({ onClose, POLICY, workerUrl, showAlert }) {
       <div className="bg-white p-5 rounded-2xl shadow-xl w-full max-w-[1200px] flex flex-col h-[85vh]">
         <div className="flex justify-between items-center mb-4 shrink-0">
           <h2 className="text-xl font-bold text-gray-800">📋 정책 업로드</h2>
-          <button onClick={onClose} className="text-gray-500 hover:text-gray-800 text-3xl font-bold">&times;</button>
+          <button ON-CLICK={onClose} className="text-gray-500 hover:text-gray-800 text-3xl font-bold">&times;</button>
         </div>
         <p className="text-[13px] text-blue-800 mb-4 bg-blue-50 border border-blue-200 p-3 rounded-lg leading-relaxed">
           💡 엑셀에서 각 시트의 <b>표 전체를 복사(Ctrl+C)</b>해서, 아래 빈칸에 각각 <b>붙여넣기(Ctrl+V)</b> 하신 후 하단의 [저장]을 누르시면 됩니다.
         </p>
         <div className="flex-1 overflow-y-auto grid grid-cols-1 md:grid-cols-5 gap-3 pb-4">
-          <div className="flex flex-col"><label className="font-extrabold text-red-600 mb-1">1. SK_공통</label><textarea className="flex-1 border p-2 text-[11px] font-mono whitespace-pre bg-gray-50 min-h-[150px]" value={skCommon} onChange={e=>setSkCommon(e.target.value)}></textarea></div>
-          <div className="flex flex-col"><label className="font-extrabold text-blue-600 mb-1">2. KT_공통</label><textarea className="flex-1 border p-2 text-[11px] font-mono whitespace-pre bg-gray-50 min-h-[150px]" value={ktCommon} onChange={e=>setKtCommon(e.target.value)}></textarea></div>
-          <div className="flex flex-col"><label className="font-extrabold text-emerald-600 mb-1">3. U+_공통</label><textarea className="flex-1 border p-2 text-[11px] font-mono whitespace-pre bg-gray-50 min-h-[150px]" value={uCommon} onChange={e=>setUCommon(e.target.value)}></textarea></div>
-          <div className="flex flex-col"><label className="font-extrabold text-gray-800 mb-1">4. 닷컴_추가</label><textarea className="flex-1 border p-2 text-[11px] font-mono whitespace-pre bg-gray-50 min-h-[150px]" value={extraDotcom} onChange={e=>setExtraDotcom(e.target.value)}></textarea></div>
-          <div className="flex flex-col"><label className="font-extrabold text-purple-600 mb-1">5. 갤캠스_추가</label><textarea className="flex-1 border p-2 text-[11px] font-mono whitespace-pre bg-gray-50 min-h-[150px]" value={extraGalcams} onChange={e=>setExtraGalcams(e.target.value)}></textarea></div>
+          <div className="flex flex-col"><label className="font-extrabold text-red-600 mb-1">1. SK_공통</label><textarea className="flex-1 border p-2 text-[11px] font-mono whitespace-pre bg-gray-50 min-h-[150px]" value={skCommon} ON-CHANGE={e=>setSkCommon(e.target.value)}></textarea></div>
+          <div className="flex flex-col"><label className="font-extrabold text-blue-600 mb-1">2. KT_공통</label><textarea className="flex-1 border p-2 text-[11px] font-mono whitespace-pre bg-gray-50 min-h-[150px]" value={ktCommon} ON-CHANGE={e=>setKtCommon(e.target.value)}></textarea></div>
+          <div className="flex flex-col"><label className="font-extrabold text-emerald-600 mb-1">3. U+_공통</label><textarea className="flex-1 border p-2 text-[11px] font-mono whitespace-pre bg-gray-50 min-h-[150px]" value={uCommon} ON-CHANGE={e=>setUCommon(e.target.value)}></textarea></div>
+          <div className="flex flex-col"><label className="font-extrabold text-gray-800 mb-1">4. 닷컴_추가</label><textarea className="flex-1 border p-2 text-[11px] font-mono whitespace-pre bg-gray-50 min-h-[150px]" value={extraDotcom} ON-CHANGE={e=>setExtraDotcom(e.target.value)}></textarea></div>
+          <div className="flex flex-col"><label className="font-extrabold text-purple-600 mb-1">5. 갤캠스_추가</label><textarea className="flex-1 border p-2 text-[11px] font-mono whitespace-pre bg-gray-50 min-h-[150px]" value={extraGalcams} ON-CHANGE={e=>setExtraGalcams(e.target.value)}></textarea></div>
         </div>
         <div className="pt-4 border-t flex justify-end gap-2 shrink-0">
-          <button onClick={onClose} className="px-5 py-2.5 bg-gray-200 rounded-xl font-bold text-gray-700 hover:bg-gray-300">취소</button>
-          <button onClick={handleSave} className="px-5 py-2.5 bg-blue-600 rounded-xl font-bold text-white hover:bg-blue-700 shadow-md">저장 후 반영하기</button>
+          <button ON-CLICK={onClose} className="px-5 py-2.5 bg-gray-200 rounded-xl font-bold text-gray-700 hover:bg-gray-300">취소</button>
+          <button ON-CLICK={handleSave} className="px-5 py-2.5 bg-blue-600 rounded-xl font-bold text-white hover:bg-blue-700 shadow-md">저장 후 반영하기</button>
         </div>
       </div>
     </div>
   );
 }
-
 
 // ------------------ 재고 복사-붙여넣기 팝업 (DRM 우회용) ------------------
 function InventoryPastePopup({ onClose, inventory, setInventory, setDisplayOrder, workerUrl, showAlert, keyInfoMap, copyTextToKeyMap }) {
@@ -2249,10 +2248,7 @@ function InventoryPastePopup({ onClose, inventory, setInventory, setDisplayOrder
   };
 
   return (
-    {/* 💡 뒷배경 클릭 시 닫히도록 ON-CLICK={handleForceClose} 추가 */}
     <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-[9999] p-4" ON-CLICK={handleForceClose}>
-      
-      {/* 💡 팝업 내부창을 클릭했을 땐 안 닫히도록 클릭 이벤트 전파 차단 */}
       <div className="bg-white p-5 rounded-2xl shadow-xl w-full max-w-[800px] flex flex-col h-[70vh]" ON-CLICK={(e) => e.stopPropagation()}>
         <div className="flex justify-between items-center mb-4 shrink-0">
           <h2 className="text-xl font-bold text-gray-800">📦 재고 현황 업로드 (엑셀 복사/붙여넣기)</h2>
@@ -2275,10 +2271,7 @@ function InventoryPastePopup({ onClose, inventory, setInventory, setDisplayOrder
   );
 }
 
-	
-
 // ------------------ 2. 재고 현황 팝업 (새 창 버전) ------------------
-// 👇 여기에 색상 배경 맵핑 함수 추가 👇
 function getColorBgClass(colorName) {
   if (!colorName) return '';
   if (colorName.includes('크림') || colorName.includes('옐로우')) return 'bg-amber-100'; 
@@ -2289,67 +2282,6 @@ function getColorBgClass(colorName) {
   if (colorName.includes('민트') || colorName.includes('피스타치오')) return 'bg-emerald-100';
   if (colorName.includes('그레이') || colorName.includes('실버') || colorName.includes('화이트')) return 'bg-slate-200';
   return '';
-}
-
-// ------------------ 당일 변경 이력 팝업 ------------------
-function HistoryPopup({ onClose, activeTab }) {
-  const [historyLogs, setHistoryLogs] = useState([]);
-  
-  // 팝업이 열릴 때 로컬 스토리지에서 이력을 가져옴
-  React.useEffect(() => {
-    setHistoryLogs(JSON.parse(localStorage.getItem('inventory_history') || '[]'));
-  }, []);
-
-  const today = new Date().toLocaleDateString('ko-KR');
-  const todayLogs = historyLogs.filter(log => log.date === today);
-
-  return (
-    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-[9999] p-4">
-      <div className="bg-white p-5 rounded-2xl shadow-xl w-full max-w-[600px] flex flex-col h-[70vh]">
-        <div className="flex justify-between items-center mb-4 shrink-0">
-          <h2 className="text-xl font-bold text-gray-800">🕒 오늘 재고 변경 이력</h2>
-          <button onClick={onClose} className="text-gray-500 hover:text-gray-800 text-3xl font-bold leading-none">&times;</button>
-        </div>
-        
-        <div className="flex-1 overflow-y-auto custom-scrollbar p-2 bg-gray-50 rounded-xl border border-gray-200">
-  {!activeTab ? (
-    <div className="text-center text-gray-400 mt-20 font-bold">먼저 열람할 통신사 탭을 선택해 주세요.</div>
-  ) : historyLogs.filter(log => log.date === new Date().toLocaleDateString('ko-KR') && log.operator === activeTab).length === 0 ? (
-    <div className="text-center text-gray-400 mt-20 font-bold">현재 탭에 오늘 변경된 이력이 없습니다.</div>
-  ) : (
-    <div className="mb-5">
-      <h3 className={`font-extrabold text-[15px] mb-2 px-2 ${activeTab==='SK'?'text-red-600':activeTab==='KT'?'text-blue-600':'text-emerald-600'}`}>
-        [{activeTab} 통신사]
-      </h3>
-      <div className="space-y-1.5">
-        {historyLogs.filter(log => log.date === new Date().toLocaleDateString('ko-KR') && log.operator === activeTab).map((log, i) => (
-          <div key={i} className="flex justify-between items-center bg-white p-2.5 rounded-lg border border-gray-200 shadow-sm text-[13px]">
-            <div>
-              <span className="text-gray-400 text-xs mr-2">{log.time}</span>
-              <span className="font-bold text-gray-700">{log.device}</span>
-              <span className="text-gray-500 ml-1">({log.color})</span>
-            </div>
-            <div className="flex items-center gap-1.5">
-              <span className="font-extrabold text-gray-800">{log.qty}개</span>
-              <span className={`px-2 py-0.5 rounded text-xs font-bold ${log.action === '차감' ? 'bg-red-100 text-red-600' : 'bg-blue-100 text-blue-600'}`}>
-                {log.action}
-              </span>
-            </div>
-          </div>
-        ))}
-      </div>
-    </div>
-  )}
-</div>
-
-        <div className="pt-4 mt-2 border-t flex justify-end shrink-0">
-          <button onClick={onClose} className="px-5 py-2 bg-amber-500 text-white rounded-lg text-[13px] font-bold hover:bg-amber-600 shadow-sm">
-            닫기
-          </button>
-        </div>
-      </div>
-    </div>
-  );
 }
 	
 function DraggablePopup({ onClose }) {
@@ -2363,7 +2295,6 @@ function DraggablePopup({ onClose }) {
   const [unlockedTabs, setUnlockedTabs] = useState({ SK: true, KT: true, 'U+': true });
   const [loading, setLoading] = useState(true);
 
-  // 💡 새 창 안에서만 뜨는 전용 비밀번호 모달 상태
   const [showPasswordModal, setShowPasswordModal] = useState(false);
   const [pendingTab, setPendingTab] = useState(null);
   const [passwordInput, setPasswordInput] = useState('');
@@ -2374,9 +2305,6 @@ function DraggablePopup({ onClose }) {
   const [showHistoryModal, setShowHistoryModal] = useState(false);
   const [historyLogs, setHistoryLogs] = useState([]);
 
-
-
-  // 💡 새 창 안에서만 뜨는 전용 알림/확인창(Alert/Confirm) 모달 상태 추가!
   const [customModal, setCustomModal] = useState({ isOpen: false, type: 'alert', message: '', onConfirm: null });
 
   const showAlert = (message) => {
@@ -2529,7 +2457,7 @@ function DraggablePopup({ onClose }) {
       const currentReq = parseInt(prev[activeTab]?.[`${deviceKey}_req`] || '0', 10);
       let newReq = currentReq + delta;
       if (newReq > currentStock) {
-        showAlert('잔여 재고가 없습니다.'); // 💡 커스텀 알림창으로 변경
+        showAlert('잔여 재고가 없습니다.'); 
         return prev;
       }
       return { ...prev, [activeTab]: { ...prev[activeTab], [`${deviceKey}_req`]: String(newReq) } };
@@ -2545,12 +2473,10 @@ function DraggablePopup({ onClose }) {
       ? `보유 수량에서 ${currentReq}개를 차감 확정하시겠습니까?`
       : `차감했던 ${Math.abs(currentReq)}개를 보유 수량으로 다시 복구하시겠습니까?`;
 
-// 💡 브라우저 기본 window.confirm 대신 커스텀 컨펌창 호출
     showConfirm(confirmMessage, () => {
       lastSaveTimeRef.current = Date.now();
       const newStock = currentStock - currentReq;
 
-      // 👇👇 [추가] 변경 이력 로컬 스토리지에 저장 👇👇
       const info = keyInfoMap[deviceKey] || { device: deviceKey.replace('UNMAPPED_', ''), color: '' };
       const newLog = {
         date: new Date().toLocaleDateString('ko-KR'),
@@ -2564,9 +2490,8 @@ function DraggablePopup({ onClose }) {
       
       const savedLogs = JSON.parse(localStorage.getItem('inventory_history') || '[]');
       savedLogs.unshift(newLog);
-      if (savedLogs.length > 300) savedLogs.pop(); // 최근 300개까지만 저장
+      if (savedLogs.length > 300) savedLogs.pop(); 
       localStorage.setItem('inventory_history', JSON.stringify(savedLogs));
-      // 👆👆 [추가 끝] 👆👆
 
       const newInventory = {
         ...inventory,
@@ -2603,129 +2528,6 @@ function DraggablePopup({ onClose }) {
       if (pwdInputRef.current) pwdInputRef.current.focus();
     }
   };
-
-
-// 👇👇 여기서부터 추가 (정책 업로드 로직) 👇👇
-  const policyUploadRef = useRef(null);
-
-  const handlePolicyUpload = (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
-
-    const reader = new FileReader();
-    reader.onload = (event) => {
-      try {
-        const data = new Uint8Array(event.target.result);
-        const wb = window.XLSX.read(data, { type: 'array' });
-        
-        let updatedPolicy = JSON.parse(JSON.stringify(POLICY)); 
-
-        if (wb.Sheets['SK_공통지원금']) {
-          const skData = window.XLSX.utils.sheet_to_json(wb.Sheets['SK_공통지원금']);
-          skData.forEach(row => {
-            const model = row['모델명']; const type = row['가입유형'] || '공통';
-            if (updatedPolicy.DEVICES[model]) {
-              if (!updatedPolicy.DEVICES[model].SK_COMMON[type]) updatedPolicy.DEVICES[model].SK_COMMON[type] = {};
-              Object.keys(row).forEach(k => { if (k !== '모델명' && k !== '가입유형') updatedPolicy.DEVICES[model].SK_COMMON[type][k] = row[k]; });
-            }
-          });
-        }
-
-        if (wb.Sheets['KT_공통지원금']) {
-          const ktData = window.XLSX.utils.sheet_to_json(wb.Sheets['KT_공통지원금']);
-          ktData.forEach(row => {
-            const model = row['모델명']; const type = row['가입유형'] || '공통';
-            if (updatedPolicy.DEVICES[model]) {
-              if (!updatedPolicy.DEVICES[model].KT_COMMON[type]) updatedPolicy.DEVICES[model].KT_COMMON[type] = {};
-              Object.keys(row).forEach(k => { if (k !== '모델명' && k !== '가입유형') updatedPolicy.DEVICES[model].KT_COMMON[type][k] = row[k]; });
-            }
-          });
-        }
-
-        if (wb.Sheets['U_공통지원금']) {
-          const uData = window.XLSX.utils.sheet_to_json(wb.Sheets['U_공통지원금']);
-          uData.forEach(row => {
-            const model = row['모델명']; const type = row['가입유형'] || '공통';
-            if (updatedPolicy.DEVICES[model]) {
-              if (!updatedPolicy.DEVICES[model].U_COMMON[type]) updatedPolicy.DEVICES[model].U_COMMON[type] = {};
-              Object.keys(row).forEach(k => { if (k !== '모델명' && k !== '가입유형') updatedPolicy.DEVICES[model].U_COMMON[type][k] = row[k]; });
-            }
-          });
-        }
-
-const parseExtraSheet = (sheetName, isGalcams) => {
-          if (!wb.Sheets[sheetName]) return;
-          const extraData = window.XLSX.utils.sheet_to_json(wb.Sheets[sheetName]);
-          extraData.forEach(row => {
-            const model = row['모델명'];
-            if (updatedPolicy.DEVICES[model]) {
-              if (!updatedPolicy.DEVICES[model].EXTRA) updatedPolicy.DEVICES[model].EXTRA = {};
-              const ex = updatedPolicy.DEVICES[model].EXTRA;
-              let ktTier = 'OVER_90K'; let uHighTier = 'OVER_95K'; let uLowTier = 'OVER_61K'; let skTier = 'OVER_99K';
-              if (model.includes('A36') || model.includes('A37')) { ktTier = 'OVER_61K'; uHighTier = 'OVER_61K'; uLowTier = 'OVER_61K'; skTier = 'OVER_50K'; } 
-              else if (model.includes('A17')) { ktTier = 'OVER_33K'; uHighTier = 'OVER_33K'; uLowTier = 'OVER_33K'; skTier = 'OVER_33K'; }
-
-              const skChangeKey = isGalcams ? 'SK_CHANGE_GALCAMS' : 'SK_CHANGE_DOTCOM';
-              const skMnpKey = isGalcams ? 'SK_MNP_GALCAMS' : 'SK_MNP_DOTCOM';
-              const ktChangeKey = isGalcams ? 'KT_CHANGE_GALCAMS' : 'KT_CHANGE_DOTCOM';
-              const ktMnpKey = isGalcams ? 'KT_MNP_GALCAMS' : 'KT_MNP_DOTCOM';
-              const uChangeKey = isGalcams ? 'U_CHANGE_GALCAMS' : 'U_CHANGE_DOTCOM';
-              const uMnpKey = isGalcams ? 'U_MNP_GALCAMS' : 'U_MNP_DOTCOM';
-
-              if(row['SK기변_공시'] !== undefined || row['SK기변_선약'] !== undefined) ex[skChangeKey] = { [skTier]: { common: row['SK기변_공시']||0, selective: row['SK기변_선약']||0 } };
-              if(row['SK번이_공시'] !== undefined || row['SK번이_선약'] !== undefined) ex[skMnpKey] = { [skTier]: { common: row['SK번이_공시']||0, selective: row['SK번이_선약']||0 } };
-              
-              if(row['KT기변_공시'] !== undefined || row['KT기변_선약'] !== undefined) ex[ktChangeKey] = { [ktTier]: { common: row['KT기변_공시']||0, selective: row['KT기변_선약']||0 } };
-              if(row['KT번이_공시'] !== undefined || row['KT번이_선약'] !== undefined) ex[ktMnpKey] = { [ktTier]: { common: row['KT번이_공시']||0, selective: row['KT번이_선약']||0 } };
-
-              const applyUPlus = (highCom, highSel, lowCom, lowSel) => {
-                if (uHighTier === uLowTier) {
-                  const com = highCom !== undefined ? highCom : (lowCom !== undefined ? lowCom : 0);
-                  const sel = highSel !== undefined ? highSel : (lowSel !== undefined ? lowSel : 0);
-                  return { [uHighTier]: { common: com, selective: sel } };
-                } else {
-                  return { [uHighTier]: { common: highCom||0, selective: highSel||0 }, [uLowTier]: { common: lowCom||0, selective: lowSel||0 } };
-                }
-              };
-
-              if(row['U+기변_고_공시'] !== undefined || row['U+기변_고_선약'] !== undefined || row['U+기변_저_공시'] !== undefined || row['U+기변_저_선약'] !== undefined) {
-                 ex[uChangeKey] = applyUPlus(row['U+기변_고_공시'], row['U+기변_고_선약'], row['U+기변_저_공시'], row['U+기변_저_선약']);
-              }
-              if(row['U+번이_고_공시'] !== undefined || row['U+번이_고_선약'] !== undefined || row['U+번이_저_공시'] !== undefined || row['U+번이_저_선약'] !== undefined) {
-                 ex[uMnpKey] = applyUPlus(row['U+번이_고_공시'], row['U+번이_고_선약'], row['U+번이_저_공시'], row['U+번이_저_선약']);
-              }
-            }
-          });
-        };
-
-        // 새로 만든 시트 2개를 각각 파싱 처리 (true는 갤캠스 플래그)
-        parseExtraSheet('닷컴_추가지원금', false);
-        parseExtraSheet('갤캠스_추가지원금', true);
-
-        fetch(`${workerUrl}/save-policy`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(updatedPolicy)
-        })
-        .then(res => res.json())
-        .then(result => {
-          showAlert("✅ 정책 데이터가 서버에 저장되었습니다! 새로고침 해주세요.");
-        })
-        .catch(err => {
-          showAlert("❌ 서버 전송 실패: " + err.message);
-        });
-
-            } catch (err) {
-        // 에러의 진짜 이유를 화면에 같이 출력하도록 변경
-        showAlert("❌ 엑셀 오류: " + err.message + "\n\n(사내 문서보안 암호화가 원인일 확률이 높습니다.)");
-      }
-
-    };
-    reader.readAsArrayBuffer(file);
-    e.target.value = null; 
-  };
-
-  
 
   const handleExportExcel = () => {
     try {
@@ -2815,7 +2617,7 @@ const parseExtraSheet = (sheetName, isGalcams) => {
       window.XLSX.writeFile(wb, '통신사별_재고현황표.xlsx', { bookType: 'xlsx', bookSST: true, compression: true });
 
     } catch (err) {
-      console.error(err); showAlert("엑셀 저장 중 오류가 발생했습니다."); // 💡 커스텀 알림창
+      console.error(err); showAlert("엑셀 저장 중 오류가 발생했습니다."); 
     }
   };
 
@@ -2828,25 +2630,20 @@ const parseExtraSheet = (sheetName, isGalcams) => {
             📦 실시간 재고 현황 {loading && "🔄 로딩중..."}
           </span>
           
-                    <div className="flex items-center gap-2">
-            {/* 1. 정책 붙여넣기 (보안 우회용) */}
-            <button onClick={() => setShowPolicyPaste(true)} className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1.5 rounded-lg text-[13px] font-bold transition-colors shadow-md">
+          <div className="flex items-center gap-2">
+            <button ON-CLICK={() => setShowPolicyPaste(true)} className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1.5 rounded-lg text-[13px] font-bold transition-colors shadow-md">
               📋 정책 업로드
             </button>
 
-                        {/* 2. 재고 텍스트 업로드 */}
-            <button onClick={() => setShowInventoryPaste(true)} className="bg-white/20 hover:bg-white/30 text-white px-2.5 py-1.5 rounded text-[13px] font-bold transition-colors shadow-sm">
+            <button ON-CLICK={() => setShowInventoryPaste(true)} className="bg-white/20 hover:bg-white/30 text-white px-2.5 py-1.5 rounded text-[13px] font-bold transition-colors shadow-sm">
               📦 재고 업로드
             </button>
 
-{/* 👇 수정된 이력 보기 버튼 👇 */}
-<button onClick={() => { setHistoryLogs(JSON.parse(localStorage.getItem('inventory_history') || '[]')); setShowHistoryModal(true); }} className="bg-purple-500 hover:bg-purple-600 text-white px-2.5 py-1.5 rounded text-[13px] font-bold transition-colors shadow-sm">
-  🕒 이력 보기
-</button>
+            <button ON-CLICK={() => { setHistoryLogs(JSON.parse(localStorage.getItem('inventory_history') || '[]')); setShowHistoryModal(true); }} className="bg-purple-500 hover:bg-purple-600 text-white px-2.5 py-1.5 rounded text-[13px] font-bold transition-colors shadow-sm">
+              🕒 이력 보기
+            </button>
 
-
-            {/* 3. 엑셀로 저장 */}
-            <button onClick={handleExportExcel} className="bg-emerald-500 hover:bg-emerald-600 text-white px-2.5 py-1.5 rounded text-[13px] font-bold transition-colors shadow-sm">
+            <button ON-CLICK={handleExportExcel} className="bg-emerald-500 hover:bg-emerald-600 text-white px-2.5 py-1.5 rounded text-[13px] font-bold transition-colors shadow-sm">
               엑셀로 저장
             </button>
           </div>
@@ -2858,7 +2655,7 @@ const parseExtraSheet = (sheetName, isGalcams) => {
           {['SK', 'KT', 'U+'].map(tab => (
             <button
               key={tab}
-              onClick={() => handleTabClick(tab)}
+              ON-CLICK={() => handleTabClick(tab)}
               className={`flex-1 py-3 text-[16px] font-bold transition-colors flex justify-center items-center gap-1 ${
                 activeTab === tab ? 'bg-white text-amber-600 border-b-[3px] border-amber-500' : 'text-gray-500 hover:bg-gray-200'
               }`}
@@ -2922,12 +2719,12 @@ const parseExtraSheet = (sheetName, isGalcams) => {
                       
                       <td className="p-2 bg-white text-center align-middle">
                         <div className="flex items-center justify-center gap-2">
-                          <button onClick={() => handleRequestChange(key, -1)} className="w-7 h-7 flex items-center justify-center bg-slate-100 rounded hover:bg-slate-200 text-slate-700 font-black shadow-sm transition-all text-lg leading-none active:scale-95">-</button>
+                          <button ON-CLICK={() => handleRequestChange(key, -1)} className="w-7 h-7 flex items-center justify-center bg-slate-100 rounded hover:bg-slate-200 text-slate-700 font-black shadow-sm transition-all text-lg leading-none active:scale-95">-</button>
                           <span className="font-extrabold text-red-600 min-w-[20px] text-center text-[16px]">{currentReq}</span>
-                          <button onClick={() => handleRequestChange(key, 1)} className="w-7 h-7 flex items-center justify-center bg-slate-100 rounded hover:bg-slate-200 text-slate-700 font-black shadow-sm transition-all text-lg leading-none active:scale-95">+</button>
+                          <button ON-CLICK={() => handleRequestChange(key, 1)} className="w-7 h-7 flex items-center justify-center bg-slate-100 rounded hover:bg-slate-200 text-slate-700 font-black shadow-sm transition-all text-lg leading-none active:scale-95">+</button>
                           
                           <button 
-                            onClick={() => handleConfirmRequest(key)}
+                            ON-CLICK={() => handleConfirmRequest(key)}
                             disabled={currentReq === 0}
                             className={`ml-2 px-3 py-1.5 text-[13px] font-bold rounded shadow-sm transition-all whitespace-nowrap ${
                               currentReq > 0 ? 'bg-red-500 text-white hover:bg-red-600 active:scale-95 cursor-pointer' 
@@ -2961,8 +2758,8 @@ const parseExtraSheet = (sheetName, isGalcams) => {
                 type="password" 
                 ref={pwdInputRef}
                 value={passwordInput} 
-                onChange={(e) => { setPasswordInput(e.target.value); setPwdError(false); }}
-                onKeyDown={(e) => { if (e.key === 'Enter') handlePasswordSubmit(); }}
+                ON-CHANGE={(e) => { setPasswordInput(e.target.value); setPwdError(false); }}
+                ON-KEY-DOWN={(e) => { if (e.key === 'Enter') handlePasswordSubmit(); }}
                 className={`border-2 p-3 rounded-xl mb-1 text-center text-2xl w-56 tracking-[0.3em] font-bold outline-none transition-colors ${pwdError ? 'border-red-500 bg-red-50 text-red-600 focus:border-red-500' : 'border-gray-200 focus:border-amber-500 text-gray-800'}`}
                 placeholder="****"
               />
@@ -2970,20 +2767,17 @@ const parseExtraSheet = (sheetName, isGalcams) => {
                 {pwdError && <span className="text-red-500 text-[13px] font-bold">❌ 비밀번호가 틀렸습니다.</span>}
               </div>
               <div className="flex gap-2 w-full">
-                <button onClick={() => { setShowPasswordModal(false); setPwdError(false); }} className="flex-1 py-2.5 bg-gray-100 rounded-xl font-bold hover:bg-gray-200 text-gray-600 transition-colors text-[14px]">취소</button>
-                <button onClick={handlePasswordSubmit} className="flex-1 py-2.5 bg-amber-500 text-white rounded-xl font-bold hover:bg-amber-600 transition-colors shadow-sm text-[14px]">확인</button>
+                <button ON-CLICK={() => { setShowPasswordModal(false); setPwdError(false); }} className="flex-1 py-2.5 bg-gray-100 rounded-xl font-bold hover:bg-gray-200 text-gray-600 transition-colors text-[14px]">취소</button>
+                <button ON-CLICK={handlePasswordSubmit} className="flex-1 py-2.5 bg-amber-500 text-white rounded-xl font-bold hover:bg-amber-600 transition-colors shadow-sm text-[14px]">확인</button>
               </div>
             </div>
           </div>
         )}
 
-        {/* 방금 만든 붙여넣기 팝업을 띄우는 곳 */}
         {showPolicyPaste && (
           <PolicyPastePopup onClose={() => setShowPolicyPaste(false)} POLICY={POLICY} workerUrl={workerUrl} showAlert={showAlert} />
         )}
 
-
-		        {/* 재고 복사-붙여넣기 팝업 띄우는 곳 */}
         {showInventoryPaste && (
           <InventoryPastePopup 
             onClose={() => setShowInventoryPaste(false)} 
@@ -2996,20 +2790,17 @@ const parseExtraSheet = (sheetName, isGalcams) => {
             copyTextToKeyMap={copyTextToKeyMap}
           />
         )}
-
-		  
-		  
-        {/* 💡 커스텀 알림창(Alert/Confirm) 모달! 메인 화면으로 안 넘어가고 여기서 다 처리됩니다! */}
+    
         {customModal.isOpen && (
           <div className="absolute inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-[9999]">
             <div className="bg-white p-6 rounded-2xl shadow-2xl flex flex-col items-center border border-gray-200 min-w-[300px] max-w-sm text-center">
               <h3 className="font-extrabold mb-5 text-[16px] text-gray-800 whitespace-pre-wrap leading-relaxed">{customModal.message}</h3>
               <div className="flex gap-2 w-full">
                 {customModal.type === 'confirm' && (
-                  <button onClick={closeCustomModal} className="flex-1 py-2.5 bg-gray-100 rounded-xl font-bold hover:bg-gray-200 text-gray-600 transition-colors text-[14px]">취소</button>
+                  <button ON-CLICK={closeCustomModal} className="flex-1 py-2.5 bg-gray-100 rounded-xl font-bold hover:bg-gray-200 text-gray-600 transition-colors text-[14px]">취소</button>
                 )}
                 <button 
-                  onClick={() => {
+                  ON-CLICK={() => {
                     if (customModal.onConfirm) customModal.onConfirm();
                     closeCustomModal();
                   }} 
@@ -3022,74 +2813,69 @@ const parseExtraSheet = (sheetName, isGalcams) => {
           </div>
         )}
 
-{/* 👇👇 [수정된] 🕒 당일 변경 이력 모달 👇👇 */}
-{showHistoryModal && (
-  <div className="absolute inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-[9999] p-4">
-    <div className="bg-white p-5 rounded-2xl shadow-xl w-full max-w-[600px] flex flex-col h-[70vh]">
-      <div className="flex justify-between items-center mb-4 shrink-0">
-        <h2 className="text-xl font-bold text-gray-800">🕒 오늘 재고 변경 이력</h2>
-        <button 
-          onClick={(e) => { e.stopPropagation(); setShowHistoryModal(false); }} 
-          className="text-gray-500 hover:text-gray-800 text-3xl font-bold leading-none"
-        >
-          ×
-        </button>
-      </div>
-      
-      <div className="flex-1 overflow-y-auto custom-scrollbar p-2 bg-gray-50 rounded-xl border border-gray-200">
-        {!activeTab ? (
-          <div className="text-center text-gray-400 mt-20 font-bold">먼저 열람할 통신사 탭을 선택해 주세요.</div>
-        ) : historyLogs.filter(log => log.date === new Date().toLocaleDateString('ko-KR') && log.operator === activeTab).length === 0 ? (
-          <div className="text-center text-gray-400 mt-20 font-bold">현재 탭에 오늘 변경된 이력이 없습니다.</div>
-        ) : (
-          <div className="mb-5">
-            <h3 className={`font-extrabold text-[15px] mb-2 px-2 ${activeTab==='SK'?'text-red-600':activeTab==='KT'?'text-blue-600':'text-emerald-600'}`}>
-              [{activeTab} 통신사]
-            </h3>
-            <div className="space-y-1.5">
-              {historyLogs.filter(log => log.date === new Date().toLocaleDateString('ko-KR') && log.operator === activeTab).map((log, i) => (
-                <div key={i} className="flex justify-between items-center bg-white p-2.5 rounded-lg border border-gray-200 shadow-sm text-[13px]">
-                  <div>
-                    <span className="text-gray-400 text-xs mr-2">{log.time}</span>
-                    <span className="font-bold text-gray-700">{log.device}</span>
-                    <span className="text-gray-500 ml-1">({log.color})</span>
+        {/* 👇👇 [수정된] 🕒 당일 변경 이력 모달 👇👇 */}
+        {showHistoryModal && (
+          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-[9999] p-4">
+            <div className="bg-white p-5 rounded-2xl shadow-xl w-full max-w-[600px] flex flex-col h-[70vh]">
+              <div className="flex justify-between items-center mb-4 shrink-0">
+                <h2 className="text-xl font-bold text-gray-800">🕒 오늘 재고 변경 이력</h2>
+                <button 
+                  ON-CLICK={(e) => { e.stopPropagation(); setShowHistoryModal(false); }} 
+                  className="text-gray-500 hover:text-gray-800 text-3xl font-bold leading-none"
+                >
+                  &times;
+                </button>
+              </div>
+              
+              <div className="flex-1 overflow-y-auto custom-scrollbar p-2 bg-gray-50 rounded-xl border border-gray-200">
+                {!activeTab ? (
+                  <div className="text-center text-gray-400 mt-20 font-bold">먼저 열람할 통신사 탭을 선택해 주세요.</div>
+                ) : historyLogs.filter(log => log.date === new Date().toLocaleDateString('ko-KR') && log.operator === activeTab).length === 0 ? (
+                  <div className="text-center text-gray-400 mt-20 font-bold">현재 탭에 오늘 변경된 이력이 없습니다.</div>
+                ) : (
+                  <div className="mb-5">
+                    <h3 className={`font-extrabold text-[15px] mb-2 px-2 ${activeTab==='SK'?'text-red-600':activeTab==='KT'?'text-blue-600':'text-emerald-600'}`}>
+                      [{activeTab} 통신사]
+                    </h3>
+                    <div className="space-y-1.5">
+                      {historyLogs.filter(log => log.date === new Date().toLocaleDateString('ko-KR') && log.operator === activeTab).map((log, i) => (
+                        <div key={i} className="flex justify-between items-center bg-white p-2.5 rounded-lg border border-gray-200 shadow-sm text-[13px]">
+                          <div>
+                            <span className="text-gray-400 text-xs mr-2">{log.time}</span>
+                            <span className="font-bold text-gray-700">{log.device}</span>
+                            <span className="text-gray-500 ml-1">({log.color})</span>
+                          </div>
+                          <div className="flex items-center gap-1.5">
+                            <span className="font-extrabold text-gray-800">{log.qty}개</span>
+                            <span className={`px-2 py-0.5 rounded text-xs font-bold ${log.action === '차감' ? 'bg-red-100 text-red-600' : 'bg-blue-100 text-blue-600'}`}>
+                              {log.action}
+                            </span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
                   </div>
-                  <div className="flex items-center gap-1.5">
-                    <span className="font-extrabold text-gray-800">{log.qty}개</span>
-                    <span className={`px-2 py-0.5 rounded text-xs font-bold ${log.action === '차감' ? 'bg-red-100 text-red-600' : 'bg-blue-100 text-blue-600'}`}>
-                      {log.action}
-                    </span>
-                  </div>
-                </div>
-              ))}
+                )}
+              </div>
+
+              <div className="pt-4 mt-2 border-t flex justify-end shrink-0">
+                <button 
+                  ON-CLICK={(e) => { e.stopPropagation(); setShowHistoryModal(false); }} 
+                  className="px-5 py-2 bg-amber-500 text-white rounded-lg text-[13px] font-bold hover:bg-amber-600 shadow-sm"
+                >
+                  닫기
+                </button>
+              </div>
             </div>
           </div>
         )}
-      </div>
-
-      <div className="pt-4 mt-2 border-t flex justify-end shrink-0">
-        <button 
-          onClick={(e) => { e.stopPropagation(); setShowHistoryModal(false); }} 
-          className="px-5 py-2 bg-amber-500 text-white rounded-lg text-[13px] font-bold hover:bg-amber-600 shadow-sm"
-        >
-          닫기
-        </button>
-      </div>
-    </div>
-  </div>
-)}
-{/* 👆👆 [수정 끝] 👆👆 */}
+        {/* 👆👆 [수정 끝] 👆👆 */}
       </div>
     </NewWindowPortal>
   );
 }
 
-
-				  
-
-             
- function App() {
-  // 👇 라이트/다크모드 상태 관리 로직 (여기부터) 👇
+function App() {
   const [isDarkMode, setIsDarkMode] = useState(() => localStorage.getItem('theme') === 'dark');
 
   useEffect(() => {
@@ -3101,10 +2887,8 @@ const parseExtraSheet = (sheetName, isGalcams) => {
       localStorage.setItem('theme', 'light');
     }
   }, [isDarkMode]);
-  // 👆 라이트/다크모드 상태 관리 로직 (여기까지) 👆
 
-
-const handleFileUpload = (e) => {
+  const handleFileUpload = (e) => {
     const file = e.target.files[0];
     if (!file) return;
 
@@ -3114,7 +2898,7 @@ const handleFileUpload = (e) => {
         let usimIdx = -1;
         let planIdx = -1;
         let addrIdx = -1; 
-        let dateIdx = -1; // 💡 '상담희망일시' 열 위치 저장할 변수 추가!
+        let dateIdx = -1; 
         
         for (let i = 0; i < Math.min(records.length, 10); i++) {
             if (records[i].includes('구분') || records[i].includes('상담희망일시')) {
@@ -3124,7 +2908,7 @@ const handleFileUpload = (e) => {
                 usimIdx = headers.findIndex(h => h.includes('유심모델'));
                 planIdx = headers.findIndex(h => h === '요금제' || h.includes('요금제'));
                 addrIdx = headers.findIndex(h => h === '주소' || h.includes('주소')); 
-                dateIdx = headers.findIndex(h => h === '상담희망일시' || h.includes('희망일시')); // 💡 위치 찾기
+                dateIdx = headers.findIndex(h => h === '상담희망일시' || h.includes('희망일시'));
                 break;
             }
         }
@@ -3161,7 +2945,6 @@ const handleFileUpload = (e) => {
             const name = namePhoneMatch ? namePhoneMatch[1] : '';
             const confirm = namePhoneMatch ? namePhoneMatch[2] : ''; 
 
-            // 🚨 1. 상담희망일시에서 '날짜'만 숫자형태로 추출! (예: 2026-06-24 -> 24일)
             let reqDay = '';
             if (dateIdx !== -1) {
                 const cols = record.split(delimiter);
@@ -3176,7 +2959,6 @@ const handleFileUpload = (e) => {
                 if (dateM) reqDay = parseInt(dateM[1], 10) + '일';
             }
 
-            // 🚨 2. 기존 닷컴상태 추출 로직
             let dotcom = '';
             if (dotcomIdx !== -1) {
                 const cols = record.split(delimiter);
@@ -3187,14 +2969,13 @@ const handleFileUpload = (e) => {
                 dotcom = dotcomMatches ? dotcomMatches[dotcomMatches.length - 1] : '';
             }
 
-            // 🚨 3. 추출한 날짜를 닷컴상태 문자열 뒤에 예쁘게 붙여주기! (예: 서식지접수, 24일)
             if (dotcom && reqDay) {
                 dotcom = `${dotcom}, ${reqDay}`;
             } else if (reqDay) {
                 dotcom = reqDay;
             }
 
-const rawModel = getVal(/(SM-[A-Z0-9]+|iPhone\s*[A-Za-z0-9\s]+)/i);
+            const rawModel = getVal(/(SM-[A-Z0-9]+|iPhone\s*[A-Za-z0-9\s]+)/i);
             let mappedModel = rawModel; 
             if (rawModel) {
                 const searchModel = rawModel.replace(/\s+/g, '').toUpperCase();
@@ -3202,7 +2983,6 @@ const rawModel = getVal(/(SM-[A-Z0-9]+|iPhone\s*[A-Za-z0-9\s]+)/i);
                 for (const [deviceName, colors] of Object.entries(DEVICE_COLORS_MAP)) {
                     for (const colorInfo of colors) {
                         if (colorInfo.copyText.toUpperCase() === searchModel) {
-                            // deviceName에서 '(사전예약)' 문구를 빈 문자열로 바꾸고 양옆 공백을 정리합니다.
                             mappedModel = `${deviceName.replace('(사전예약)', '').trim()} - ${colorInfo.name}`;
                             isFound = true;
                             break;
@@ -3322,7 +3102,7 @@ const rawModel = getVal(/(SM-[A-Z0-9]+|iPhone\s*[A-Za-z0-9\s]+)/i);
     
     if (fileName.endsWith('.xlsx') || fileName.endsWith('.xls')) {
         const reader = new FileReader();
-        reader.onload = (event) => {
+        reader.ON-LOAD = (event) => {
             try {
                 const data = new Uint8Array(event.target.result);
                 const workbook = XLSX.read(data, { type: 'array' });
@@ -3343,7 +3123,7 @@ const rawModel = getVal(/(SM-[A-Z0-9]+|iPhone\s*[A-Za-z0-9\s]+)/i);
     } 
     else {
         const reader = new FileReader();
-        reader.onload = (event) => {
+        reader.ON-LOAD = (event) => {
             try {
                 const text = event.target.result;
                 const records = text.split(/(?=202\d{10})/); 
@@ -3376,7 +3156,7 @@ const rawModel = getVal(/(SM-[A-Z0-9]+|iPhone\s*[A-Za-z0-9\s]+)/i);
   const [isLoading, setIsLoading] = useState(true)
 
 const fileInputRef = React.useRef(null);     
-  const [isAdminVerified, setIsAdminVerified] = useState(false); // 💡 새로 추가된 인증 상태 기억 변수
+  const [isAdminVerified, setIsAdminVerified] = useState(false); 
 
 const handleAdminClick = async () => {
 
@@ -3385,7 +3165,6 @@ const handleAdminClick = async () => {
       return;
     }
 
-    // --- 프리패스가 꺼져있다면 텔레그램 인증 시작 ---
     const workerUrl = 'https://shiny-surf-3362.xodnd9733.workers.dev';
 
     try {
@@ -3399,7 +3178,7 @@ const handleAdminClick = async () => {
       const verifyData = await verifyRes.json();
 
 if (verifyData.success) {
-  setIsAdminVerified(true); // 💡 이 줄을 추가해야 페이지를 벗어나기 전까지 인증이 유지됩니다!
+  setIsAdminVerified(true); 
   fileInputRef.current.click(); 
 } else {
   alert("❌ 인증번호가 틀렸습니다.");
@@ -3433,10 +3212,9 @@ if (verifyData.success) {
     } catch (error) { alert("서버 통신 오류가 발생했습니다."); }
   };
 
-	 
+  
 
 useEffect(() => {
-    // 👇👇 정책 엑셀 파싱 로직 대신 서버에서 바로 받아오도록 수정 👇👇
     const workerUrl = 'https://shiny-surf-3362.xodnd9733.workers.dev';
     
     fetch(`${workerUrl}/get-policy`)
@@ -3454,13 +3232,12 @@ useEffect(() => {
       })
       .catch(error => {
         console.error('정책 데이터를 불러오는데 실패했습니다:', error);
-        setPolicyData(POLICY); // 에러 발생 시 기본값 사용
+        setPolicyData(POLICY); 
         setIsLoading(false); 
       });
   }, []);
 
 
- // 💡 송장번호 검색 함수를 '비밀 스위치'로 개조
   const handleTrackingSearch = () => { 
     if (trackingNumber === '0130') {
       setIsAdminVerified((prev) => {
@@ -3468,11 +3245,10 @@ useEffect(() => {
         alert(newState ? "🔓 [프리패스 모드 ON]\n이제 '관리' 버튼을 누르면 인증 없이 바로 열립니다." : "🔒 [보안 모드 ON]\n이제 다시 텔레그램 인증이 필요합니다.");
         return newState;
       });
-      setTrackingNumber(''); // 입력창 비우기
+      setTrackingNumber(''); 
       return; 
     }
 
-    // 2. 일반적인 숫자(송장번호)를 입력했을 때의 기존 정상 기능
     if (!trackingNumber || !/^\d+$/.test(trackingNumber)) return alert('송장번호를 입력해주세요.'); 
     window.open(`https://trace.cjlogistics.com/next/tracking.html?wblNo=${trackingNumber}`, 'cjTrackingPopup', 'width=1600,height=900,scrollbars=yes,resizable=yes'); 
     setTrackingNumber(''); 
@@ -3496,30 +3272,27 @@ const plans = useMemo(() => operator === 'SK' ? PLAN_LIST_SK : (operator === 'KT
     <div className="font-sans text-gray-900 bg-gray-50 min-h-screen flex flex-col">
     <div className="mt-2 py-2 px-4 mb-3 max-w-4xl mx-auto flex flex-nowrap overflow-x-auto hide-scroll-bar gap-2 items-center bg-white rounded-2xl shadow-[0_2px_10px_rgb(0,0,0,0.02)] border border-gray-100 w-full relative z-10">
   
-  {/* 통신사 선택 (iOS 스타일 세그먼트 컨트롤) */}
   <div className="flex bg-gray-100 p-1 rounded-xl shrink-0">
-    <button className={`px-4 py-1.5 rounded-lg text-sm font-bold transition-all ${operator === 'SK' ? 'bg-white text-red-600 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`} onClick={() => setOperator('SK')}>SK</button>
-    <button className={`px-4 py-1.5 rounded-lg text-sm font-bold transition-all ${operator === 'KT' ? 'bg-white text-blue-600 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`} onClick={() => setOperator('KT')}>KT</button>
-    <button className={`px-4 py-1.5 rounded-lg text-sm font-bold transition-all ${operator === 'U' ? 'bg-white text-emerald-600 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`} onClick={() => setOperator('U')}>U+</button>
+    <button className={`px-4 py-1.5 rounded-lg text-sm font-bold transition-all ${operator === 'SK' ? 'bg-white text-red-600 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`} ON-CLICK={() => setOperator('SK')}>SK</button>
+    <button className={`px-4 py-1.5 rounded-lg text-sm font-bold transition-all ${operator === 'KT' ? 'bg-white text-blue-600 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`} ON-CLICK={() => setOperator('KT')}>KT</button>
+    <button className={`px-4 py-1.5 rounded-lg text-sm font-bold transition-all ${operator === 'U' ? 'bg-white text-emerald-600 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`} ON-CLICK={() => setOperator('U')}>U+</button>
   </div>
 
-  <div className="w-px h-5 bg-gray-200 mx-1 shrink-0"></div> {/* 구분선 */}
+  <div className="w-px h-5 bg-gray-200 mx-1 shrink-0"></div> 
 
-  {/* 유틸리티 버튼들 (은은한 배경색과 둥근 모서리) */}
   {operator === 'SK' && <a href="https://shop.tworld.co.kr/notice" target="_blank" className="bg-red-50 text-red-600 px-3 py-1.5 rounded-xl hover:bg-red-100 font-bold text-sm shrink-0 transition-colors">SK 지원금</a>}
   {operator === 'KT' && <a href="https://shop.kt.com/smart/supportAmtList.do" target="_blank" className="bg-blue-50 text-blue-600 px-3 py-1.5 rounded-xl hover:bg-blue-100 font-bold text-sm shrink-0 transition-colors">KT 지원금</a>}
   {operator === 'U' && <a href="https://www.lguplus.com/mobile/financing-model" target="_blank" className="bg-emerald-50 text-emerald-600 px-3 py-1.5 rounded-xl hover:bg-emerald-100 font-bold text-sm shrink-0 transition-colors">U+ 지원금</a>}
 
   <a href="https://www.samsung.com/sec/smartphones/all-smartphones/?carrier-phone" target="_blank" className="bg-gray-100 text-gray-700 px-3 py-1.5 rounded-xl hover:bg-gray-200 font-bold text-sm shrink-0 transition-colors">닷컴</a>
-  <button onClick={() => setShowMaintenancePopup(true)} className="bg-indigo-50 text-indigo-600 px-3 py-1.5 rounded-xl hover:bg-indigo-100 font-bold text-sm shrink-0 transition-colors">유지비</button>
-  <button onClick={() => setShowStorePopup(true)} className="bg-teal-50 text-teal-600 px-3 py-1.5 rounded-xl hover:bg-teal-100 font-bold text-sm shrink-0 transition-colors">MVNO</button>
-  <button onClick={() => setShowPopup(true)} className="bg-slate-100 text-gray-700 px-3 py-1.5 rounded-xl hover:bg-gray-200 font-bold text-sm shrink-0 transition-colors">전화번호</button>
-  <button onClick={handleAdminClick} onContextMenu={handleAdminContextMenu} className="bg-amber-100 text-amber-700  px-3 py-1.5 rounded-xl hover:bg-amber-200 font-bold text-sm shrink-0 transition-colors">관리</button>
-  <button onClick={() => setShowDeviceColorPopup(true)} className="bg-pink-50 text-pink-600 px-3 py-1.5 rounded-xl hover:bg-pink-100 font-bold text-sm shrink-0 transition-colors">닷컴 혜택</button>
+  <button ON-CLICK={() => setShowMaintenancePopup(true)} className="bg-indigo-50 text-indigo-600 px-3 py-1.5 rounded-xl hover:bg-indigo-100 font-bold text-sm shrink-0 transition-colors">유지비</button>
+  <button ON-CLICK={() => setShowStorePopup(true)} className="bg-teal-50 text-teal-600 px-3 py-1.5 rounded-xl hover:bg-teal-100 font-bold text-sm shrink-0 transition-colors">MVNO</button>
+  <button ON-CLICK={() => setShowPopup(true)} className="bg-slate-100 text-gray-700 px-3 py-1.5 rounded-xl hover:bg-gray-200 font-bold text-sm shrink-0 transition-colors">전화번호</button>
+  <button ON-CLICK={handleAdminClick} ON-CON-TEXTMENU={handleAdminContextMenu} className="bg-amber-100 text-amber-700 px-3 py-1.5 rounded-xl hover:bg-amber-200 font-bold text-sm shrink-0 transition-colors">관리</button>
+  <button ON-CLICK={() => setShowDeviceColorPopup(true)} className="bg-pink-50 text-pink-600 px-3 py-1.5 rounded-xl hover:bg-pink-100 font-bold text-sm shrink-0 transition-colors">닷컴 혜택</button>
   
-  {/* 검색창 (입력 포커스 시 부드러운 테두리 강조) */}
   <div className="flex items-center ml-auto gap-1.5 shrink-0">
-    <input type="text" value={trackingNumber} onChange={(e) => setTrackingNumber(e.target.value.replace(/\D/g, ''))} onKeyDown={(e) => e.key === 'Enter' && handleTrackingSearch()} placeholder="CJ 송장번호" className="bg-gray-50 border border-gray-200 focus:bg-white focus:border-transparent focus:ring-2 focus:ring-blue-400 p-2 rounded-xl w-32 h-[36px] text-sm text-center outline-none transition-all" />
+    <input type="text" value={trackingNumber} ON-CHANGE={(e) => setTrackingNumber(e.target.value.replace(/\D/g, ''))} ON-KEY-DOWN={(e) => e.key === 'Enter' && handleTrackingSearch()} placeholder="CJ 송장번호" className="bg-gray-50 border border-gray-200 focus:bg-white focus:border-transparent focus:ring-2 focus:ring-blue-400 p-2 rounded-xl w-32 h-[36px] text-sm text-center outline-none transition-all" />
   </div>
 </div>
 
@@ -3537,11 +3310,10 @@ const plans = useMemo(() => operator === 'SK' ? PLAN_LIST_SK : (operator === 'KT
 
       {showDraggablePopup && <DraggablePopup onClose={() => setShowDraggablePopup(false)} />}
 
-            <input type="file" accept=".csv, .txt, .crdownload, .xls, .xlsx" ref={fileInputRef} onChange={handleFileUpload} style={{ display: 'none' }} />
+            <input type="file" accept=".csv, .txt, .crdownload, .xls, .xlsx" ref={fileInputRef} ON-CHANGE={handleFileUpload} style={{ display: 'none' }} />
       
-      {/* 👇 화면 우측 하단 네이버 지도 팝업 버튼 (다크모드 버튼 바로 위) 👇 */}
       <button
-        onClick={() => window.open('https://m.map.naver.com', 'naverMap', 'width=390,height=800,left=50,top=50')}
+        ON-CLICK={() => window.open('https://m.map.naver.com', 'naverMap', 'width=390,height=800,left=50,top=50')}
         className="fixed bottom-24 right-6 z-[9999] bg-white text-[#03c75a] p-3 rounded-full shadow-[0_10px_25px_rgba(0,0,0,0.3)] hover:scale-110 transition-transform flex items-center justify-center w-14 h-14 border-2 border-gray-200"
         title="네이버 지도 열기"
       >
@@ -3550,9 +3322,8 @@ const plans = useMemo(() => operator === 'SK' ? PLAN_LIST_SK : (operator === 'KT
         </svg>
       </button>
 
-      {/* 👇 화면 우측 하단 다크모드 토글 버튼 👇 */}
       <button
-        onClick={() => setIsDarkMode(!isDarkMode)}
+        ON-CLICK={() => setIsDarkMode(!isDarkMode)}
         className="fixed bottom-6 right-6 z-[9999] bg-gray-800 text-white p-3 rounded-full shadow-[0_10px_25px_rgba(0,0,0,0.3)] hover:scale-110 transition-transform flex items-center justify-center w-14 h-14 text-2xl border-2 border-gray-700"
         title="라이트/다크 모드 전환"
       >
@@ -3562,7 +3333,6 @@ const plans = useMemo(() => operator === 'SK' ? PLAN_LIST_SK : (operator === 'KT
     </div>
   );
 }
-
 
 ReactDOM.createRoot(document.getElementById('root')).render(<App/>);
 </script>
