@@ -2096,13 +2096,20 @@ function PolicyPastePopup({ onClose, POLICY, workerUrl, showAlert }) {
 
 // ------------------ 재고 복사-붙여넣기 팝업 (DRM 우회용) ------------------
 function InventoryPastePopup({ onClose, inventory, setInventory, setDisplayOrder, workerUrl, showAlert, keyInfoMap, copyTextToKeyMap }) {
-  // 💡 수정됨: 상태(useState) 대신 직접 HTML 요소에 접근하는 useRef 사용
   const textareaRef = useRef(null); 
 
-  const handleSave = () => {
-    // 💡 수정됨: 화면에 붙여넣어진 값을 직접 읽어옴
-    const pasteData = textareaRef.current.value; 
+  // 💡 이벤트 충돌 방지 및 확실한 닫기를 위한 강제 종료 함수 추가
+  const handleForceClose = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    onClose();
+  };
 
+  const handleSave = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    
+    const pasteData = textareaRef.current ? textareaRef.current.value : ''; 
     if (!pasteData.trim()) {
       showAlert("데이터를 입력해주세요.");
       return;
@@ -2235,35 +2242,39 @@ function InventoryPastePopup({ onClose, inventory, setInventory, setDisplayOrder
       }).catch(err => console.error("서버 저장 실패:", err));
 
       showAlert(`✅ ${updateCount}건의 재고가 성공적으로 업데이트되었습니다.`);
-      onClose();
+      onClose(); // 저장 후 팝업 닫기
     } else {
       showAlert('일치하는 단말기/통신사 데이터를 찾을 수 없거나 양식이 잘못되었습니다.');
     }
   };
 
   return (
-    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-[9999] p-4">
-      <div className="bg-white p-5 rounded-2xl shadow-xl w-full max-w-[800px] flex flex-col h-[70vh]">
+    {/* 💡 뒷배경 클릭 시 닫히도록 ON-CLICK={handleForceClose} 추가 */}
+    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-[9999] p-4" ON-CLICK={handleForceClose}>
+      
+      {/* 💡 팝업 내부창을 클릭했을 땐 안 닫히도록 클릭 이벤트 전파 차단 */}
+      <div className="bg-white p-5 rounded-2xl shadow-xl w-full max-w-[800px] flex flex-col h-[70vh]" ON-CLICK={(e) => e.stopPropagation()}>
         <div className="flex justify-between items-center mb-4 shrink-0">
           <h2 className="text-xl font-bold text-gray-800">📦 재고 현황 업로드 (엑셀 복사/붙여넣기)</h2>
-          <button ON-CLICK={onClose} className="text-gray-500 hover:text-gray-800 text-3xl font-bold">&times;</button>
+          <button type="button" ON-CLICK={handleForceClose} className="text-gray-500 hover:text-gray-800 text-3xl font-bold">&times;</button>
         </div>
         <p className="text-[13px] text-emerald-800 mb-4 bg-emerald-50 border border-emerald-200 p-3 rounded-lg leading-relaxed">
           💡 엑셀에서 재고 표 전체(통신사, 모델, 수량)를 <b>드래그하여 복사(Ctrl+C)</b>한 뒤, 아래 빈칸에 <b>붙여넣기(Ctrl+V)</b> 해주세요.
         </p>
         <textarea 
-          ref={textareaRef} /* 💡 수정됨: value, onChange를 삭제하고 ref 속성 추가 */
+          ref={textareaRef} 
           className="flex-1 border p-3 text-[12px] font-mono whitespace-pre bg-gray-50 rounded-xl mb-4 resize-none outline-none focus:ring-2 focus:ring-emerald-400" 
           placeholder="여기에 엑셀 데이터를 붙여넣으세요..."
         ></textarea>
         <div className="pt-4 border-t flex justify-end gap-2 shrink-0">
-          <button ON-CLICK={onClose} className="px-5 py-2.5 bg-gray-200 rounded-xl font-bold text-gray-700 hover:bg-gray-300">취소</button>
-          <button ON-CLICK={handleSave} className="px-5 py-2.5 bg-emerald-600 rounded-xl font-bold text-white hover:bg-emerald-700 shadow-md">저장 후 반영하기</button>
+          <button type="button" ON-CLICK={handleForceClose} className="px-5 py-2.5 bg-gray-200 rounded-xl font-bold text-gray-700 hover:bg-gray-300">취소</button>
+          <button type="button" ON-CLICK={handleSave} className="px-5 py-2.5 bg-emerald-600 rounded-xl font-bold text-white hover:bg-emerald-700 shadow-md">저장 후 반영하기</button>
         </div>
       </div>
     </div>
   );
 }
+
 	
 
 // ------------------ 2. 재고 현황 팝업 (새 창 버전) ------------------
