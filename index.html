@@ -3310,7 +3310,7 @@ const plans = useMemo(() => operator === 'SK' ? PLAN_LIST_SK : (operator === 'KT
 
       {showDraggablePopup && <DraggablePopup onClose={() => setShowDraggablePopup(false)} />}
 
-            <input type="file" accept=".csv, .txt, .crdownload, .xls, .xlsx" ref={fileInputRef} ON-CHANGE={handleFileUpload} style={{ display: 'none' }} />
+      <input type="file" accept=".csv, .txt, .crdownload, .xls, .xlsx" ref={fileInputRef} ON-CHANGE={handleFileUpload} style={{ display: 'none' }} />
       
       <button
         ON-CLICK={() => window.open('https://m.map.naver.com', 'naverMap', 'width=390,height=800,left=50,top=50')}
