@@ -2174,6 +2174,37 @@ function InventoryPastePopup({ onClose, inventory, setInventory, setDisplayOrder
         });
       });
 
+ // 👇👇 [여기부터 추가] 직전 수량 대비 증감 이력 저장 👇👇
+      const savedLogs = JSON.parse(localStorage.getItem('inventory_history') || '[]');
+      const nowDate = new Date().toLocaleDateString('ko-KR');
+      const nowTime = new Date().toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+
+      ['SK', 'KT', 'U+'].forEach(carrier => {
+        Object.keys(updatedInventory[carrier] || {}).forEach(key => {
+          if (key.endsWith('_req')) return; // 요청 수량 키는 제외
+
+          const prevQty = parseInt(inventory[carrier]?.[key] || '0', 10) || 0;
+          const nextQty = parseInt(updatedInventory[carrier]?.[key] || '0', 10) || 0;
+          const diff = nextQty - prevQty; // 새 수량 - 직전 수량
+
+          if (diff !== 0) {
+            const info = keyInfoMap[key] || { device: key.replace('UNMAPPED_', ''), color: '' };
+            savedLogs.unshift({
+              date: nowDate,
+              time: nowTime,
+              operator: carrier,
+              device: info.device,
+              color: info.color,
+              action: diff > 0 ? '증가(업로드)' : '감소(업로드)',
+              qty: Math.abs(diff)
+            });
+          }
+        });
+      });
+
+      if (savedLogs.length > 300) savedLogs.splice(300); // 최근 300개 유지
+      localStorage.setItem('inventory_history', JSON.stringify(savedLogs));
+		
       setInventory(updatedInventory);
       setDisplayOrder(newOrder); 
       
@@ -2271,7 +2302,7 @@ function HistoryPopup({ onClose, activeTab }) {
             </div>
             <div className="flex items-center gap-1.5">
               <span className="font-extrabold text-gray-800">{log.qty}개</span>
-              <span className={`px-2 py-0.5 rounded text-xs font-bold ${log.action === '차감' ? 'bg-red-100 text-red-600' : 'bg-blue-100 text-blue-600'}`}>
+              <span className={`px-2 py-0.5 rounded text-xs font-bold ${(log.action === '차감' || log.action.includes('감소')) ? 'bg-red-100 text-red-600' : 'bg-blue-100 text-blue-600'}`}>
                 {log.action}
               </span>
             </div>
@@ -2996,7 +3027,7 @@ const parseExtraSheet = (sheetName, isGalcams) => {
                   </div>
                   <div className="flex items-center gap-1.5">
                     <span className="font-extrabold text-gray-800">{log.qty}개</span>
-                    <span className={`px-2 py-0.5 rounded text-xs font-bold ${log.action === '차감' ? 'bg-red-100 text-red-600' : 'bg-blue-100 text-blue-600'}`}>
+                    <span className={`px-2 py-0.5 rounded text-xs font-bold ${(log.action === '차감' || log.action.includes('감소')) ? 'bg-red-100 text-red-600' : 'bg-blue-100 text-blue-600'}`}>
                       {log.action}
                     </span>
                   </div>
