@@ -2096,9 +2096,13 @@ function PolicyPastePopup({ onClose, POLICY, workerUrl, showAlert }) {
 
 // ------------------ 재고 복사-붙여넣기 팝업 (DRM 우회용) ------------------
 function InventoryPastePopup({ onClose, inventory, setInventory, setDisplayOrder, workerUrl, showAlert, keyInfoMap, copyTextToKeyMap }) {
-  const [pasteData, setPasteData] = useState('');
+  // 💡 수정됨: 상태(useState) 대신 직접 HTML 요소에 접근하는 useRef 사용
+  const textareaRef = useRef(null); 
 
   const handleSave = () => {
+    // 💡 수정됨: 화면에 붙여넣어진 값을 직접 읽어옴
+    const pasteData = textareaRef.current.value; 
+
     if (!pasteData.trim()) {
       showAlert("데이터를 입력해주세요.");
       return;
@@ -2155,7 +2159,7 @@ function InventoryPastePopup({ onClose, inventory, setInventory, setDisplayOrder
             operator: carrier,
             device: devName,
             color: colorName,
-            action: diff > 0 ? '업로드' : '차감', // 증가하면 파란색(업로드), 감소하면 빨간색(차감)
+            action: diff > 0 ? '업로드' : '차감',
             qty: Math.abs(diff)
           });
         }
@@ -2248,10 +2252,9 @@ function InventoryPastePopup({ onClose, inventory, setInventory, setDisplayOrder
           💡 엑셀에서 재고 표 전체(통신사, 모델, 수량)를 <b>드래그하여 복사(Ctrl+C)</b>한 뒤, 아래 빈칸에 <b>붙여넣기(Ctrl+V)</b> 해주세요.
         </p>
         <textarea 
+          ref={textareaRef} /* 💡 수정됨: value, onChange를 삭제하고 ref 속성 추가 */
           className="flex-1 border p-3 text-[12px] font-mono whitespace-pre bg-gray-50 rounded-xl mb-4 resize-none outline-none focus:ring-2 focus:ring-emerald-400" 
           placeholder="여기에 엑셀 데이터를 붙여넣으세요..."
-          value={pasteData} 
-          ON-CHANGE={e=>setPasteData(e.target.value)}
         ></textarea>
         <div className="pt-4 border-t flex justify-end gap-2 shrink-0">
           <button ON-CLICK={onClose} className="px-5 py-2.5 bg-gray-200 rounded-xl font-bold text-gray-700 hover:bg-gray-300">취소</button>
