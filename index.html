@@ -2479,11 +2479,7 @@ function DraggablePopup({ onClose }) {
               });
             });
 
-            setInventory(newInv);
-            setDisplayOrder(serverOrder);
-          }
-          setLoading(false);
-
+            
 			 newInv.HISTORY = data.HISTORY || []; // 👈 [여기부터 추가] 서버 이력 동기화
             if (data.HISTORY) {
               localStorage.setItem('inventory_history', JSON.stringify(data.HISTORY));
