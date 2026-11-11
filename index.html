@@ -2204,6 +2204,7 @@ function InventoryPastePopup({ onClose, inventory, setInventory, setDisplayOrder
 
       if (savedLogs.length > 300) savedLogs.splice(300); // 최근 300개 유지
       localStorage.setItem('inventory_history', JSON.stringify(savedLogs));
+      updatedInventory.HISTORY = savedLogs;
 		
       setInventory(updatedInventory);
       setDisplayOrder(newOrder); 
@@ -2482,6 +2483,19 @@ function DraggablePopup({ onClose }) {
             setDisplayOrder(serverOrder);
           }
           setLoading(false);
+
+			 newInv.HISTORY = data.HISTORY || []; // 👈 [여기부터 추가] 서버 이력 동기화
+            if (data.HISTORY) {
+              localStorage.setItem('inventory_history', JSON.stringify(data.HISTORY));
+              setHistoryLogs(data.HISTORY);
+            } // 👈 [여기까지 추가]
+
+            setInventory(newInv);
+            setDisplayOrder(serverOrder);
+          }
+          setLoading(false);
+
+			
         })
         .catch(err => {
           console.error("재고 불러오기 실패:", err);
@@ -2541,6 +2555,7 @@ function DraggablePopup({ onClose }) {
 
       const newInventory = {
         ...inventory,
+		HISTORY: savedLogs,
         [activeTab]: { ...inventory[activeTab], [deviceKey]: String(newStock), [`${deviceKey}_req`]: '0' }
       };
       setInventory(newInventory);
