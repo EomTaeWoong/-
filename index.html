@@ -1958,12 +1958,20 @@ function PolicyPastePopup({ onClose, POLICY, workerUrl, showAlert }) {
         }
       } catch (e) { console.error("기존 정책 불러오기 실패:", e); }
 
-      const processSheet = (tsvData, targetKey) => {
+const processSheet = (tsvData, targetKey) => {
         const parsed = parseTSV(tsvData);
+
+        // 붙여넣은 시트에 포함된 모델의 기존 공통지원금을 먼저 초기화
+        const targetModels = new Set(parsed.map(r => r['모델명']).filter(Boolean));
+        targetModels.forEach(model => {
+          if (updatedPolicy.DEVICES[model]) {
+            updatedPolicy.DEVICES[model][targetKey] = {};
+          }
+        });
+
         parsed.forEach(row => {
           const model = row['모델명']; const type = row['가입유형'] || '공통';
           if (updatedPolicy.DEVICES[model]) {
-            if (!updatedPolicy.DEVICES[model][targetKey]) updatedPolicy.DEVICES[model][targetKey] = {};
             if (!updatedPolicy.DEVICES[model][targetKey][type]) updatedPolicy.DEVICES[model][targetKey][type] = {};
             Object.keys(row).forEach(k => { 
               if (k !== '모델명' && k !== '가입유형' && row[k] !== '') updatedPolicy.DEVICES[model][targetKey][type][k] = row[k]; 
