@@ -324,7 +324,7 @@ const PLAN_LIST_SK = [
   { category: '통합', name: 'T플랜 세이브', price: 33000 },
   { category: '통합', name: '주말엔 팅 세이브', price: 31000 },
   { category: '통합', name: 'ZEM플랜 베스트', price: 26000 },
-  { category: '통합', name: 'ZEM플랜 스마트', price: 198000 },
+  { category: '통합', name: 'ZEM플랜 스마트', price: 19800 },
   // 필요에 따라 기존 양식처럼 추가 작성해주세요.
 ];
 
@@ -1455,7 +1455,7 @@ function NoticePopup({ onClose }) {
       <div className="bg-white p-6 rounded-3xl shadow-xl relative w-max max-w-[90vw] text-center mb-[20vh]">
         <button onClick={onClose} className="absolute top-2 right-2 text-gray-400 hover:text-gray-800 text-2xl leading-none">&times;</button>
         <h2 className="text-lg font-bold mb-4 text-blue-600">📢 안내</h2>
-        <p className="text-gray-800 font-medium whitespace-nowrap">정책 기준일 : SK 10월 30일 / KT 10월 30일 / U+ 10월 30일<br /><span className="text-red-600">11월 24일부터 S26 출고가 인상</span><br />
+        <p className="text-gray-800 font-medium whitespace-nowrap">정책 기준일 : SK 11월 24일 / KT 10월 30일 / U+ 10월 30일<br /><span className="text-red-600">11월 24일부터 S26 출고가 인상</span><br />
 		<span className="text-blue-600">NEW 붙은게 출고가 인상 적용된 단말기</span>
 		</p>
         <button onClick={onClose} className="mt-6 bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 w-full font-bold text-sm">확인</button>
@@ -2135,14 +2135,6 @@ function InventoryPastePopup({ onClose, inventory, setInventory, setDisplayOrder
         }
         
         newOrder[carrier] = finalCarrierOrder.length > 0 ? finalCarrierOrder : (inventory[carrier] ? Object.keys(inventory[carrier]).filter(k => !k.endsWith('_req')) : []);
-        
-        // 기존에 있던 재고 항목 중 이번 복사본에 없는 단말기는 수량을 0으로 처리하되 목록에 유지
-        Object.keys(inventory[carrier] || {}).forEach(k => {
-           if (!k.endsWith('_req') && !updatedInventory[carrier][k]) {
-               updatedInventory[carrier][k] = '0';
-               updatedInventory[carrier][`${k}_req`] = inventory[carrier][`${k}_req`] || '0';
-           }
-        });
       });
 
  // 👇👇 [여기부터 추가] 직전 수량 대비 증감 이력 저장 👇👇
